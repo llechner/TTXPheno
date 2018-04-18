@@ -24,4 +24,11 @@ voms-proxy-init -voms cms -out ~/private/.proxy
 cd TTXPheno/postprocessing
 python genPostProcessing.py --overwrite --sample fwlite_ttZ_ll_LO_highStat_scan --addReweights --small
 ```
-Remove `--small` to process the full sample. Add `--nJobs=10` and `--job=0` etc. options to run only on the first 10% of events. In Vienna you could also do `export X509_USER_PROXY=~/private/.proxy` and `submitBatch.py --dpm genPostProcessing.sh`. For other places we can add submission scripts.
+Remove `--small` to process the full sample. Add `--nJobs=10` and `--job=0` etc. options to run only on the first 10% of events. In Vienna you could also do 
+```
+export X509_USER_PROXY=~/private/.proxy
+submitBatch.py --dpm genPostProcessing.sh # append `#SPLIT200` to a line
+``` 
+For other places we can add submission scripts.
+
+## Tests
