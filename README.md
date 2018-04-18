@@ -31,4 +31,4 @@ submitBatch.py --dpm genPostProcessing.sh # append `#SPLIT200` to a line
 ``` 
 For other places we can add submission scripts.
 
-## Tests
+## Examples
