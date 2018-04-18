@@ -13,7 +13,7 @@ scram b -j40
 ```
 
 ## Prerequisites
-Add your user-specific locations to [user.py](https://github.com/TTXPheno/TTXPheno/Tools/python/user.py)
+Add your user-specific locations to [user.py](https://github.com/TTXPheno/TTXPheno/blob/master/Tools/python/user.py)
 Depending on what you're planning, you need not do that for all of locations and 
 fix potential 'ImportError' from `user.py`  when they occur. 
 
