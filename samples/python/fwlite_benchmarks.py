@@ -6,9 +6,10 @@ import os
 # RootTools
 from RootTools.core.standard import *
 
-# Top EFT
+# TTXPheno
 from TTXPheno.Tools.user import results_directory 
 
+# sqlite3 sample cache file
 dbFile = os.path.join( results_directory, 'sample_cache', 'fwlite_benchmarks.db')
 
 # Logging
