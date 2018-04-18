@@ -41,7 +41,7 @@ args = argParser.parse_args()
 #
 # Logger
 #
-import TopEFT.Tools.logger as logger
+import TTXPheno.Tools.logger as logger
 import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(   args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
@@ -51,7 +51,7 @@ if len(args.inputFiles)>0:
     logger.info( "Input files found. Ignoring 'sample' argument. Files: %r", args.inputFiles)
     sample = FWLiteSample( args.targetSampleName, args.inputFiles)
 else:
-    sample_file = "$CMSSW_BASE/python/TopEFT/samples/fwlite_benchmarks.py"
+    sample_file = "$CMSSW_BASE/python/TTXPheno/samples/fwlite_benchmarks.py"
     samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
     sample = getattr( samples, args.sample )
 

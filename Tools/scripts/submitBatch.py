@@ -58,7 +58,7 @@ parser.add_option('--logLevel', action='store', nargs='?', choices=['CRITICAL', 
 
 
 # Logging
-import TopEFT.Tools.logger as logger
+import TTXPheno.Tools.logger as logger
 logger  = logger.get_logger(options.logLevel, logFile = None)
 
 # Arguments
