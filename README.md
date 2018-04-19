@@ -13,9 +13,8 @@ scram b -j40
 ```
 
 ## Prerequisites
-Add your user-specific locations to [user.py](https://github.com/TTXPheno/TTXPheno/blob/master/Tools/python/user.py)
-Depending on what you're planning, you need not do that for all of locations and 
-fix potential 'ImportError' from `user.py`  when they occur. 
+Add your user-specific locations to [user.py](https://github.com/TTXPheno/TTXPheno/blob/master/Tools/python/user.py).
+You can do that also later and thus fix potential 'ImportError' from `user.py`  when they occur. 
 
 ## How to make a flat ntuple from a GEN file
 Define the sample in e.g. [fwlite_benchmarks.py](https://github.com/TTXPheno/TTXPheno/blob/master/samples/python/fwlite_benchmarks.py) and do 
