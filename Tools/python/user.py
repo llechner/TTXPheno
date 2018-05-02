@@ -11,3 +11,6 @@ if os.environ['USER'] in ['dspitzbart', 'dspitzba']:
     skim_directory      = "/afs/hephy.at/data/dspitzbart01/TTXPheno/skims/"
     skim_output_directory = "/afs/hephy.at/data/dspitzbart01/TTXPheno/skims/"
     plot_directory      = "/afs/hephy.at/user/d/dspitzbart/www/TTXPheno/"
+
+if os.environ['USER'] in ['llechner']:
+    plot_directory      = "/afs/hephy.at/user/l/llencher/www/TTXPheno"
