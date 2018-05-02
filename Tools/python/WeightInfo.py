@@ -27,6 +27,9 @@ class WeightInfo:
         logger.debug( "Found %i variables: %s. Found %i weights." %(self.nvar, ",".join( self.variables ), self.nid) )
 
     def set_order( self, order):
+#        gp_order = get_pkl_order(...) #get order of gridpack from pkl file
+#        if order > gp_order:
+#            raise ValueError( "Polynomial order is greater than in the gridpack (order %i)" % gp_order )
         self.order = order
 
     @staticmethod
@@ -45,13 +48,16 @@ class WeightInfo:
 
     def arg_weight_string(self, **kwargs):
         if len(kwargs)==0: return 'p_C[0]'
+        unused_args = set(kwargs.keys()) - set(self.variables)
+        if len(unused_args) > 0:
+            raise ValueError( "Variable %s not in the gridpack" % ' && '.join(unused_args) )
         substrings = []
         counter = -1
         for o in xrange(self.order+1):
             for comb in itertools.combinations_with_replacement( self.variables, o ):
                 counter += 1
                 if False in [v in kwargs for v in comb]: continue
-                substrings.append( "p_C[%i]*%f" %(counter, reduce(mul,[kwargs.get(v) for v in comb],1)) )
+                substrings.append( "p_C[%i]*%s" %(counter, str(reduce(mul,[kwargs.get(v) for v in comb],1)).rstrip('0').rstrip('.')) )
         return "+".join( substrings )
 
     @staticmethod
@@ -102,5 +108,5 @@ if __name__ == "__main__":
     w.set_order( 3 )
 #    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
 
-#    print(w.arg_weight_string(ctZI=2, cpt=5,ctZ=4))
-#    print(w.arg_weight_string())
+    print(w.arg_weight_string(ctZI=2, cpt=5, ctZ=.4, cmk=3))
+#     print(w.arg_weight_string())
