@@ -13,4 +13,5 @@ if os.environ['USER'] in ['dspitzbart', 'dspitzba']:
     plot_directory      = "/afs/hephy.at/user/d/dspitzbart/www/TTXPheno/"
 
 if os.environ['USER'] in ['llechner']:
-    plot_directory      = "/afs/hephy.at/user/l/llencher/www/TTXPheno"
+    results_directory   = "/afs/hephy.at/data/llechner01/TTXPheno/results/" #for analysis results and cache files
+    plot_directory      = "/afs/hephy.at/user/l/llechner/www/TTXPheno"
