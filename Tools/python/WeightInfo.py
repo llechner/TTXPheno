@@ -102,5 +102,5 @@ if __name__ == "__main__":
     w.set_order( 3 )
 #    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
 
-#    print(w.arg_weight_string(ctZI=2, cpt=5,ctZ=4))
+    print w.arg_weight_string(ctZI=2, cpt=5,ctZ=4)
 #    print(w.arg_weight_string())
