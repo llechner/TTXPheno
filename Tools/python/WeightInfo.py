@@ -47,6 +47,7 @@ class WeightInfo:
         return "+".join( substrings )
 
     def arg_weight_string(self, **kwargs):
+        print(self.variables)
         if len(kwargs)==0: return 'p_C[0]'
         unused_args = set(kwargs.keys()) - set(self.variables)
         if len(unused_args) > 0:
