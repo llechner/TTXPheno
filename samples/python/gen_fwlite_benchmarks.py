@@ -7,7 +7,7 @@ import os
 from RootTools.core.standard import *
 
 #Top EFT
-from TopEFT.Tools.user import results_directory 
+from TTXPheno.Tools.user import results_directory 
 
 # Logging
 import logging
@@ -25,3 +25,4 @@ dim6top_ttZ_ll_LO_currentplane_highStat_scan              = Sample.fromDirectory
 dim6top_ttZ_ll_LO_currentplane_highStat_scan.reweight_pkl = "/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_currentplane_highStat_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 
 test = Sample.fromFiles("test", files = ["/afs/hephy.at/data/rschoefbeck02/TTXPheno/skims/gen/v2/test/test.root"], texName = "test")
+test.reweight_pkl = '/afs/cern.ch/user/l/llechner/public/gridpacks_data/order_3/ttZ/gridpacks/reweight_card.pkl'
