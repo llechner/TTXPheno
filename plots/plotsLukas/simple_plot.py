@@ -22,7 +22,7 @@ sample.files = sample.files[:1]
 c = sample.chain 
 
 w = WeightInfo(sample.reweight_pkl)
-w.set_order( 3 )
+w.set_order( 2 )
 
 
 c.Draw("Z_pt>>h_Zpt(50,0,400)") # "weight*(%s)" % weightString(cpt=0.2)
@@ -36,13 +36,6 @@ ROOT.h_Zpt.Draw('hist')
 
 c1.Print(os.path.join(plot_directory, 'Zpt.png'))
 #c2.Print(os.path.join(plot_directory, 'Zpt_weight.png'))
-
-
-
-
-
-
-
 
 
 
