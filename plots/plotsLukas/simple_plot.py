@@ -30,12 +30,7 @@ w = WeightInfo(sample.reweight_pkl)
 w.set_order( 2 )
 
 c.Draw("Z_pt>>h_Zpt(50,0,500)") # "weight*(%s)" % weightString(cpt=0.2)
-c.Draw("Z_pt>>h_Zpt1(50,0,500)", '(' + w.arg_weight_string(cpt=-20, cpQM=0.1, ctZI=0.1, ctZ=0.1) + ')/p_C[0]')
-#print(w.arg_weight_string(cpt=40, cpQM=20, ctZI=1, ctZ=2) )
-
-# Scaling the histograms on the same plot
-#ROOT.h_Zpt.Scale(1./ROOT.h_Zpt.Integral())
-#ROOT.h_Zpt1.Scale(1./ROOT.h_Zpt1.Integral())
+c.Draw("Z_pt>>h_Zpt1(50,0,500)", '(' + w.arg_weight_string(cpt=0, cpQM=0, ctZI=-1, ctZ=0) + ')/p_C[0]')
 
 # Remove StatsBox
 ROOT.h_Zpt.SetStats(False)
@@ -50,6 +45,12 @@ legend = ROOT.TLegend(0.65, 0.75, .9, .9)
 legend.AddEntry(ROOT.h_Zpt, "p_T(Z) SM", "l")
 legend.AddEntry(ROOT.h_Zpt1, "p_T(Z) (cpt, cpQM, ctZI, ctZ)", "l")
 
+h_Zpt_max = ROOT.h_Zpt.GetMaximum()
+h_Zpt1_max = ROOT.h_Zpt1.GetMaximum()
+
+if h_Zpt_max < h_Zpt1_max:
+    ROOT.h_Zpt1, ROOT.h_Zpt = ROOT.h_Zpt, ROOT.h_Zpt1
+
 # Base Line
 line = ROOT.TLine(300,0,300,ROOT.h_Zpt.GetMaximum())
 line.SetLineColor(ROOT.kBlack)
@@ -57,16 +58,16 @@ line.SetLineWidth(1)
 
 # Plotting
 c1 = ROOT.TCanvas()
+ROOT.h_Zpt.Draw('HIST')
+ROOT.h_Zpt1.Draw('HIST SAME')
+
+#ROOT.gStyle.SetTitleY(1.4)
 ROOT.h_Zpt.SetXTitle('p_T(Z)')
 ROOT.h_Zpt.SetYTitle('Weighted Entries')
 ROOT.h_Zpt.SetTitle('')
 
-#ROOT.gStyle.SetTitleY(1.4)
 
-
-ROOT.h_Zpt.Draw('HIST')
-c1.SetLogy()
-ROOT.h_Zpt1.Draw('HIST SAME')
+#c1.SetLogy()
 line.Draw('SAME')
 legend.Draw()
 

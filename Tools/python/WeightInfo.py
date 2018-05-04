@@ -51,14 +51,14 @@ class WeightInfo:
         if len(kwargs)==0: return 'p_C[0]'
         unused_args = set(kwargs.keys()) - set(self.variables)
         if len(unused_args) > 0:
-            raise ValueError( "Variable %s not in the gridpack" % ' && '.join(unused_args) )
+            raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
         substrings = []
         counter = -1
         for o in xrange(self.order+1):
             for comb in itertools.combinations_with_replacement( self.variables, o ):
                 counter += 1
                 if False in [v in kwargs for v in comb]: continue
-                substrings.append( "p_C[%i]*%s" %(counter, str(reduce(mul,[kwargs.get(v) for v in comb],1)).rstrip('0').rstrip('.')) )
+                substrings.append( "p_C[%i]*%s" %(counter, str(reduce(mul,[kwargs.get(v) for v in comb],1)).rstrip('0') ) )
         return "+".join( substrings )
 
     @staticmethod
@@ -93,10 +93,49 @@ class WeightInfo:
         else:
             return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
 
+    def GetNDYield(self, WeightList, **kwargs):
+        # input is a list of (the sum of) weights (output from BinContentToList)
+        # kwargs are specific coefficients with given values (for a 2D plot, 2 coefficients) e.g. cpt=2, cpQM=3
+        # GetYield matches the prefactors p_C[i] from the arg_weight_string output with the entry in Weightlist and calculates the yield for the given weights in kwargs
+        elements = []
+        for item in self.arg_weight_string(**kwargs).split('+'):
+           index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
+           elements.append(float(WeightList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from WeightList
+        return sum(elements)
+
+    def Get1DYield(self, WeightList, coefficient, value):
+        # input is a list of (the sum of) weights (output from BinContentToList)
+        # one specific coefficients with given values e.g. cpt, 2
+        # GetYield matches the prefactors p_C[i] from the arg_weight_string output with the entry in Weightlist and calculates the yield for the given weights in kwargs
+        dict = {coefficient:value}
+        elements = []
+        for item in self.arg_weight_string(**dict).split('+'):
+           index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
+           if len(item.split('*'))>1: factor = float(item.split('*')[1])
+           else: factor = 1.
+           elements.append(float(WeightList[index])*factor) #replace p_C[i] with the entry from WeightList
+        return sum(elements)
+
+#class YieldFunction:
+#    def __init__( self, WeightClass, WeightList):
+#        self.weightinfo = WeightClass
+#        self.weightslist = WeightList
+#        self.coefficient_string = ''
+#        self.coefficient = {}
+
+#    def SetCoefficient(self, Parameter):
+#        self.coefficient_string = Parameter
+#        self.coefficient[Parameter] = 0
+
+#    def CalculateYield(self, CoefficientValue):
+#        self.coefficient[self.coefficient_string]= float(CoefficientValue)
+#        print(self.coefficient)
+#        return self.weightinfo.GetYield(self.weightslist, **self.coefficient)
 
 def BinContentToList(histo):
     return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
+    
 if __name__ == "__main__":
 
     #w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_currentplane_highStat_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")

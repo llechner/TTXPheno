@@ -27,17 +27,6 @@ h = ROOT.TH1F('h_weights','weights',15,0,15)
 c.Draw('Iteration$>>h_weights','p_C')
 c.Draw('Iteration$>>h_weights_Zpt','p_C*(Z_pt>300)')
 
-# Some checking
-# print(c.GetEntries())
-# print(c.GetEntries('Z_pt>200'))
-# print(c.GetListOfBranches().ls())
-# print(c.p_C)
-# print(c.Scan('Iteration$:p_C'))
-# print(h.GetBinContent(1))
-# print(c.Scan('p_C[1]'))
-# print(c.Scan('Z_pt[1]'))
-
-# exit()
 
 c1 = ROOT.TCanvas()
 ROOT.h_weights.SetXTitle('Entry')
@@ -65,7 +54,3 @@ line.Draw('SAME')
 legend.Draw()
 
 c1.Print(os.path.join(plot_directory, 'weight.png'))
-
-
-print(BinContentToList(ROOT.h_weights))
-print(len(BinContentToList(ROOT.h_weights)))
