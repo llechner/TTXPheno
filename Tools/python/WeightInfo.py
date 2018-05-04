@@ -58,7 +58,7 @@ class WeightInfo:
             for comb in itertools.combinations_with_replacement( self.variables, o ):
                 counter += 1
                 if False in [v in kwargs for v in comb]: continue
-                substrings.append( "p_C[%i]*%s" %(counter, str(reduce(mul,[kwargs.get(v) for v in comb],1)).rstrip('0') ) )
+                substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[kwargs.get(v) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
     @staticmethod
@@ -148,8 +148,8 @@ if __name__ == "__main__":
     c = ROOT.TChain("Events")
     c.Add("/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2_small/fwlite_ttZ_ll_LO_highStat_scan/fwlite_ttZ_ll_LO_highStat_scan.root")
     w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_625_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
-    w.set_order( 3 )
+    w.set_order( 2 )
 #    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
 
-    print(w.arg_weight_string(ctZI=2, cpt=5, ctZ=.4, cmk=3, abc=0))
+    print(w.arg_weight_string(ctZI=2, cpt=5))
 #     print(w.arg_weight_string())
