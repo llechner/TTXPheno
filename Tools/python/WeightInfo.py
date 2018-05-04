@@ -47,7 +47,7 @@ class WeightInfo:
         return "+".join( substrings )
 
     def arg_weight_string(self, **kwargs):
-        print(self.variables)
+        kwargs = {x:y for x,y in kwargs.items() if y!=0} # remove entries which are 0
         if len(kwargs)==0: return 'p_C[0]'
         unused_args = set(kwargs.keys()) - set(self.variables)
         if len(unused_args) > 0:
@@ -94,6 +94,9 @@ class WeightInfo:
             return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
 
 
+def BinContentToList(histo):
+    return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX())]
+
 if __name__ == "__main__":
 
     #w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_currentplane_highStat_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
@@ -109,5 +112,5 @@ if __name__ == "__main__":
     w.set_order( 3 )
 #    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
 
-    print(w.arg_weight_string(ctZI=2, cpt=5, ctZ=.4, cmk=3))
+    print(w.arg_weight_string(ctZI=2, cpt=5, ctZ=.4, cmk=3, abc=0))
 #     print(w.arg_weight_string())

@@ -10,10 +10,15 @@ from TTXPheno.Tools.user import plot_directory
 from TTXPheno.Tools.WeightInfo import WeightInfo
 
 # Sample
-from TTXPheno.samples.fwlite_benchmarks import * # dim6top_ttZ_ll_LO_currentplane_highStat_scan 
+from TTXPheno.samples.benchmarks import * # dim6top_ttZ_ll_LO_currentplane_highStat_scan 
+
+#lumi = 77 #36+41
+#sigmaxBR = 
+#Nsim = 5000
 
 # sample = test
-sample = fwlite_ttZ_ll_LO_highStat_scan
+sample = dim6top_ttZ_ll_LO_highStat_scan
+#sample = dim6top_ttZ_ll_LO_currentplane_highStat_scan
 
 # just 1 file
 sample.files = sample.files[:1]
@@ -24,26 +29,45 @@ c = sample.chain
 w = WeightInfo(sample.reweight_pkl)
 w.set_order( 2 )
 
+c.Draw("Z_pt>>h_Zpt(50,0,500)") # "weight*(%s)" % weightString(cpt=0.2)
+c.Draw("Z_pt>>h_Zpt1(50,0,500)", '(' + w.arg_weight_string(cpt=-20, cpQM=0.1, ctZI=0.1, ctZ=0.1) + ')/p_C[0]')
+#print(w.arg_weight_string(cpt=40, cpQM=20, ctZI=1, ctZ=2) )
 
-c.Draw("Z_pt>>h_Zpt(50,0,400)") # "weight*(%s)" % weightString(cpt=0.2)
-#c.Draw("Z_pt>>h_Zpt1(50,0,400)",  w.arg_weight_string(cpt=.4, ctZ=.2, ctZI=.3) )
+# Scaling the histograms on the same plot
+#ROOT.h_Zpt.Scale(1./ROOT.h_Zpt.Integral())
+#ROOT.h_Zpt1.Scale(1./ROOT.h_Zpt1.Integral())
 
+# Remove StatsBox
+ROOT.h_Zpt.SetStats(False)
+ROOT.h_Zpt1.SetStats(False)
+
+# Line Color
+ROOT.h_Zpt.SetLineColor(ROOT.kBlue)
+ROOT.h_Zpt1.SetLineColor(ROOT.kRed)
+
+legend = ROOT.TLegend(0.65, 0.75, .9, .9)
+#legend->SetNColumns(2)
+legend.AddEntry(ROOT.h_Zpt, "p_T(Z) SM", "l")
+legend.AddEntry(ROOT.h_Zpt1, "p_T(Z) (cpt, cpQM, ctZI, ctZ)", "l")
+
+# Base Line
+line = ROOT.TLine(300,0,300,ROOT.h_Zpt.GetMaximum())
+line.SetLineColor(ROOT.kBlack)
+line.SetLineWidth(1)
+
+# Plotting
 c1 = ROOT.TCanvas()
-ROOT.h_Zpt.Draw('hist')
+ROOT.h_Zpt.SetXTitle('p_T(Z)')
+ROOT.h_Zpt.SetYTitle('Weighted Entries')
+ROOT.h_Zpt.SetTitle('')
 
-#c2 = ROOT.TCanvas()
-#ROOT.h_Zpt1.Draw('hist')
+#ROOT.gStyle.SetTitleY(1.4)
+
+
+ROOT.h_Zpt.Draw('HIST')
+c1.SetLogy()
+ROOT.h_Zpt1.Draw('HIST SAME')
+line.Draw('SAME')
+legend.Draw()
 
 c1.Print(os.path.join(plot_directory, 'Zpt.png'))
-#c2.Print(os.path.join(plot_directory, 'Zpt_weight.png'))
-
-
-
-
-#def weightString(cut_list):
-#    if type(cut_list)==list: return '&&'.join(['(' + str(item) + ')' for item in cut_list])
-#    else: return '(%s)' % cut_list
-
-#print weightString(['cpt=0.2','Zpt<5'])
-#exit()
-
