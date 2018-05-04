@@ -9,7 +9,6 @@ import numpy as np
 # TTXPheno
 from TTXPheno.Tools.user import plot_directory
 from TTXPheno.Tools.WeightInfo import WeightInfo
-from TTXPheno.Tools.WeightInfo import YieldFunction
 from TTXPheno.Tools.WeightInfo import BinContentToList
 
 # Sample
@@ -41,9 +40,15 @@ def plot1Dcoefficient(coeff, range):
     y = np.array([w.Get1DYield(sum_weights, coeff, i) for i in x])/sum_weights[0] #weight to SM
     graph = ROOT.TGraph(len(x), x, y)
 
+    # Base Line
+    line = ROOT.TLine(range[0],1,range[1],1)
+    line.SetLineColor(ROOT.kBlack)
+    line.SetLineWidth(1)
+
     # Plotting
     c1 = ROOT.TCanvas()
     graph.Draw()
+    line.Draw('SAME')
     c1.Print(os.path.join(plot_directory, '1D%s.png') %(coeff))
 
 
@@ -52,14 +57,19 @@ def plot1D2coefficient(coeff, range, fixedcoeff, fixedvalue):
     y = []
     for i in x:
         dict = {coeff:i, fixedcoeff:fixedvalue}
-        print(dict)
         y.append(w.GetNDYield(sum_weights, **dict))
     y = np.array(y)/sum_weights[0] #weight to SM
     graph = ROOT.TGraph(len(x), x, y)
 
+    # Base Line
+    line = ROOT.TLine(range[0],1,range[1],1)
+    line.SetLineColor(ROOT.kBlack)
+    line.SetLineWidth(1)
+
     # Plotting
     c1 = ROOT.TCanvas()
     graph.Draw()
+    line.Draw('SAME')
     c1.Print(os.path.join(plot_directory, '1D%s_%s%s.png') %(coeff, fixedcoeff,fixedvalue))
 
 
