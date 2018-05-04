@@ -8,6 +8,7 @@ import os
 # TTXPheno
 from TTXPheno.Tools.user import plot_directory
 from TTXPheno.Tools.WeightInfo import WeightInfo
+from TTXPheno.Tools.WeightInfo import BinContentToList
 
 # Sample
 from TTXPheno.samples.benchmarks import * # dim6top_ttZ_ll_LO_currentplane_highStat_scan 
@@ -66,7 +67,5 @@ legend.Draw()
 c1.Print(os.path.join(plot_directory, 'weight.png'))
 
 
-def BinContentToList(histo):
-    return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX())]
-
 print(BinContentToList(ROOT.h_weights))
+print(len(BinContentToList(ROOT.h_weights)))

@@ -95,7 +95,7 @@ class WeightInfo:
 
 
 def BinContentToList(histo):
-    return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX())]
+    return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
 if __name__ == "__main__":
 
