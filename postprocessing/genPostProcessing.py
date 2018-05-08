@@ -20,6 +20,8 @@ from TTXPheno.Tools.GenSearch              import GenSearch
 from TTXPheno.Tools.helpers                import deltaR2, cosThetaStar
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
+from TTXPheno.Tools.DelphesProducer        import DelphesProducer
+
 #
 # Arguments
 # 
@@ -27,8 +29,9 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')#, default = True)
+argParser.add_argument('--delphes',            action='store_true', help='Run Delphes?')
 argParser.add_argument('--overwrite',          action='store_true', help='Overwrite?')#, default = True)
-argParser.add_argument('--targetDir',          action='store',      default='v2')
+argParser.add_argument('--targetDir',          action='store',      default='v3')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_scan', help="Name of the sample loaded from fwlite_benchmarks. Only if no inputFiles are specified")
 argParser.add_argument('--inputFiles',         action='store',      nargs = '*', default=[])
 argParser.add_argument('--targetSampleName',   action='store',      default=None, help="Name of the sample in case inputFile are specified. Otherwise ignored")
@@ -259,6 +262,11 @@ output_filename =  os.path.join(output_directory, sample.name+'.root')
 if os.path.exists( output_filename ) and not args.overwrite:
     logger.info( "File %s found. Quit.", output_filename )
     sys.exit(0)
+
+if args.delphes:
+    delphesProducer = DelphesProducer()
+    delphes_file = os.path.join( output_directory, 'delphes', sample.name+'.root' )
+    delphesProducer.produce( sample.files, delphes_file )
 
 output_file = ROOT.TFile( output_filename, 'recreate')
 output_file.cd()
