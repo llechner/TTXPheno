@@ -13,6 +13,7 @@ scram b -j40
 ```
 
 ## Delphes
+```
 export PYTHIA8=/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/pythia8/223-mlhled2/
 export LD_LIBRARY_PATH=$PYTHIA8/lib:$LD_LIBRARY_PATH
 cd $CMSSW_BASE/..
@@ -22,6 +23,7 @@ git checkout tags/3.4.2pre12
 ./configure
 sed -i -e 's/c++0x/c++1y/g' Makefile
 make -j 4 
+```
 
 ## Prerequisites
 Add your user-specific locations to [user.py](https://github.com/TTXPheno/TTXPheno/blob/master/Tools/python/user.py).
