@@ -133,11 +133,14 @@ variables     += ["GenLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
 top_vars       =  "pt/F,eta/F,phi/F"
 top_varnames   =  varnames( top_vars ) 
 variables     += ["top[%s]"%top_vars]
+
+# to be stored for each boson
+boson_read_varnames= [ 'pt', 'phi', 'eta', 'mass']
 # Z vector
-Z_read_varnames= [ 'pt', 'phi', 'eta', 'mass']
 variables     += ["Z_pt/F", "Z_phi/F", "Z_eta/F", "Z_mass/F", "Z_cosThetaStar/F", "Z_daughterPdg/I"]
+# W vector
+variables     += ["W_pt/F", "W_phi/F", "W_eta/F", "W_mass/F", "W_daughterPdg/I"]
 # gamma vector
-gamma_read_varnames= [ 'pt', 'phi', 'eta', 'mass']
 variables     += ["gamma_pt/F", "gamma_phi/F", "gamma_eta/F", "gamma_mass/F"]
 if args.addReweights:
     variables.append('rw_nominal/F')
@@ -198,11 +201,12 @@ def filler( event ):
     tops.sort( key = lambda p:-p['pt'] )
     fill_vector( event, "top", top_varnames, tops ) 
 
+    # generated Z's
     gen_Zs = filter( lambda p:abs(p.pdgId())==23 and search.isLast(p), gp)
     gen_Zs.sort( key = lambda p: -p.pt() )
     if len(gen_Zs)>0: 
         gen_Z = gen_Zs[0]
-        for var in Z_read_varnames:
+        for var in boson_read_varnames:
            setattr( event, "Z_"+var,  getattr(gen_Z, var)() )
     else:
         gen_Z = None
@@ -217,11 +221,33 @@ def filler( event ):
         event.Z_daughterPdg = lm.pdgId()
         event.Z_cosThetaStar = cosThetaStar(gen_Z.mass(), gen_Z.pt(), gen_Z.eta(), gen_Z.phi(), lm.pt(), lm.eta(), lm.phi())
 
+    # generated W's
+    gen_Ws = filter( lambda p:abs(p.pdgId())==24 and search.isLast(p), gp)
+    gen_Ws.sort( key = lambda p: -p.pt() )
+    # W can't have a top-mother - We're looking for the extra boson (there is always an extra boson)
+    gen_Ws = filter( lambda p: abs(search.ascend(p).mother(0).pdgId())!=6, gen_Ws )
+    if len(gen_Ws)>0: 
+        gen_W = gen_Ws[0]
+        for var in boson_read_varnames:
+           setattr( event, "W_"+var,  getattr(gen_W, var)() )
+    else:
+        gen_W = None
+    
+    if gen_W is not None:
+
+        d1, d2 = gen_W.daughter(0), gen_W.daughter(1)
+        if abs(d1.pdgId()) in [11, 13, 15]: 
+            lep, neu = d1, d2
+        else:
+            lep, neu = d2, d1
+
+        event.W_daughterPdg = lep.pdgId()
+
     gen_Gammas = filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp)
     gen_Gammas.sort( key = lambda p: -p.pt() )
     if len(gen_Gammas)>0: 
         gen_Gamma = gen_Gammas[0]
-        for var in gamma_read_varnames:
+        for var in boson_read_varnames:
            setattr( event, "gamma_"+var,  getattr(gen_Gamma, var)() )
     else:
         gen_Gamma = None

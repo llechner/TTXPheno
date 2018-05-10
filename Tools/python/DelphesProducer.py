@@ -35,7 +35,7 @@ class DelphesProducer:
 
         # process files individually
         for i_infile, infile in enumerate(infiles):
-            tmp_file = infile.rstrip('.root')+'_tmp_%i.root'%i_infile
+            tmp_file = outfile.rstrip('.root')+'_tmp_%i.root'%i_infile
             if os.path.exists( tmp_file ):
                 logger.warning( "Found output file %s. Deleting", tmp_file )
                 os.remove( tmp_file )

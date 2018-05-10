@@ -1,6 +1,10 @@
 #!/bin/sh
 
-python genPostProcessing.py --overwrite --sample fwlite_ttZ_ll_LO_highStat_scan --addReweights --delphes #SPLIT200
+python genPostProcessing.py --logLevel DEBUG --overwrite --sample fwlite_ttZ_ll_LO_order3_8weights --addReweights --delphes #SPLIT200
+python genPostProcessing.py --logLevel DEBUG --overwrite --sample fwlite_ttW_LO_order3_8weights --addReweights --delphes #SPLIT200
+python genPostProcessing.py --logLevel DEBUG --overwrite --sample fwlite_ttgamma_LO_order3_8weights --addReweights --delphes #SPLIT200
+
+#python genPostProcessing.py --overwrite --sample fwlite_ttZ_ll_LO_highStat_scan --addReweights --delphes #SPLIT200
 #python genPostProcessing.py --overwrite --sample fwlite_ttZ_ll_LO_currentplane_highStat_scan --overwrite --addReweights #SPLIT200
 #python genPostProcessing.py --sample fwlite_ttZ_ll_LO_scan --overwrite --addReweights #SPLIT200
 
