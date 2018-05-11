@@ -30,12 +30,12 @@ test.reweight_pkl = '/afs/cern.ch/user/l/llechner/public/gridpacks_data/order_3/
 gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v3/"
 gridpack_dir = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/"
 
-dim6top_ttZ_ll_LO_8weights_order3_07052018 = Sample.fromDirectory("fwlite_ttZ_ll_LO_order3_8weights", texName = "ttZ (current scan)", directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order3_8weights" )])
-
 fwlite_ttZ_ll_LO_order3_8weights  = Sample.fromDirectory("fwlite_ttZ_ll_LO_order3_8weights",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order3_8weights" )]) 
 fwlite_ttZ_ll_LO_order3_8weights.reweight_pkl = gridpack_dir + "07052018/ttZ/order3/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+
 fwlite_ttW_LO_order3_8weights     = Sample.fromDirectory("fwlite_ttW_LO_order3_8weights",     texName = "ttW",      directory = [os.path.join( gen_dir, "fwlite_ttW_LO_order3_8weights" )])
 fwlite_ttW_ll_LO_order3_8weights.reweight_pkl = gridpack_dir + "07052018/ttW/order3/ttW0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+
 fwlite_ttgamma_LO_order3_8weights = Sample.fromDirectory("fwlite_ttgamma_LO_order3_8weights", texName = "ttgamma",  directory = [os.path.join( gen_dir, "fwlite_ttgamma_LO_order3_8weights" )])
 fwlite_ttgamma_ll_LO_order3_8weights.reweight_pkl = gridpack_dir + "07052018/ttgamma/order3/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 
