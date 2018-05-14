@@ -14,8 +14,10 @@ logger = logging.getLogger(__name__)
 
 class WeightInfo:
     def __init__( self, filename ):
-        self.data      = pickle.load(file(filename))
-
+        data = pickle.load(file(filename))
+        if 'rw_dict' in data.keys(): self.data = data['rw_dict']
+        else: self.data = data
+        print(self.data)
         self.variables = self.data.keys()[0].split('_')[::2]
         self.nvar      = len(self.variables)
 
@@ -147,9 +149,11 @@ if __name__ == "__main__":
     import ROOT
     c = ROOT.TChain("Events")
     c.Add("/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2_small/fwlite_ttZ_ll_LO_highStat_scan/fwlite_ttZ_ll_LO_highStat_scan.root")
+#    w = WeightInfo("/afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/Refpoint_test/gridpacks/addons/cards/ttZ0j_rwgt/ttZ0j_rwgt_reweight_card.pkl")
     w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_625_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
     w.set_order( 2 )
 #    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
 
-    print(w.arg_weight_string(ctZI=2, cpt=5))
+#    print(w.weight_string())
+#    print(w.arg_weight_string(ctZI=2, cpt=5))
 #     print(w.arg_weight_string())
