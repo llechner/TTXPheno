@@ -17,7 +17,6 @@ class WeightInfo:
         data = pickle.load(file(filename))
         if 'rw_dict' in data.keys(): self.data = data['rw_dict']
         else: self.data = data
-        print(self.data)
         self.variables = self.data.keys()[0].split('_')[::2]
         self.nvar      = len(self.variables)
 
@@ -117,22 +116,6 @@ class WeightInfo:
            else: factor = 1.
            elements.append(float(WeightList[index])*factor) #replace p_C[i] with the entry from WeightList
         return sum(elements)
-
-#class YieldFunction:
-#    def __init__( self, WeightClass, WeightList):
-#        self.weightinfo = WeightClass
-#        self.weightslist = WeightList
-#        self.coefficient_string = ''
-#        self.coefficient = {}
-
-#    def SetCoefficient(self, Parameter):
-#        self.coefficient_string = Parameter
-#        self.coefficient[Parameter] = 0
-
-#    def CalculateYield(self, CoefficientValue):
-#        self.coefficient[self.coefficient_string]= float(CoefficientValue)
-#        print(self.coefficient)
-#        return self.weightinfo.GetYield(self.weightslist, **self.coefficient)
 
 def BinContentToList(histo):
     return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
