@@ -347,3 +347,15 @@ def timeit(method):
 #                  (method.__name__, (te - ts) * 1000)
         return result
     return timed
+
+def create_cut_string(dict, operator):
+    if len(dict.keys()) == 0: return ''
+    cut_string = ''
+    for item in dict.keys():
+       cut_string += '*('
+       cut_string += str(item)
+       cut_string += str(operator)
+       cut_string += str(dict[item])
+       cut_string += ')'
+    return cut_string
+
