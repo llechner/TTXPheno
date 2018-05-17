@@ -22,7 +22,7 @@ argParser.add_argument('--logLevel',           action='store',      default='INF
 argParser.add_argument('--samples',            action='store',      nargs='*',               help="Which samples?")
 argParser.add_argument('--plot_directory',     action='store',      default='gen')
 #argParser.add_argument('--selection',          action='store',      default='njet2p-btag1p-relIso0.12-looseLeptonVeto-mll20-met80-metSig5-dPhiJet0-dPhiJet1')
-argParser.add_argument('--small',                                   action='store_true',     help='Run only on a small subset of the data?', )
+argParser.add_argument('--small',                                   action='store_true',     help='Run only on a small subset of the data?')
 args = argParser.parse_args()
 
 #
@@ -39,6 +39,7 @@ if args.small: args.plot_directory += "_small"
 from TTXPheno.samples.benchmarks import *
 
 samples = map( eval, ["fwlite_ttZ_ll_LO_order3_8weights"] ) 
+
 #samples = fwlite_ttZ_ll_LO_order3_8weights #map( eval, args.samples ) 
 
 ##
@@ -82,7 +83,7 @@ read_variables = [
     "GenJet_matchBParton/F", 
     "nGenLep/I", "GenLep[pt/F,eta/F,phi/F,pdgId/I,motherPdgId/I]", 
     "ntop/I", "top[pt/F,eta/F,phi/F]", 
-    "Z_mass/F", "Z[pt/F,eta/F,phi/F,cosThetaStar/F,daughterPdg/I]", 
+    "Z_pt/F", "Z_eta/F", "Z_phi/F", "Z_mass/F", "Z_cosThetaStar/F", "Z_daughterPdg/I"
 ]
 
 selection = [ 
@@ -100,8 +101,8 @@ selectionString = "&&".join( c[1] for c in selection )
 subDirectory    = '_'.join(  c[0] for c in selection )
 
 for sample in samples:
-    sample.setSelectionString( "(1)" )
-    sample.style = styles.lineStyle(sample.color)
+    sample.setSelectionString( "Z_pt>0" )
+    sample.style = styles.lineStyle(ROOT.kBlue)
 
 # weight_         = weightstring?
 weight_         = None
@@ -128,25 +129,21 @@ def makeDeltaPhi( event, sample ):
     else:
         event.dPhi_ll = -1
 
-def getLeadingZ( event, sample ):
-    Zs = [ z for z in event.Z_pt ]
-    event.leading_Z_pt = Zs[0] if not isnan(Zs[0]) else -1
+def print_Z( event, sample ):
+    print(event.Z_pt)
 
-def getZ( event, sample ):
-    print(event.Z_pt[0])
-    return event.Z_pt[0]
-
+#sequence.append( print_Z )
 #sequence.append( makeDeltaPhi )
 #sequence.append( getLeadingZ )
 
 # Use some defaults
-Plot.setDefaults(stack = stack, weight = weight_, selectionString = selectionString, addOverFlowBin='upper')
+Plot.setDefaults(stack = stack, weight = weight_, selectionString = selectionString, addOverFlowBin=None)
   
 plots = []
 
-plots.append(Plot( name = "Z_pT",
+plots.append(Plot( name = "Z_pt",
   texX = 'p_{T}(Z) (GeV)', texY = 'Number of Events / 20 GeV',
-  attribute = TreeVariable.fromString( "Z_pt/F" ),
+  attribute = lambda event, sample: event.Z_pt,
   binning=[400/20,0,400],
 ))
 
