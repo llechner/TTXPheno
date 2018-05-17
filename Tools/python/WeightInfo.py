@@ -14,7 +14,13 @@ logger = logging.getLogger(__name__)
 
 class WeightInfo:
     def __init__( self, filename ):
-        self.data      = pickle.load(file(filename))
+        data = pickle.load(file(filename))
+
+        if 'rw_dict' in data.keys(): self.data = data['rw_dict']
+        else: self.data = data
+
+        if 'order' in data.keys(): self.pkl_order = data['order']['order']
+        else: self.pkl_order = None
 
         self.variables = self.data.keys()[0].split('_')[::2]
         self.nvar      = len(self.variables)
@@ -27,9 +33,10 @@ class WeightInfo:
         logger.debug( "Found %i variables: %s. Found %i weights." %(self.nvar, ",".join( self.variables ), self.nid) )
 
     def set_order( self, order):
-#        gp_order = get_pkl_order(...) #get order of gridpack from pkl file
-#        if order > gp_order:
-#            raise ValueError( "Polynomial order is greater than in the gridpack (order %i)" % gp_order )
+        if self.pkl_order == None:
+            print( "WARNING: Could not find the polynomial order of the gridpack!")
+        elif order > self.pkl_order:
+            raise ValueError( "Polynomial order is greater than in the gridpack (order %i)" % self.pkl_order )
         self.order = order
 
     @staticmethod
@@ -116,22 +123,6 @@ class WeightInfo:
            elements.append(float(WeightList[index])*factor) #replace p_C[i] with the entry from WeightList
         return sum(elements)
 
-#class YieldFunction:
-#    def __init__( self, WeightClass, WeightList):
-#        self.weightinfo = WeightClass
-#        self.weightslist = WeightList
-#        self.coefficient_string = ''
-#        self.coefficient = {}
-
-#    def SetCoefficient(self, Parameter):
-#        self.coefficient_string = Parameter
-#        self.coefficient[Parameter] = 0
-
-#    def CalculateYield(self, CoefficientValue):
-#        self.coefficient[self.coefficient_string]= float(CoefficientValue)
-#        print(self.coefficient)
-#        return self.weightinfo.GetYield(self.weightslist, **self.coefficient)
-
 def BinContentToList(histo):
     return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
@@ -147,9 +138,12 @@ if __name__ == "__main__":
     import ROOT
     c = ROOT.TChain("Events")
     c.Add("/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2_small/fwlite_ttZ_ll_LO_highStat_scan/fwlite_ttZ_ll_LO_highStat_scan.root")
-    w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_625_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
-    w.set_order( 2 )
+#    w = WeightInfo("/afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/Refpoint_test/gridpacks/addons/cards/ttZ0j_rwgt/ttZ0j_rwgt_reweight_card.pkl")
+#    w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_625_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
+    w = WeightInfo("/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/03052018/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
+    w.set_order( 4 )
 #    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
 
-    print(w.arg_weight_string(ctZI=2, cpt=5))
+#    print(w.weight_string())
+#    print(w.arg_weight_string(ctZI=2, cpt=5))
 #     print(w.arg_weight_string())
