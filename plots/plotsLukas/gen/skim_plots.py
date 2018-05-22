@@ -9,8 +9,9 @@ ROOT.gROOT.SetBatch(True)
 
 from math                                import sqrt, cos, sin, pi, isnan, sinh
 from RootTools.core.standard             import *
-from TTXPheno.Tools.user                 import plot_directory, deltaPhi, getCollection
-from TTXPheno.Tools.helpers              import deltaR, mz, sign, TransMT2, TransMT
+from TTXPheno.Tools.user                 import plot_directory
+from TTXPheno.Tools.helpers              import deltaPhi, getCollection
+from TTXPheno.Tools.helpers              import deltaR, mZ, sign, TransMT2, TransMT
 from TTXPheno.Tools.helpers              import TransVecSum, VecSum, returnNanDict, returnNan
 from TTXPheno.Tools.helpers              import createVec2, createLVec, UnitVectorT2, NUnitVectorT2
 from TTXPheno.Tools.WeightInfo           import WeightInfo
@@ -138,15 +139,15 @@ def getLp( event, sample ):
     return ( WlepTransVec*event.LepsFromNonZ[0]['transverse_vector'] ) / ( WlepTransVec*WlepTransVec )
 
 def getbleplepDoteZ3( event, sample ):
-    return VecSum( getblep( event, sample ), event.LepsFromNonZ[0] ).Vect() * createLVec( event.Z_pt, event.Z_phi, event.Z_eta ).Vect().Unit() )
+    return VecSum( getblep( event, sample ), event.LepsFromNonZ[0] ).Vect() * createLVec( event.Z_pt, event.Z_phi, event.Z_eta ).Vect().Unit()
 
 def getbleplepDoteZ2( event, sample ):
     return TransVecSum( getblep( event, sample ), event.LepsFromNonZ[0] ) * UnitVectorT2( event.Z_phi )
 
 def gettDoteZ( event, sample ):
     tTransVec = TransVecSum( event.MetVec, event.LepsFromNonZ[0], getblep( event, sample ) )
-    e_para = tTransVec * UnitVectorT2( event.ZVec_phi )
-    e_norm = tTransVec * NUnitVectorT2( event.ZVec_phi )
+    e_para = tTransVec * UnitVectorT2( event.Z_phi )
+    e_norm = tTransVec * NUnitVectorT2( event.Z_phi )
     return e_para, e_norm
 
 def getTransMTW( event, sample ):
@@ -178,7 +179,7 @@ def makeLeps( event, sample ):
         p['transverse_vector'] = createVec2( p['pt'], p['phi'] )
         p['vector'] = createLVec( p['pt'], p['phi'], p['eta'] )
     event.LepsFromZ = list( filter( lambda j: j['motherPdgId'] == 23 , event.leps ) )
-    if len( event.LepsFromZ ) != 2 or event.LepsFromZ[0]['pdgId'] * event.LepsFromZ[1]['pdgId'] > 0: event.LepsFromZ = []
+    if len( event.LepsFromZ ) < 2 or event.LepsFromZ[0]['pdgId'] * event.LepsFromZ[1]['pdgId'] > 0: event.LepsFromZ = [returnNanDict(), returnNanDict()]
     event.LepsFromNonZ = list( filter( lambda j: j['motherPdgId'] != 23, event.leps ) )
     
 def makeJets( event, sample ):
@@ -233,13 +234,13 @@ plots.append(Plot( name = "b1_pt",
 plots.append(Plot( name = "b0_eta",
   texX = '#eta(b0) (GeV)', texY = 'Number of Events',
   attribute = lambda event, sample: (event.bjets + event.jets)[0]['eta'],
-  binning=[20,-1.2*pi,1.2*pi],
+  binning=[50,-2.2*pi,2.2*pi],
 ))
 
 plots.append(Plot( name = "b1_eta",
   texX = '#eta(b1) (GeV)', texY = 'Number of Events',
   attribute = lambda event, sample: (event.bjets + event.jets)[1]['eta'],
-  binning=[20,-1.2*pi,1.2*pi],
+  binning=[50,-2.2*pi,2.2*pi],
 ))
 
 plots.append(Plot( name = "b0_phi",
@@ -287,13 +288,13 @@ plots.append(Plot( name = 'Met_pt',
 plots.append(Plot( name	= 'Met_phi',
   texX = '#phi(E_{T}^{miss})', texY = 'Number of Events / 20 GeV',
   attribute = lambda event, sample: event.GenMet_phi,
-  binning=[10,-1.2*pi,1.2*pi],
+  binning=[50,-1.2*pi,1.2*pi],
 ))
 
 plots.append(Plot( name = 'nbjets',
   texX = 'number of gen bjets', texY = 'Number of Events',
   attribute = lambda event, sample: len( event.bjets ),
-  binning=[6,0,6],
+  binning=[10,0,10],
 ))
 
 plots.append(Plot( name = 'njets',

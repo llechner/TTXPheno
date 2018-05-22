@@ -2,7 +2,7 @@
 '''
 #Standard imports
 import ROOT
-from math import pi, sqrt, cos, sin, sinh, log, cosh
+from math import pi, sqrt, cos, sin, sinh, log, cosh, isnan
 from array import array
 import itertools
 import timeit
@@ -56,6 +56,7 @@ def cosThetaStar( Z_mass, Z_pt, Z_eta, Z_phi, l_pt, l_eta, l_phi ):
     return (-beta + cosTheta) / (1 - beta*cosTheta)
 
 def deltaPhi(phi1, phi2):
+    if isnan(phi1) or isnan(phi2): return float('nan')
     dphi = phi2-phi1
     if  dphi > pi:
         dphi -= 2.0*pi
@@ -64,6 +65,7 @@ def deltaPhi(phi1, phi2):
     return abs(dphi)
 
 def deltaR2(l1, l2):
+    if isnan(l1['phi']) or isnan(l2['phi']) or isnan(l1['eta']) or isnan(l2['eta']): return float('nan')
     return deltaPhi(l1['phi'], l2['phi'])**2 + (l1['eta'] - l2['eta'])**2
 
 def deltaR(l1, l2):
@@ -324,7 +326,7 @@ def sign( x ):
 
 
 def TransMT2( pt1, phi1, pt2, phi2 ):
-    return 2*pt1*pt2*( 1 - cos(phi1 - phi2) )
+    return abs( 2*pt1*pt2*( 1 - cos(phi1 - phi2) ) )
 
 
 def TransMT( *args ):
