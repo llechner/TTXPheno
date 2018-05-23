@@ -6,6 +6,7 @@
 #
 import ROOT, os, itertools
 ROOT.gROOT.SetBatch(True)
+import copy
 
 from math                                import sqrt, cos, sin, pi, isnan, sinh, cosh
 from RootTools.core.standard             import *
@@ -19,7 +20,6 @@ from TTXPheno.Tools.WeightInfo           import WeightInfo
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
-argParser.add_argument('--samples',            action='store',      nargs='*',               help="Which samples?")
 argParser.add_argument('--plot_directory',     action='store',      default='gen')
 argParser.add_argument('--small',                                   action='store_true',     help='Run only on a small subset of the data?')
 args = argParser.parse_args()
@@ -36,8 +36,34 @@ if args.small: args.plot_directory += "_small"
 
 # Import samples
 from TTXPheno.samples.benchmarks import *
+sample = fwlite_ttZ_ll_LO_order3_8weights 
+w = WeightInfo(sample.reweight_pkl)
+w.set_order(3)
 
-samples = map( eval, ["fwlite_ttZ_ll_LO_order3_8weights"] ) 
+params = [  
+    {'legendText':'SM',  'color':ROOT.kBlue, 'WC':{}},
+   ] 
+params += [ {'legendText':'ctZI %i'%ctZI, 'color':ROOT.kRed,  'WC':{'ctZI':ctZI} } for ctZI in range(-6,7)]
+
+#samples = []
+#for i_param, param in enumerate(params):
+#    samples.append(sample)
+#    samples[-1].name+='_%i'%i_param
+#    print param
+#    samples[-1].style = styles.lineStyle( param['color'] )
+#    samples[-1].texName = param['legendText']
+#    #samples[-1].ttreeFormula = ROOT.TTreeFormula("weightstring_%i"%i_param,  w.arg_weight_string(**param['WC']), samples[-1].chain )
+#    samples[-1].paramWeightFunc =  w.arg_weight_func(**param['WC'])
+
+#def getWeightFunc(sample):
+#    formula = sample.ttreeFormula
+#    def rw(event, sample):
+#        return formula.EvalInstance()
+#    return rw 
+
+stack = Stack(*[ [ sample ] for param in params ] )
+weight= [ [ w.arg_weight_func(**param['WC']) ] for param in params ]
+#print weight
 
 ##
 ## Text on the plots
@@ -98,25 +124,9 @@ preselection = [
 selectionString = "&&".join( c[1] for c in preselection )
 subDirectory    = '_'.join(  c[0] for c in preselection )
 
-for sample in samples:
+for sample in stack.samples:
     sample.setSelectionString( selectionString )
-    sample.style = styles.lineStyle(ROOT.kBlue)
-
-
-# Initialize weightstring
-
-#WC = {'cpt':-7, 'cpQM':10, 'ctZ':2, 'ctZI':2}
-#for sample in samples:
-#    w = WeightInfo(sample.reweight_pkl)
-#    w.set_order( 3 )
-#    weightstring = '(' + w.arg_weight_string(**WC) + ')/p_C[0]'
-#    print(weightstring.replace('p','event.p'))
-#    weight_.append( weightstring.replace('p','event.p') )
-
-stack = Stack(*[ [ sample ] for sample in samples] )
-
-if args.small:
-    for sample in stack.samples:
+    if args.small:
         sample.reduceFiles( to = 1 )
 
 # Helpers
@@ -272,16 +282,16 @@ def makeObservables( event, sample):
 sequence.append( makeObservables )
 
 # Weight <- Here we remove events where leptons fail the analysis selection despite passing the preselection
-weight_ = None#lambda event, sample: event.passing_3lep
+#weight_ = None#lambda event, sample: event.passing_3lep
     
 # Use some defaults
-Plot.setDefaults(stack = stack, weight = weight_, selectionString = selectionString, addOverFlowBin=None)
+Plot.setDefaults(stack = stack, weight = None, selectionString = selectionString, addOverFlowBin=None)
   
 plots = []
 
 plots.append(Plot( name = "Z_pt",
   texX = 'p_{T}(Z) (GeV)', texY = 'Number of Events / 20 GeV',
-  attribute = lambda event, sample: event.Z_pt,
+  attribute = lambda event, sample: event.Z_pt, weight = weight,
   binning=[400/20,0,400],
 ))
 

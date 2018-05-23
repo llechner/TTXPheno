@@ -263,18 +263,6 @@ def makeObservables( event, sample):
     event.bleplep_vec2D = vecSum( b_lep['vec2D'], event.leptonsNotFromZ[0]['vec2D'] )
     event.bleplep_vec4D = vecSum( b_lep['vec4D'], event.leptonsNotFromZ[0]['vec4D'] )
 
-#def getbleplepDoteZ3( event, sample ):
-#    return vecSum( getblep( event, sample ), event.leptonsNotFromZ[0] ).Vect() * createLVec( event.Z_pt, event.Z_phi, event.Z_eta ).Vect().Unit()
-
-#def getbleplepDoteZ2( event, sample ):
-#    return TransvecSum( getblep( event, sample ), event.leptonsNotFromZ[0] ) * UnitVectorT2( event.Z_phi )
-#
-#def gettDoteZ( event, sample ):
-#    tTransVec = TransvecSum( event.MetVec, event.leptonsNotFromZ[0], getblep( event, sample ) )
-#    e_para = tTransVec * UnitVectorT2( event.Z_phi )
-#    e_norm = tTransVec * NUnitVectorT2( event.Z_phi )
-#    return e_para, e_norm
-
     # transverse mass of top
     event.t_MT = sqrt( MTSquared( event.leptonsNotFromZ[0], event.MET) + MSquared( event.leptonsNotFromZ[0], event.b_lep ) + MTSquared( event.MET, event.b_lep ) )
     event.t_vec2D = vecSum( event.leptonsNotFromZ[0]['vec2D'], event.MET['vec2D'], event.b_lep['vec2D'] )

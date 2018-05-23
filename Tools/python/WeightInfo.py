@@ -68,6 +68,22 @@ class WeightInfo:
                 substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[kwargs.get(v) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
+    def arg_weight_func(self, **kwargs):
+        kwargs = {x:y for x,y in kwargs.items() if y!=0} # remove entries which are 0
+        if len(kwargs)==0: return lambda event, sample: event.p_C[0]
+        unused_args = set(kwargs.keys()) - set(self.variables)
+        if len(unused_args) > 0:
+            raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
+        terms = []
+        counter = -1
+        for o in xrange(self.order+1):
+            for comb in itertools.combinations_with_replacement( self.variables, o ):
+                counter += 1
+                if False in [v in kwargs for v in comb]: continue
+                # store [ ncoeff, factor ]
+                terms.append( [ counter, float(reduce(mul,[kwargs.get(v) for v in comb],1)) ] )
+        return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
+
     @staticmethod
     def differentiate( comb, var ):
         ''' Differentiate a product
