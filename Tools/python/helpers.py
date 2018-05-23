@@ -321,53 +321,6 @@ def getPlotFromChain(c, var, binning, cutString = "(1)", weight = "weight", binn
     return res
 
 
-def sign( x ):
-    return x and (1, -1)[x < 0]
-
-
-def TransMT2( pt1, phi1, pt2, phi2 ):
-    return abs( 2*pt1*pt2*( 1 - cos(phi1 - phi2) ) )
-
-
-def TransMT( *args ):
-    mT2 = 0
-    for comb in itertools.combinations( args, 2 ):
-        mT2 += TransMT2( comb[0]['pt'], comb[0]['phi'], comb[1]['pt'], comb[1]['phi'] )
-    return sqrt( mT2 )
-
-
-def TransVecSum( *args ):
-    return sum( [p['transverse_vector'] for p in args], ROOT.TVector2() )
-
-
-def VecSum( *args ):
-    return sum( [p['vector'] for p in args], ROOT.TLorentzVector() )
-
-
-def createVec2( pt, phi ):
-    return ROOT.TVector2( pt*cos(phi), pt*sin(phi) )
-
-
-def createLVec( pt, phi, eta ):
-    return ROOT.TLorentzVector( pt*cos(phi), pt*sin(phi), pt*sinh(eta), 0 )
-
-
-def UnitVectorT2( phi ):
-    return ROOT.TVector2( cos(phi), sin(phi) )
-
-
-def NUnitVectorT2( phi ):
-    return ROOT.TVector2( -sin(phi), cos(phi) )
-
-
-def returnNanDict():
-    return {'pt':float('nan'), 'phi':float('nan'), 'pdgId':float('nan'), 'eta':float('nan'), 'motherPdgId':float('nan'), 'matchBParton':float('nan'), 'transverse_vector':float('nan'), 'vector':float('nan')}
-
-
-def returnNan():
-    return float('nan')
-
-
 def getGenZ(genparts):
   for g in genparts:
     if g['pdgId'] != 23:        continue					# pdgId == 23 for Z
