@@ -112,8 +112,8 @@ def drawPlots(plots):
         logX = False, logY = log, sorting = True,
         #yRange = (0.03, "auto") if log else (0., "auto"),
         #scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
-        legend =  ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/2,1.,0.9), 3),
-        #drawObjects = drawObjects( ),
+        legend =  ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/2,1.,0.9), 2),
+        drawObjects = drawObjects( ),
         copyIndexPHP = True,
     )
 
