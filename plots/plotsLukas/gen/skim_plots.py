@@ -6,6 +6,7 @@
 import ROOT, os, itertools
 ROOT.gROOT.SetBatch(True)
 from math                                import sqrt, cos, sin, pi, isnan, sinh, cosh
+import copy
 
 # RootTools
 from RootTools.core.standard             import *
@@ -21,10 +22,12 @@ from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
-argParser.add_argument('--samples',            action='store',      nargs='*',               help="Which samples?")
 argParser.add_argument('--plot_directory',     action='store',      default='gen')
-argParser.add_argument('--selection',          action='store',      default='lepSel-onZ-njet3p-nbjet1p')
-argParser.add_argument('--small',                                   action='store_true',     help='Run only on a small subset of the data?')
+argParser.add_argument('--selection',          action='store',      default='lepSel-onZ-njet3p-nbjet1p', help="Specify cut.")
+argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
+argParser.add_argument('--scaleLumi',          action='store_true', help='Scale lumi only??')
+argParser.add_argument('--parameters',         action='store',      default = ['ctZI', '2'], type=str, nargs='+', help = "argument parameters")
+
 args = argParser.parse_args()
 
 #
@@ -35,16 +38,41 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(   args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 
-if args.small: args.plot_directory += "_small"
+# Make subdirectory
+subDirectory = []
+if args.small:      subDirectory.append("small")
+if args.scaleLumi:  subDirectory.append('scaleLumi')
+subDirectory = '_'.join( subDirectory )
 
 # Import samples
 from TTXPheno.samples.benchmarks import *
+sample = fwlite_ttZ_ll_LO_order3_8weights 
 
-samples = map( eval, ["fwlite_ttZ_ll_LO_order3_8weights"] ) 
+# Polynomial parametrization
+w = WeightInfo(sample.reweight_pkl)
+w.set_order(3)
 
-##
-## Text on the plots
-##
+# Parameters
+params = [  
+    {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack},
+   ] 
+
+colors = [ ROOT.kMagenta+1, ROOT.kOrange, ROOT.kBlue, ROOT.kCyan+1, ROOT.kGreen+1, ROOT.kRed, ROOT.kViolet, ROOT.kYellow+2 ]
+
+coeffs = args.parameters[::2]
+vals   = list( map( float, args.parameters[1::2] ) )
+str_vals = args.parameters[1::2]
+for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
+    params.append( { 
+        'legendText': ' '.join([coeff,str_val]),
+        'WC'        : { coeff:val },
+        'color'     : colors[i_param], 
+        })
+
+# Make stack and weight
+stack = Stack(*[ [ sample ] for param in params ] )
+weight= [ [ w.arg_weight_func(**param['WC']) ] for param in params ]
+
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
@@ -56,10 +84,40 @@ def drawObjects( hasData = False ):
     ]
     return [tex.DrawLatex(*l) for l in lines] 
 
-def drawPlots(plots, subDirectory=''):
+def drawPlots(plots):
+
+  for plot in plots:
+    for i_h, h in enumerate(plot.histos):
+      h[0].style = styles.lineStyle(params[i_h]['color'])
+
   for log in [False, True]:
-    plot_directory_ = os.path.join(plot_directory, args.plot_directory, subDirectory)
-    plot_directory_ = os.path.join(plot_directory_, "log") if log else os.path.join(plot_directory_, "lin")
+    # Directory structure
+    plot_directory_ = os.path.join(\
+        plot_directory,
+        args.plot_directory, 
+        subDirectory, 
+        args.selection, 
+        "log" if log else "lin")
+
+    # plot the legend
+    l_plot = copy.deepcopy(plots[0])
+    for i_h, h in enumerate(l_plot.histos):
+      h[0].legendText = params[i_h]['legendText']
+      h[0].style = styles.lineStyle(params[i_h]['color'])
+      h[0].Scale(0.)
+    l_plot.name = "legend"
+    plotting.draw(l_plot,
+        plot_directory = plot_directory_,
+        ratio = None, #{'yRange':(0.1,1.9)} if not args.noData else None,
+        logX = False, logY = log, sorting = True,
+        #yRange = (0.03, "auto") if log else (0., "auto"),
+        #scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
+        legend =  ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/2,1.,0.9), 3),
+        #drawObjects = drawObjects( ),
+        copyIndexPHP = True,
+    )
+
+    # plot the plots
     for plot in plots:
       if not max(l[0].GetMaximum() for l in plot.histos): continue # Empty plot
 
@@ -67,10 +125,11 @@ def drawPlots(plots, subDirectory=''):
 	    plot_directory = plot_directory_,
 	    ratio = None, #{'yRange':(0.1,1.9)} if not args.noData else None,
 	    logX = False, logY = log, sorting = True,
-	    yRange = (0.03, "auto") if log else (0.001, "auto"),
-	    scaling = {},
-	    legend =  ( (0.17,0.9-0.05*sum(map(len, plot.histos))/2,1.,0.9), 2),
+	    yRange = (0.03, "auto") if log else (0., "auto"),
+	    scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
+	    legend =  None, #( (0.17,0.9-0.05*sum(map(len, plot.histos))/2,1.,0.9), 2),
 	    drawObjects = drawObjects( ),
+        copyIndexPHP = True,
       )
 
 #
@@ -86,12 +145,11 @@ read_variables = [
 ]
 read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
-for sample in samples:
-    logger.info( "Translating cut %s to %s", args.selection, cutInterpreter.cutString(args.selection) )
-    sample.setSelectionString( cutInterpreter.cutString(args.selection) )
-    sample.style = styles.lineStyle(ROOT.kBlue)
+logger.info( "Translating cut %s to %s", args.selection, cutInterpreter.cutString(args.selection) )
+sample.setSelectionString( cutInterpreter.cutString(args.selection) )
+sample.style = styles.lineStyle(ROOT.kBlue)
 
-stack = Stack(*[ [ sample ] for sample in samples] )
+stack = Stack(*[ [ sample ] for param in params] )
 
 if args.small:
     for sample in stack.samples:
@@ -271,10 +329,10 @@ sequence.append( makeObservables )
 
 
 # Weight <- Here we remove events where leptons fail the analysis selection despite passing the preselection
-weight_ = None #lambda event, sample: event.passing_3lep
+weight_ = None # lambda event, sample: event.passing_3lep
     
 # Use some defaults
-Plot.setDefaults(stack = stack, weight = weight_, addOverFlowBin=None)
+Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
 
   
 plots = []
@@ -324,31 +382,31 @@ plots.append(Plot( name = "b1_eta",
 plots.append(Plot( name = "b0_phi",
   texX = '#phi(b_{0})', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.bj0['phi'],
-  binning=[20,-1.2*pi,1.2*pi],
+  binning=[20,pi,pi],
 ))
 
 plots.append(Plot( name = "b1_phi",
   texX = '#phi(b_{1})', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.bj1['phi'],
-  binning=[20,-1.2*pi,1.2*pi],
+  binning=[20,pi,pi],
 ))
 
 plots.append(Plot( name = 'deltaPhi_bb',
   texX = '#Delta#phi(bb)', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.deltaPhi_bb,
-  binning=[32,-0.2*pi,1.2*pi],
+  binning=[32,0,pi],
 ))
 
 plots.append(Plot( name = 'deltaR_bb',
   texX = '#DeltaR(bb)', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.deltaR_bb,
-  binning=[32,0,5],
+  binning=[32,0,6],
 ))
 
 plots.append(Plot( name = 'Z_deltaPhi_ll',
   texX = '#Delta#phi(ll)', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.Z_deltaPhi_ll,
-  binning=[32,-0.2*pi,1.2*pi],
+  binning=[32,0,pi],
 ))
 
 plots.append(Plot( name = 'Z_deltaR_ll',
@@ -366,7 +424,7 @@ plots.append(Plot( name = 'Met_pt',
 plots.append(Plot( name	= 'Met_phi',
   texX = '#phi(E_{T}^{miss})', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.GenMet_phi,
-  binning=[50,-1.2*pi,1.2*pi],
+  binning=[50,-pi,pi],
 ))
 
 plots.append(Plot( name = 'nbjets',
@@ -378,7 +436,7 @@ plots.append(Plot( name = 'nbjets',
 plots.append(Plot( name = 'njets',
   texX = 'Number of Jets', texY = 'Number of Events',
   attribute = lambda event, sample: len( event.jets ),
-  binning=[8,2,10],
+  binning=[8,0,10],
 ))
 
 plots.append(Plot( name = 'nleps',
@@ -387,32 +445,56 @@ plots.append(Plot( name = 'nleps',
   binning=[8,0,8],
 ))
 
+plots.append(Plot( name = 'W_pt',
+  texX = 'p_{T}(W lep.)', texY = 'Number of Events / bin',
+  attribute = lambda event, sample: event.Wlep_vec2D.Mod(),
+  binning=[50,0,400],
+))
+
 plots.append(Plot( name = 'W_Lp',
   texX = 'L_{p} from W_{lep}', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.Wlep_Lp,
   binning=[50,-6,6],
 ))
 
-plots.append(Plot( name = 'W_dot_eZ2',
-  texX = 'p_{T}(b_{lep} + l)^{2D} [GeV] * e(Z)^{2D}', texY = 'Number of Events / bin',
+plots.append(Plot( name = 'bleplep_dot_nZ_2D',
+  texX = 'p_{T}(b_{lep} + l) #upoint n(Z) (2D)', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.bleplep_vec2D*event.Z_unitVec2D,
   binning=[50,-400,400],
 ))
 
-plots.append(Plot( name = 'W_dot_eZ3',
-  texX = 'p_{T}(b_{lep} + l)^{3D} [GeV] * e(Z)^{3D}', texY = 'Number of Events / bin',
+plots.append(Plot( name = 'bleplep_dot_nZ_3D',
+  texX = 'p_{T}(b_{lep} + l) #upoint n(Z) (3D)', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.bleplep_vec4D.Vect()*event.Z_unitVec3D,
   binning=[50,-400,400],
 ))
 
-plots.append(Plot( name = 't_dot_eZ',
-  texX = 'p_{T}(t_{lep})^{3D} [GeV] * e(Z)^{3D}', texY = 'Number of Events / bin',
+plots.append(Plot( name = 'top_dot_nZ',
+  texX = 'p_{T}(t_{lep}) #upoint n(Z)', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.t_vec2D*event.Z_unitVec2D,
   binning=[50,-400,400],
 ))
 
-plots.append(Plot( name = 'l_pt_charge',
-  texX = 'p_{T}(l^{non-Z}) [GeV] * sign(q(l^{non-Z}))', texY = 'Number of Events / bin',
+plots.append(Plot( name = 'top_lep_pt',
+  texX = 'p_{T}(t_{lep})', texY = 'Number of Events / bin',
+  attribute = lambda event, sample: event.t_vec2D.Mod(),
+  binning=[50,0,500],
+))
+
+plots.append(Plot( name = 'lnonZ_eta',
+  texX = 'p_{T}(l^{non-Z})', texY = 'Number of Events / bin',
+  attribute = lambda event, sample: event.lepsNotFromZ[0]['eta'],
+  binning=[50,-200,200],
+))
+
+plots.append(Plot( name = 'lnonZ_pt',
+  texX = 'p_{T}(l^{non-Z})', texY = 'Number of Events / bin',
+  attribute = lambda event, sample: event.lepsNotFromZ[0]['pt'],
+  binning=[50,-200,200],
+))
+
+plots.append(Plot( name = 'lnonZ_pt_charge',
+  texX = 'p_{T}(l^{non-Z}) signed with lepton charge', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.getnonZlepchargept,
   binning=[50,-200,200],
 ))
@@ -429,9 +511,8 @@ plots.append(Plot( name = 'mT_t',
   binning=[400/20,0,400],
 ))
 
-
 plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_events = -1 if args.small else -1)
 
-drawPlots(plots, subDirectory = args.selection)
+drawPlots(plots)
 
 #logger.info( "Done with prefix %s and selectionString %s", args.selection, cutInterpreter.cutString(args.selection) )
