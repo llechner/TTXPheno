@@ -19,7 +19,10 @@ from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 
 # Import samples
-from TTXPheno.samples.benchmarks import *
+from TTXPheno.samples.benchmarks         import *
+
+# Import helpers
+from plot_helpers                        import *
 
 #
 # Arguments
@@ -30,7 +33,7 @@ argParser.add_argument('--logLevel',           action='store',      default='INF
 argParser.add_argument('--plot_directory',     action='store',      default='gen')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttgamma_LO_order3_8weights')
 argParser.add_argument('--order',              action='store',      default=3)
-argParser.add_argument('--selection',          action='store',      default='gammapt40-nlep1-njet3p-nbjet1p', help="Specify cut.")
+argParser.add_argument('--selection',          action='store',      default='gammapt40-nlep1p-njet3p-nbjet1p', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',          action='store_true', help='Scale lumi only??')
 argParser.add_argument('--parameters',         action='store',      default = ['ctZI', '2'], type=str, nargs='+', help = "argument parameters")
@@ -80,8 +83,8 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
         })
 
 # Make stack and weight
-stack = Stack(*[ [ sample ] for param in params ] )
-weight= None#[ [ w.arg_weight_func(**param['WC']) ] for param in params ]
+stack  = Stack(*[ [ sample ] for param in params ] )
+weight = [ [ w.arg_weight_func( **param['WC'] ) ] for param in params ]
 
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
@@ -108,7 +111,7 @@ def drawPlots(plots):
         sample.name, 
         subDirectory, 
         args.selection, 
-        '_'.join(args.parameters),
+        '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p'),
         "log" if log else "lin")
 
     # plot the legend
@@ -167,57 +170,9 @@ logger.info( "Translating cut %s to %s", args.selection, cutInterpreter.cutStrin
 sample.setSelectionString( cutInterpreter.cutString(args.selection) )
 sample.style = styles.lineStyle(ROOT.kBlue)
 
-stack = Stack(*[ [ sample ] for param in params] )
-
 if args.small:
     for sample in stack.samples:
         sample.reduceFiles( to = 1 )
-
-# Helpers
-def addTransverseVector( p_dict ):
-    ''' add a transverse vector for further calculations
-    '''
-    p_dict['vec2D'] = ROOT.TVector2( p_dict['pt']*cos(p_dict['phi']), p_dict['pt']*sin(p_dict['phi']) )
-
-def addTLorentzVector( p_dict ):
-    ''' add a TLorentz 4D Vector for further calculations
-    '''
-    p_dict['vec4D'] = ROOT.TLorentzVector( p_dict['pt']*cos(p_dict['phi']), p_dict['pt']*sin(p_dict['phi']),  p_dict['pt']*sinh(p_dict['eta']), 0 )
-
-def NanJet():
-    ''' return a dict in Jet format filled with Nan
-    '''
-    return {'index':float('nan'), 'pt':float('nan'), 'phi':float('nan'), 'eta':float('nan'), 'matchBParton':float('nan'), 'vec2D':ROOT.TVector2( float('nan'), float('nan') ), 'vec4D':ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )}
-
-def NanLepton():
-    ''' return a dict in Lepton format filled with Nan
-    '''
-    return {'index':float('nan'), 'pt':float('nan'), 'phi':float('nan'), 'pdgId':float('nan'), 'eta':float('nan'), 'motherPdgId':float('nan'), 'vec2D':ROOT.TVector2( float('nan'), float('nan') ), 'vec4D':ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )}
-
-def UnitVectorT2( phi ):
-    ''' 2D Unit Vector
-    '''
-    return ROOT.TVector2( cos(phi), sin(phi) )
-
-def isGoodJet( j ):
-    ''' jet object selection
-    '''
-    return j['pt']>30 and abs(j['eta'])<2.4
-
-def isGoodLepton( l ):
-    ''' lepton object selection
-    '''
-    return l['pt']>10 and abs(l['eta'])<2.5
-
-def MTSquared( p1, p2 ):
-    ''' compute MT from 2 particles
-    '''
-    return 2*p1['pt']*p2['pt']*( 1-cos(p1['phi']-p2['phi']) )
-
-def MSquared( p1, p2 ):
-    ''' compute MassSquared from 2 particles
-    '''
-    return 2*p1['pt']*p2['pt']*( cosh(p1['eta']-p2['eta'])-cos(p1['phi']-p2['phi']) )
 
 
 #sequence functions
@@ -251,7 +206,7 @@ sequence.append( makeJets )
 
 
 def makeMET( event, sample ):
-    ''' Make a MET vector to facilitate further calculations
+    ''' Make a MET vector to facilitate further calculations, MET only from one neutrino
     '''
     event.MET = {'pt':event.GenMet_pt, 'phi':event.GenMet_phi}
     addTransverseVector( event.MET )
@@ -346,165 +301,165 @@ Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
   
 plots = []
 
-plots.append(Plot( name = "Gamma_pt",
+plots.append(Plot( name = "gamma_pt",
   texX = 'p_{T}(#gamma) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.gamma_pt,
+  attribute = lambda event, sample: event.gamma_pt if event.passing_1lep else float('nan'),
   binning=[20,0,400],
 ))
 
 plots.append(Plot( name = "gamma_mass",
   texX = 'm(#gamma) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.gamma_mass,
+  attribute = lambda event, sample: event.gamma_mass if event.passing_1lep else float('nan'),
   binning=[20,-5,5],
 ))
 
 plots.append(Plot( name = "b0_pt",
   texX = 'p_{T}(b_{0}) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.bj0['pt'],
+  attribute = lambda event, sample: event.bj0['pt'] if event.passing_1lep else float('nan'),
   binning=[20,0,400],
 ))
 
 plots.append(Plot( name = "b1_pt",
   texX = 'p_{T}(b_{1}) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.bj1['pt'],
+  attribute = lambda event, sample: event.bj1['pt'] if event.passing_1lep else float('nan'),
   binning=[20,0,400],
 ))
 
 plots.append(Plot( name = "b0_eta",
   texX = '#eta(b_{0})', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.bj0['eta'],
+  attribute = lambda event, sample: event.bj0['eta'] if event.passing_1lep else float('nan'),
   binning=[20,-3,3],
 ))
 
 plots.append(Plot( name = "b1_eta",
   texX = '#eta(b_{1})', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.bj1['eta'],
+  attribute = lambda event, sample: event.bj1['eta'] if event.passing_1lep else float('nan'),
   binning=[20,-3,3],
 ))
 
 plots.append(Plot( name = "b0_phi",
   texX = '#phi(b_{0})', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.bj0['phi'],
+  attribute = lambda event, sample: event.bj0['phi'] if event.passing_1lep else float('nan'),
   binning=[20,pi,pi],
 ))
 
 plots.append(Plot( name = "b1_phi",
   texX = '#phi(b_{1})', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.bj1['phi'],
+  attribute = lambda event, sample: event.bj1['phi'] if event.passing_1lep else float('nan'),
   binning=[20,pi,pi],
 ))
 
 plots.append(Plot( name = "l0_pt",
   texX = 'p_{T}(l_{0}) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.l0['pt'],
-  binning=[20,0,400],
+  attribute = lambda event, sample: event.l0['pt'] if event.passing_1lep else float('nan'),
+  binning=[20,0,300],
 ))
 
 plots.append(Plot( name = "l0_eta",
   texX = '#eta(l_{0})', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.l0['eta'],
+  attribute = lambda event, sample: event.l0['eta'] if event.passing_1lep else float('nan'),
   binning=[20,-3,3],
 ))
 
 plots.append(Plot( name = "l0_phi",
   texX = '#phi(l_{0})', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.l0['phi'],
+  attribute = lambda event, sample: event.l0['phi'] if event.passing_1lep else float('nan'),
   binning=[20,pi,pi],
 ))
 
 plots.append(Plot( name = 'deltaPhi_bb',
   texX = '#Delta#phi(bb)', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.deltaPhi_bb,
+  attribute = lambda event, sample: event.deltaPhi_bb if event.passing_1lep else float('nan'),
   binning=[20,0,pi],
 ))
 
 plots.append(Plot( name = 'deltaR_bb',
   texX = '#DeltaR(bb)', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.deltaR_bb,
+  attribute = lambda event, sample: event.deltaR_bb if event.passing_1lep else float('nan'),
   binning=[20,0,6],
 ))
 
 plots.append(Plot( name = 'Met_pt',
   texX = 'E_{T}^{miss} [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.GenMet_pt,
+  attribute = lambda event, sample: event.GenMet_pt if event.passing_1lep else float('nan'),
   binning=[20,0,400],
 ))
 
 plots.append(Plot( name	= 'Met_phi',
   texX = '#phi(E_{T}^{miss})', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.GenMet_phi,
+  attribute = lambda event, sample: event.GenMet_phi if event.passing_1lep else float('nan'),
   binning=[20,-pi,pi],
 ))
 
 plots.append(Plot( name = 'nbjets',
   texX = 'Number of b-Jets', texY = 'Number of Events',
-  attribute = lambda event, sample: len( event.trueBjets ),
+  attribute = lambda event, sample: len( event.trueBjets ) if event.passing_1lep else float('nan'),
   binning=[4,0,4],
 ))
 
 plots.append(Plot( name = 'njets',
   texX = 'Number of Jets', texY = 'Number of Events',
-  attribute = lambda event, sample: len( event.jets ),
-  binning=[8,0,10],
+  attribute = lambda event, sample: len( event.jets ) if event.passing_1lep else float('nan'),
+  binning=[10,0,10],
 ))
 
 plots.append(Plot( name = 'nleps',
   texX = 'Number of Leptons', texY = 'Number of Events',
-  attribute = lambda event, sample: len( event.leps ),
+  attribute = lambda event, sample: len( event.leps ) if event.passing_1lep else float('nan'),
   binning=[8,0,8],
 ))
 
 plots.append(Plot( name = 'W_pt',
   texX = 'p_{T}(W_{lep}) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.Wlep_vec2D.Mod(),
+  attribute = lambda event, sample: event.Wlep_vec2D.Mod() if event.passing_1lep else float('nan'),
   binning=[20,0,400],
 ))
 
 plots.append(Plot( name = 'W_Lp',
   texX = 'L_{p} from W_{lep}', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.Wlep_Lp,
+  attribute = lambda event, sample: event.Wlep_Lp if event.passing_1lep else float('nan'),
   binning=[20,-3,3],
 ))
 
 plots.append(Plot( name = 'bleplep_dot_ngamma_2D',
   texX = 'p_{T}(b_{lep} + l) [GeV] #upoint n(#gamma) (2D)', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.bleplep_vec2D*event.gamma_unitVec2D,
+  attribute = lambda event, sample: event.bleplep_vec2D*event.gamma_unitVec2D if event.passing_1lep else float('nan'),
   binning=[20,-400,400],
 ))
 
 plots.append(Plot( name = 'bleplep_dot_ngamma_3D',
   texX = 'p_{T}(b_{lep} + l) [GeV] #upoint n(#gamma) (3D)', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.bleplep_vec4D.Vect()*event.gamma_unitVec3D,
+  attribute = lambda event, sample: event.bleplep_vec4D.Vect()*event.gamma_unitVec3D if event.passing_1lep else float('nan'),
   binning=[20,-400,400],
 ))
 
 plots.append(Plot( name = 'top_dot_nZ',
   texX = 'p_{T}(t_{lep}) [GeV] #upoint n(#gamma)', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.t_vec2D*event.gamma_unitVec2D,
+  attribute = lambda event, sample: event.t_vec2D*event.gamma_unitVec2D if event.passing_1lep else float('nan'),
   binning=[20,-400,400],
 ))
 
 plots.append(Plot( name = 'top_lep_pt',
   texX = 'p_{T}(t_{lep}) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.t_vec2D.Mod(),
+  attribute = lambda event, sample: event.t_vec2D.Mod() if event.passing_1lep else float('nan'),
   binning=[20,0,400],
 ))
 
 plots.append(Plot( name = 'l_pt_charge',
   texX = 'p_{T}(l) [GeV] signed with lepton charge', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.getlepchargept,
+  attribute = lambda event, sample: event.getlepchargept if event.passing_1lep else float('nan'),
   binning=[20,-200,200],
 ))
 
 plots.append(Plot( name = 'mT_W',
   texX = 'm_{T}(W_{lep}) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.Wlep_MT,
+  attribute = lambda event, sample: event.Wlep_MT if event.passing_1lep else float('nan'),
   binning=[20,0,150],
 ))
 
 plots.append(Plot( name = 'mT_t',
   texX = 'm_{T}(t_{lep}) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.t_MT,
+  attribute = lambda event, sample: event.t_MT if event.passing_1lep else float('nan'),
   binning=[20,0,300],
 ))
 

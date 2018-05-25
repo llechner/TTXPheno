@@ -13,11 +13,12 @@ ctG=1
 ctGI=1
 
 # declare samples to analyze
-declare -a samples2=('') #fwlite_ttgamma_ll_LO_order2_15weights')
-declare -a samples3=('fwlite_ttgamma_LO_order3_8weights')
+#declare -a samples2=('fwlite_ttW_LO_order2_15weights')
+declare -a samples2=('')
+declare -a samples3=('fwlite_ttW_LO_order3_8weights')
 
 # declare selection strings to analyze
-declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-njet3p-nbjet1p' 'gammapt100to200-nlep1p-njet3p-nbjet1p' 'gammapt200to300-nlep1p-njet3p-nbjet1p' 'gammapt300-nlep1p-njet3p-nbjet1p')
+declare -a selections=('nlep2p-njet2p-nbjet1p-Wpt0' 'nlep2p-njet2p-nbjet1p-Wpt100to200' 'nlep2p-njet2p-nbjet1p-Wpt200to300' 'nlep2p-njet2p-nbjet1p-Wpt300to400' 'nlep2p-njet2p-nbjet1p-Wpt400')
 
 # declare sample size to analyze
 declare -a samplesizes=('--small' '')
@@ -25,7 +26,7 @@ declare -a samplesizes=('--small' '')
 #declare -a samplesizes=('')
 
 # define program to run by python
-prog=skim_plots_ttgamma_1l.py
+prog=skim_plots_ttW_2l.py
 
 #################################################
 
