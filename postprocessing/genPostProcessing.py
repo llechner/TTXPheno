@@ -57,6 +57,7 @@ else:
     sample_file = "$CMSSW_BASE/python/TTXPheno/samples/fwlite_benchmarks.py"
     samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
     sample = getattr( samples, args.sample )
+    logger.debug( 'Loaded sample %s with %i files.', sample.name, len(sample.files) )
 
 maxEvents = -1
 if args.small: 
@@ -280,11 +281,13 @@ def filler( event ):
         jet['matchBParton'] = ( min([999]+[deltaR2(jet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
 
     jets.sort( key = lambda p:-p['pt'] )
+
+
     fill_vector( event, "GenJet", jet_write_varnames, jets)
 
 tmp_dir     = ROOT.gDirectory
-#post_fix = '_%i'%args.job if args.nJobs > 1 else ''
-output_filename =  os.path.join(output_directory, sample.name+'.root')
+post_fix = '_%i'%args.job if args.nJobs > 1 else ''
+output_filename =  os.path.join(output_directory, sample.name+post_fix+'.root')
 if os.path.exists( output_filename ) and not args.overwrite:
     logger.info( "File %s found. Quit.", output_filename )
     sys.exit(0)
