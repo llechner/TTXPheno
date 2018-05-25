@@ -5,13 +5,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 special_cuts = {
-    "lepSel":            "Sum$(GenLep_pt>10&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.4)>=3&&Sum$(GenLep_pt>20&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.4)>=2&&Sum$(GenLep_pt>40&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.4)>=1",
-    "onZ":               "abs(Z_mass-91.2)<=10",
-    "offZ":              "abs(Z_mass-91.2)>10",
+    "lepSel3":            "Sum$(GenLep_pt>10&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.4)>=3&&Sum$(GenLep_pt>20&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.4)>=2&&Sum$(GenLep_pt>40&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.4)>=1",
+    "lepSel4":            "Sum$(GenLep_pt>10&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.4)>=4&&Sum$(GenLep_pt>40&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.4)>=1",
+    "onZ":                "abs(Z_mass-91.2)<=10",
+    "offZ":               "abs(Z_mass-91.2)>10",
   }
 
-continous_variables = [ ("mll", "Z_mass"), ("met", "GenMet_pt"), ("Zpt","Z_pt")]
-discrete_variables  = [ ("njet", "Sum$(GenJet_pt>30&&abs(GenJet_eta)<2.4)"), ("nbjet", "Sum$(GenJet_pt>30&&GenJet_matchBParton>=1&&abs(GenJet_eta)<2.4)") , ]
+continous_variables = [ ("mll", "Z_mass"), ("met", "GenMet_pt"), ("Zpt","Z_pt"), ("gammapt","gamma_pt"), ("Wpt","W_pt")]
+discrete_variables  = [ ("nlep", "Sum$(GenLep_pt>10&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.5)"), ("njet", "Sum$(GenJet_pt>30&&abs(GenJet_eta)<2.4)"), ("nbjet", "Sum$(GenJet_pt>30&&GenJet_matchBParton>=1&&abs(GenJet_eta)<2.4)") , ]
 
 class cutInterpreter:
     ''' Translate var100to200-var2p etc.
@@ -96,5 +97,10 @@ class cutInterpreter:
         #return  "&&".join( map( cutInterpreter.translate_cut_to_string, cuts ) )
 
 if __name__ == "__main__":
+#    print cutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
+#    print cutInterpreter.cutList("lepSel-njet3p-nbjet1p-ZptTo100")
+    print cutInterpreter.cutString("lepSel-onZ-njet3p-nbjet1p")
+    print ''
+    print cutInterpreter.cutString('gammapt40')
+    print ''
     print cutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
-    print cutInterpreter.cutList("lepSel-njet3p-nbjet1p-ZptTo100")

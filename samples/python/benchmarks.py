@@ -46,7 +46,7 @@ fwlite_ttgamma_LO_order3_8weights_delphes = Sample.fromDirectory("fwlite_ttgamma
 #fwlite_ttZ_ll_LO_order3_8weights.addFriend(  fwlite_ttZ_ll_LO_order3_8weights_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttW_LO_order3_8weights.addFriend(  fwlite_ttW_LO_order3_8weights_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttgamma_LO_order3_8weights.addFriend(  fwlite_ttgamma_LO_order3_8weights_delphes, treeName = "Delphes", sortFiles = True)
-"""
+
 gen_dir = "/afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v3/"
 
 fwlite_ttZ_ll_LO_order2_15weights  = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights" )]) 
@@ -83,4 +83,3 @@ fwlite_ttgamma_LO_order2_15weights_ref_delphes = Sample.fromDirectory("fwlite_tt
 #fwlite_ttW_LO_order2_15weights_ref.addFriend(  fwlite_ttW_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttgamma_LO_order2_15weights_ref.addFriend(  fwlite_ttgamma_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 
-"""
