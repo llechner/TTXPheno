@@ -154,6 +154,18 @@ def fill_vector( event, collection_name, collection_varnames, objects):
 
 reader = sample.fwliteReader( products = products )
 
+def readReferencePoint():
+    # Load ref-point from pkl file
+    if len( weightInfo.ref_point.keys() ) > 0:
+        # list values of ref-point in right order
+        logger.info( "Using reference point from the pkl file!" )
+        return [ float( weightInfo.ref_point[var] ) if var in weightInfo.ref_point.keys() else 0 for var in weightInfo.variables ]
+
+    # if no ref point in pkl file, return None
+    else:
+        logger.info( "No reference point found in pkl file! Continuing without a reference point!", args.inputFiles)
+        return None
+
 def filler( event ):
 
     event.run, event.lumi, event.evt = reader.evt
@@ -178,8 +190,8 @@ def filler( event ):
             # weight data for interpolation
             if not hyperPoly.initialized: param_points.append( tuple(interpreted_weight[var] for var in weightInfo.variables) )
 
-        # Initialize
-        if not hyperPoly.initialized: hyperPoly.initialize( param_points )
+        # Initialize with Reference Point
+        if not hyperPoly.initialized: hyperPoly.initialize( param_points, readReferencePoint() )
         coeff = hyperPoly.get_parametrization( weights )
 
         # = HyperPoly(weight_data, args.interpolationOrder)
@@ -287,7 +299,7 @@ def filler( event ):
 
 tmp_dir     = ROOT.gDirectory
 post_fix = '_%i'%args.job if args.nJobs > 1 else ''
-output_filename =  os.path.join(output_directory, sample.name+post_fix+'.root')
+output_filename =  os.path.join(output_directory, sample.name + post_fix + '.root')
 if os.path.exists( output_filename ) and not args.overwrite:
     logger.info( "File %s found. Quit.", output_filename )
     sys.exit(0)

@@ -178,6 +178,12 @@ if args.small:
 #sequence functions
 sequence = []
 
+#def check( event, sample ):
+#    print(sample.chain.GetEntries())
+#    exit()
+#
+#sequence.append( check )
+
 def makeJets( event, sample ):
     ''' Add a list of filtered jets to the event
     '''
