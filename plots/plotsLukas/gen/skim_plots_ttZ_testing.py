@@ -30,13 +30,13 @@ from plot_helpers                        import *
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
-argParser.add_argument('--plot_directory',     action='store',      default='gen')
+argParser.add_argument('--plot_directory',     action='store',      default='gen_testing')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order3_8weights')
 argParser.add_argument('--order',              action='store',      default=3)
 argParser.add_argument('--selection',          action='store',      default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',          action='store_true', help='Scale lumi only??')
-argParser.add_argument('--parameters',         action='store',      default = ['ctZI', '2'], type=str, nargs='+', help = "argument parameters")
+argParser.add_argument('--parameters',         action='store',      default = ['ctZI', '0'], type=str, nargs='+', help = "argument parameters")
 
 args = argParser.parse_args()
 
@@ -61,6 +61,7 @@ sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 sample = getattr( samples, args.sample )
 
+
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
@@ -84,7 +85,13 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
 
 # Make stack and weight
 stack  = Stack(*[ [ sample ] for param in params ] )
-weight = [ [ w.arg_weight_func( **param['WC'] ) ] for param in params ]
+#weight = [ [ w.arg_weight_func( **param['WC'] ) ] for param in params ]
+
+param_dict = {}
+for i, item in enumerate(coeffs):
+    param_dict[item] = vals[i]
+
+weight = [ [ w.arg_weight_func( **param_dict ) ] for param in params ]
 
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
@@ -177,10 +184,10 @@ if args.small:
 #sequence functions
 sequence = []
 
-#def check( event, sample ):
-#    print(sample.chain.GetEntries())
-#    exit()
-#
+def check( event, sample ):
+    print(sample.chain.GetEntries())
+    exit()
+
 #sequence.append( check )
 
 
@@ -309,10 +316,6 @@ def makeObservables( event, sample):
 
 sequence.append( makeObservables )
 
-
-# Weight <- Here we remove events where leptons fail the analysis selection despite passing the preselection
-weight_ = None # lambda event, sample: event.passing_3lep
-    
 # Use some defaults
 Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
 
@@ -324,6 +327,8 @@ plots.append(Plot( name = "Z_pt",
   attribute = lambda event, sample: event.Z_pt if event.passing_3lep else float('nan'),
   binning=[20,0,400],
 ))
+
+'''
 
 plots.append(Plot( name = "Z_mass",
   texX = 'm(ll) [GeV]', texY = 'Number of Events / bin',
@@ -510,6 +515,8 @@ plots.append(Plot( name = 'mT_t',
   attribute = lambda event, sample: event.t_MT if event.passing_3lep else float('nan'),
   binning=[20,0,300],
 ))
+
+'''
 
 plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_events = -1 if args.small else -1)
 
