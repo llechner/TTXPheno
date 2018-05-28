@@ -51,29 +51,45 @@ class WeightInfo:
         counter = 0
         for o in xrange(self.order+1):
             for comb in itertools.combinations_with_replacement( self.variables, o ):
-                substrings.append(  "*".join( ["p_C[%i]"%counter] + [ "rw_%s"%v for v in  comb] )  )
+                substrings.append(  "*".join( ["p_C[%i]"%counter] + [ "(rw_%s-%s)"%(v,self.ref_point[v].rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  comb] )  )
                 counter += 1
 
         return "+".join( substrings )
 
     def arg_weight_string(self, **kwargs):
         kwargs = {x:y for x,y in kwargs.items() if y!=0} # remove entries which are 0
-        if len(kwargs)==0: return 'p_C[0]'
+
+        if len(kwargs)==0 and self.ref_point is None: return 'p_C[0]'
+
+        # add WC that are in the ref point but not in kwargs
+        for item in self.ref_point.keys():
+            if item not in kwargs.keys(): kwargs[item] = 0
+
+        # check if WC in kwargs that are not in the gridpack
         unused_args = set(kwargs.keys()) - set(self.variables)
         if len(unused_args) > 0:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
         substrings = []
         counter = -1
+
+        # run all combinations of WC
         for o in xrange(self.order+1):
             for comb in itertools.combinations_with_replacement( self.variables, o ):
                 counter += 1
                 if False in [v in kwargs for v in comb]: continue
-                substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[kwargs.get(v) for v in comb],1))).rstrip('0') ) )
+                substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
     def arg_weight_func(self, **kwargs):
         kwargs = {x:y for x,y in kwargs.items() if y!=0} # remove entries which are 0
-        if len(kwargs)==0: return lambda event, sample: event.p_C[0]
+
+        if len(kwargs)==0 and self.ref_point is None: return lambda event, sample: event.p_C[0]
+
+        # add WC that are in the ref point but not in kwargs
+        for item in self.ref_point.keys():
+            if item not in kwargs.keys(): kwargs[item] = 0
+
+        # check if WC in kwargs that are not in the gridpack
         unused_args = set(kwargs.keys()) - set(self.variables)
         if len(unused_args) > 0:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
@@ -84,7 +100,7 @@ class WeightInfo:
                 counter += 1
                 if False in [v in kwargs for v in comb]: continue
                 # store [ ncoeff, factor ]
-                terms.append( [ counter, float(reduce(mul,[kwargs.get(v) for v in comb],1)) ] )
+                terms.append( [ counter, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
     @staticmethod
@@ -166,7 +182,10 @@ if __name__ == "__main__":
 #    w.arg_weight_func(**para)
 #    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
 
-    w.weight_string()
+    print(w.ref_point)
     print(w.weight_string())
+    w.weight_string()
+    print(w.arg_weight_string(ctW=4, ctZ=5, ctGI=2))
+#    print(w.weight_string())
 #    print(w.arg_weight_string(ctZI=2, cpt=5))
 #     print(w.arg_weight_string())
