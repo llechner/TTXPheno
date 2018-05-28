@@ -299,8 +299,8 @@ def filler( event ):
     fill_vector( event, "GenJet", jet_write_varnames, jets)
 
 tmp_dir     = ROOT.gDirectory
-post_fix = '_%i'%args.job if args.nJobs > 1 else ''
-output_filename =  os.path.join(output_directory, sample.name + post_fix + '.root')
+#post_fix = '_%i'%args.job if args.nJobs > 1 else ''
+output_filename =  os.path.join(output_directory, sample.name + '.root')
 
 print output_filename.replace('.root', '.log'), output_filename.replace('.root', '_rt.log')
 _logger.   add_fileHandler( output_filename.replace('.root', '.log'), args.logLevel )
