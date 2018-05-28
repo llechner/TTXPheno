@@ -44,10 +44,10 @@ args = argParser.parse_args()
 #
 # Logger
 #
-import TTXPheno.Tools.logger as logger
-import RootTools.core.logger as logger_rt
-logger    = logger.get_logger(   args.logLevel, logFile = None)
-logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
+import TTXPheno.Tools.logger as _logger
+import RootTools.core.logger as _logger_rt
+logger    = _logger.get_logger(   args.logLevel, logFile = None)
+logger_rt = _logger_rt.get_logger(args.logLevel, logFile = None)
 
 # Load sample either from 
 if len(args.inputFiles)>0:
@@ -59,10 +59,16 @@ else:
     sample = getattr( samples, args.sample )
     logger.debug( 'Loaded sample %s with %i files.', sample.name, len(sample.files) )
 
+# output directory
+output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, sample.name) 
+if not os.path.exists( output_directory ): 
+    os.makedirs( output_directory )
+    logger.info( "Created output directory %s", output_directory )
+
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=100 # Number of files
+    maxEvents=10 # Number of files
     sample.files=sample.files[:1]
 
 # Load reweight pickle file if supposed to keep weights. 
@@ -90,11 +96,6 @@ def interpret_weight(weight_id):
     for i in range(len(str_s)/2):
         res[str_s[2*i]] = float(str_s[2*i+1].replace('m','-').replace('p','.'))
     return res
-
-output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, sample.name) 
-if not os.path.exists( output_directory ): 
-    os.makedirs( output_directory )
-    logger.info( "Created output directory %s", output_directory )
 
 # Run only job number "args.job" from total of "args.nJobs"
 if args.nJobs>1:
@@ -163,7 +164,7 @@ def readReferencePoint():
 
     # if no ref point in pkl file, return None
     else:
-        logger.info( "No reference point found in pkl file! Continuing without a reference point!", args.inputFiles)
+        logger.info( "No reference point found in pkl file! Continuing without a reference point!")
         return None
 
 def filler( event ):
@@ -300,6 +301,11 @@ def filler( event ):
 tmp_dir     = ROOT.gDirectory
 post_fix = '_%i'%args.job if args.nJobs > 1 else ''
 output_filename =  os.path.join(output_directory, sample.name + post_fix + '.root')
+
+print output_filename.replace('.root', '.log'), output_filename.replace('.root', '_rt.log')
+_logger.   add_fileHandler( output_filename.replace('.root', '.log'), args.logLevel )
+_logger_rt.add_fileHandler( output_filename.replace('.root', '_rt.log'), args.logLevel )
+
 if os.path.exists( output_filename ) and not args.overwrite:
     logger.info( "File %s found. Quit.", output_filename )
     sys.exit(0)
