@@ -13,6 +13,13 @@ from TTXPheno.Tools.user import results_directory
 import logging
 logger = logging.getLogger(__name__)
 
+# Logging
+if __name__ == "__main__":
+    import TTXPheno.Tools.logger as logger
+    logger = logger.get_logger('DEBUG')
+    import RootTools.core.logger as logger_rt
+    logger_rt = logger_rt.get_logger('DEBUG')
+
 import glob
 
 gen_dir = "/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2/"
