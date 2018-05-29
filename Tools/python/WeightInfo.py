@@ -104,6 +104,30 @@ class WeightInfo:
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
+    def getNDYield(self, coeffList, **kwargs):
+        '''compute yield from a list of coefficients (in the usual order of p_C) for WC given by kwargs'''
+
+        # add the arguments from the ref-point 
+        self.complement_args( kwargs )
+
+        result = 0 
+        counter = -1
+        for o in xrange(self.order+1):
+            for comb in itertools.combinations_with_replacement( self.variables, o ):
+                counter += 1
+                if False in [v in kwargs for v in comb]: continue
+                result += coeffList[counter]*float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))
+
+        return result
+
+    def getNDYield(self, coeffList, **kwargs):
+        # compute yield from a list of coefficients (in the usual order of p_C) for WC given by kwargs 
+        elements = []
+        for item in self.arg_weight_string(**kwargs).split('+'):
+           index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
+           elements.append(float(coeffList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from coeffList
+        return sum(elements)
+
     @staticmethod
     def differentiate( comb, var ):
         ''' Differentiate a product
@@ -136,17 +160,10 @@ class WeightInfo:
         else:
             return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
 
+    # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
     @staticmethod
     def BinContentToList(histo):
         return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
-
-    def getNDYield(self, coeffList, **kwargs):
-        # compute yield from a list of coefficients (in the usual order of p_C) for WC given by kwargs 
-        elements = []
-        for item in self.arg_weight_string(**kwargs).split('+'):
-           index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
-           elements.append(float(coeffList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from coeffList
-        return sum(elements)
 
 if __name__ == "__main__":
 
