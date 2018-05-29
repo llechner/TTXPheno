@@ -101,6 +101,7 @@ class WeightInfo:
                 if False in [v in kwargs for v in comb]: continue
                 # store [ ncoeff, factor ]
                 terms.append( [ counter, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
+
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
     @staticmethod
@@ -135,6 +136,10 @@ class WeightInfo:
         else:
             return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
 
+    @staticmethod
+    def BinContentToList(histo):
+        return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
+
     def GetNDYield(self, WeightList, **kwargs):
         # input is a list of (the sum of) weights (output from BinContentToList)
         # kwargs are specific coefficients with given values (for a 2D plot, 2 coefficients) e.g. cpt=2, cpQM=3
@@ -157,9 +162,6 @@ class WeightInfo:
            else: factor = 1.
            elements.append(float(WeightList[index])*factor) #replace p_C[i] with the entry from WeightList
         return sum(elements)
-
-def BinContentToList(histo):
-    return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
     
 if __name__ == "__main__":

@@ -8,7 +8,6 @@ import os
 # TTXPheno
 from TTXPheno.Tools.user import plot_directory
 from TTXPheno.Tools.WeightInfo import WeightInfo
-from TTXPheno.Tools.WeightInfo import BinContentToList
 
 # Sample
 from TTXPheno.samples.benchmarks import * # dim6top_ttZ_ll_LO_currentplane_highStat_scan 
