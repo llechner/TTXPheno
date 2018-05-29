@@ -75,6 +75,8 @@ class WeightInfo:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
         
     def get_weight_string(self, **kwargs):
+        '''make a root draw string that evaluates the weight in terms of the p_C coefficient vector using the kwargs as WC'''
+
         # add the arguments from the ref-point 
         self.complement_args( kwargs )
 
@@ -90,6 +92,8 @@ class WeightInfo:
         return "+".join( substrings )
 
     def get_weight_func(self, **kwargs):
+        '''construct a lambda function that evaluates the weight in terms of the event.p_C coefficient vector using the kwargs as WC'''
+
         # add the arguments from the ref-point 
         self.complement_args( kwargs )
 
@@ -105,7 +109,7 @@ class WeightInfo:
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
     def get_weight_yield(self, coeffList, **kwargs):
-        '''compute yield from a list of coefficients (in the usual order of p_C) for WC given by kwargs'''
+        '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC'''
 
         # add the arguments from the ref-point 
         self.complement_args( kwargs )
