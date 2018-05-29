@@ -130,7 +130,7 @@ class WeightInfo:
 
         return "+".join( substrings )
 
-    def FisherParametrization( self, var1, var2):
+    def fisherParametrization( self, var1, var2):
         if var1==var2:
             return "(%s)**2/(%s)"%( self.diff_weight_string( var1 ), self.weight_string() )
         else:
@@ -166,10 +166,10 @@ class WeightInfo:
 if __name__ == "__main__":
 
     #w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_currentplane_highStat_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
-    #w.FisherParametrization(2, 'cpt', 'cpt')
+    #w.fisherParametrization(2, 'cpt', 'cpt')
     #c = ROOT.TChain( "Events" )
     #c.Add("/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2/fwlite_ttZ_ll_LO_currentplane_highStat_scan/fwlite_ttZ_ll_LO_currentplane_highStat_scan_0.root" )
-    #fisher_string = ":".join( [ w.FisherParametrization(2, 'cpt', 'cpt'),  w.FisherParametrization(2, 'cpt', 'cpQM'),  w.FisherParametrization(2, 'cpQM', 'cpQM') ] )
+    #fisher_string = ":".join( [ w.fisherParametrization(2, 'cpt', 'cpt'),  w.fisherParametrization(2, 'cpt', 'cpQM'),  w.fisherParametrization(2, 'cpQM', 'cpQM') ] )
     #c.Scan(fisher_string)
     import ROOT
     c = ROOT.TChain("Events")
@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
 #    para = {'cpt':3, 'cpQM':5}
 #    w.arg_weight_func(**para)
-#    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
+#    fisher_string = ":".join( [ w.fisherParametrization( 'cpt', 'cpt'),  w.fisherParametrization( 'cpt', 'cpQM'),  w.fisherParametrization('cpQM', 'cpQM') ] )
 
     print(w.ref_point)
     print(w.weight_string())
