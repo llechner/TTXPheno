@@ -25,8 +25,12 @@ class WeightInfo:
         if 'ref_point' in data.keys(): self.ref_point = data['ref_point']
         else: self.ref_point = None
 
+        # store all variables (Wilson coefficients)
         self.variables = self.data.keys()[0].split('_')[::2]
         self.nvar      = len(self.variables)
+
+        # compute reference point coordinates
+        self.ref_point_coordinates = [ float( self.ref_point[var] ) if (self.ref_point is not None and var in self.ref_point.keys()) else 0 for var in self.variables ]
 
         # Sort wrt to position in ntuple
         self.id = self.data.keys()
