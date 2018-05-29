@@ -74,7 +74,7 @@ class WeightInfo:
         if len(unused_args) > 0:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
         
-    def arg_weight_string(self, **kwargs):
+    def get_weight_string(self, **kwargs):
         # add the arguments from the ref-point 
         self.complement_args( kwargs )
 
@@ -89,7 +89,7 @@ class WeightInfo:
                 substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
-    def arg_weight_func(self, **kwargs):
+    def get_weight_func(self, **kwargs):
         # add the arguments from the ref-point 
         self.complement_args( kwargs )
 
@@ -104,7 +104,7 @@ class WeightInfo:
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
-    def getNDYield(self, coeffList, **kwargs):
+    def get_weight_yield(self, coeffList, **kwargs):
         '''compute yield from a list of coefficients (in the usual order of p_C) for WC given by kwargs'''
 
         # add the arguments from the ref-point 
@@ -119,14 +119,6 @@ class WeightInfo:
                 result += coeffList[counter]*float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))
 
         return result
-
-    def getNDYield(self, coeffList, **kwargs):
-        # compute yield from a list of coefficients (in the usual order of p_C) for WC given by kwargs 
-        elements = []
-        for item in self.arg_weight_string(**kwargs).split('+'):
-           index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
-           elements.append(float(coeffList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from coeffList
-        return sum(elements)
 
     @staticmethod
     def differentiate( comb, var ):

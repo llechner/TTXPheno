@@ -78,7 +78,7 @@ def plot1D2coefficient(coeff, range, fixedcoeff, fixedvalue):
     y = []
     for i in x:
         dict = {coeff:i, fixedcoeff:fixedvalue}
-        y.append(w.getNDYield(sum_weights, **dict))
+        y.append(w.get_weight_yield(sum_weights, **dict))
     y = np.array(y)/sum_weights[0] #weight to SM
     graph = ROOT.TGraph(len(x), x, y)
 

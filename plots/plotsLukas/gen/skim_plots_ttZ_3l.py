@@ -84,7 +84,7 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
 
 # Make stack and weight
 stack  = Stack(*[ [ sample ] for param in params ] )
-weight = [ [ w.arg_weight_func( **param['WC'] ) ] for param in params ]
+weight = [ [ w.get_weight_func( **param['WC'] ) ] for param in params ]
 
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()

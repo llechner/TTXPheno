@@ -36,9 +36,9 @@ w = WeightInfo(sample.reweight_pkl)
 w.set_order( 2 )
 
 c.Draw("Z_pt>>h_Zpt(50,0,550)") # "weight*(%s)" % weightString(cpt=0.2)
-#c.Draw("Z_pt>>h_Zpt1(50,0,550)", '(' + w.arg_weight_string(cpt=vcpt, cpQM=vcpQM) + ')/p_C[0]')
-c.Draw("Z_pt>>h_Zptarg(50,0,550)", '(' + w.arg_weight_string(cpt=vcpt, cpQM=vcpQM, ctZ=vctZ, ctZI=vctZI) + ')/p_C[0]')
-c.Draw("Z_pt>>h_Zptargcut(50,0,550)", '(' + w.arg_weight_string(cpt=vcpt, cpQM=vcpQM, ctZ=vctZ, ctZI=vctZI) + ')/p_C[0]*(p_C[5]<' + pc5thresh + ')')
+#c.Draw("Z_pt>>h_Zpt1(50,0,550)", '(' + w.get_weight_string(cpt=vcpt, cpQM=vcpQM) + ')/p_C[0]')
+c.Draw("Z_pt>>h_Zptarg(50,0,550)", '(' + w.get_weight_string(cpt=vcpt, cpQM=vcpQM, ctZ=vctZ, ctZI=vctZI) + ')/p_C[0]')
+c.Draw("Z_pt>>h_Zptargcut(50,0,550)", '(' + w.get_weight_string(cpt=vcpt, cpQM=vcpQM, ctZ=vctZ, ctZI=vctZI) + ')/p_C[0]*(p_C[5]<' + pc5thresh + ')')
 
 #num = []
 #num_arg = []

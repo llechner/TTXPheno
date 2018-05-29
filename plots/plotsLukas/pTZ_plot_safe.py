@@ -112,11 +112,11 @@ w = WeightInfo(sample.reweight_pkl)
 w.set_order( order )
 
 c.Draw(plot_param + ">>h_Zpt(" + str(binning) + "," + str(plot_min) + "," + str(plot_max) + ")")
-c.Draw(plot_param + ">>h_Zptarg(" + str(binning) + "," + str(plot_min) + "," + str(plot_max) + ")", '(' + w.arg_weight_string(**WC_dict) + ')/p_C[0]')
+c.Draw(plot_param + ">>h_Zptarg(" + str(binning) + "," + str(plot_min) + "," + str(plot_max) + ")", '(' + w.get_weight_string(**WC_dict) + ')/p_C[0]')
 
 
 if cut_string != '':
-   c.Draw(plot_param + ">>h_Zptargcut(" + str(binning) + "," + str(plot_min) + "," + str(plot_max) + ")", '(' + w.arg_weight_string(**WC_dict) + ')/p_C[0]' + cut_string)
+   c.Draw(plot_param + ">>h_Zptargcut(" + str(binning) + "," + str(plot_min) + "," + str(plot_max) + ")", '(' + w.get_weight_string(**WC_dict) + ')/p_C[0]' + cut_string)
    
    numarg = ROOT.h_Zptarg.GetEntries()
    numargcut = ROOT.h_Zptargcut.GetEntries()
