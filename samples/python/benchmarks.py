@@ -92,6 +92,6 @@ fwlite_ttgamma_LO_order2_15weights_ref_delphes = Sample.fromDirectory("fwlite_tt
 
 
 
-fwlite_ttZ_ll_LO_order2_15weights_refshift = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights_refshift",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights_refshift" )]) 
-fwlite_ttZ_ll_LO_order2_15weights_refshift.reweight_pkl = gridpack_dir + "18052018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+#fwlite_ttZ_ll_LO_order2_15weights_refshift = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights_refshift",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights_refshift" )]) 
+#fwlite_ttZ_ll_LO_order2_15weights_refshift.reweight_pkl = gridpack_dir + "18052018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 

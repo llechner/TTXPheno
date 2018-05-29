@@ -60,19 +60,24 @@ class WeightInfo:
 
         return "+".join( substrings )
 
-    def arg_weight_string(self, **kwargs):
-        kwargs = {x:y for x,y in kwargs.items() if y!=0} # remove entries which are 0
+    def complement_args(self, args ):
+        ''' prepare the args; add the ref_point ones and check that there is no inconsistency''' 
+        args = {x:y for x,y in args.items() if y!=0} # remove entries which are 0
 
-        if len(kwargs)==0 and self.ref_point is None: return 'p_C[0]'
+        # add WC that are in the ref point but not in args
+        if self.ref_point is not None:
+            for item in self.ref_point.keys():
+                if item not in args.keys(): args[item] = 0
 
-        # add WC that are in the ref point but not in kwargs
-        for item in self.ref_point.keys():
-            if item not in kwargs.keys(): kwargs[item] = 0
-
-        # check if WC in kwargs that are not in the gridpack
-        unused_args = set(kwargs.keys()) - set(self.variables)
+        # check if WC in args that are not in the gridpack
+        unused_args = set(args.keys()) - set(self.variables)
         if len(unused_args) > 0:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
+        
+    def arg_weight_string(self, **kwargs):
+        # add the arguments from the ref-point 
+        self.complement_args( kwargs )
+
         substrings = []
         counter = -1
 
@@ -85,18 +90,9 @@ class WeightInfo:
         return "+".join( substrings )
 
     def arg_weight_func(self, **kwargs):
-        kwargs = {x:y for x,y in kwargs.items() if y!=0} # remove entries which are 0
+        # add the arguments from the ref-point 
+        self.complement_args( kwargs )
 
-        if len(kwargs)==0 and self.ref_point is None: return lambda event, sample: event.p_C[0]
-
-        # add WC that are in the ref point but not in kwargs
-        for item in self.ref_point.keys():
-            if item not in kwargs.keys(): kwargs[item] = 0
-
-        # check if WC in kwargs that are not in the gridpack
-        unused_args = set(kwargs.keys()) - set(self.variables)
-        if len(unused_args) > 0:
-            raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
         terms = []
         counter = -1
         for o in xrange(self.order+1):
@@ -144,29 +140,14 @@ class WeightInfo:
     def BinContentToList(histo):
         return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
-    def getNDYield(self, weightList, **kwargs):
-        # input is a list of (the sum of) weights (output from BinContentToList)
-        # kwargs are specific coefficients with given values (for a 2D plot, 2 coefficients) e.g. cpt=2, cpQM=3
-        # getYield matches the prefactors p_C[i] from the arg_weight_string output with the entry in Weightlist and calculates the yield for the given weights in kwargs
+    def getNDYield(self, coeffList, **kwargs):
+        # compute yield from a list of coefficients (in the usual order of p_C) for WC given by kwargs 
         elements = []
         for item in self.arg_weight_string(**kwargs).split('+'):
            index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
-           elements.append(float(weightList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from weightList
+           elements.append(float(coeffList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from coeffList
         return sum(elements)
 
-    def get1DYield(self, weightList, coefficient, value):
-        # input is a list of (the sum of) weights (output from BinContentToList)
-        # one specific coefficients with given values e.g. cpt, 2
-        # getYield matches the prefactors p_C[i] from the arg_weight_string output with the entry in Weightlist and calculates the yield for the given weights in kwargs
-        dict = {coefficient:value}
-        elements = []
-        for item in self.arg_weight_string(**dict).split('+'):
-           index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
-           if len(item.split('*'))>1: factor = float(item.split('*')[1])
-           else: factor = 1.
-           elements.append(float(weightList[index])*factor) #replace p_C[i] with the entry from weightList
-        return sum(elements)
-    
 if __name__ == "__main__":
 
     #w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_currentplane_highStat_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")

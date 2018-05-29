@@ -36,7 +36,7 @@ sum_weights = WeightInfo.BinContentToList(ROOT.h_weights)
 def plot1Dcoefficient(coeff, range):
 
     x = np.arange(range[0],range[1],range[2])
-    y = np.array([w.get1DYield(sum_weights, coeff, i) for i in x])/sum_weights[0] #weight to SM
+    y = np.array([w.getNDYield(sum_weights, **{coeff: i}) for i in x])/sum_weights[0] #weight to SM
     graph = ROOT.TGraph(len(x), x, y)
 
     # Base Line
