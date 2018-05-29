@@ -140,17 +140,17 @@ class WeightInfo:
     def BinContentToList(histo):
         return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
-    def GetNDYield(self, WeightList, **kwargs):
+    def GetNDYield(self, weightList, **kwargs):
         # input is a list of (the sum of) weights (output from BinContentToList)
         # kwargs are specific coefficients with given values (for a 2D plot, 2 coefficients) e.g. cpt=2, cpQM=3
         # GetYield matches the prefactors p_C[i] from the arg_weight_string output with the entry in Weightlist and calculates the yield for the given weights in kwargs
         elements = []
         for item in self.arg_weight_string(**kwargs).split('+'):
            index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
-           elements.append(float(WeightList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from WeightList
+           elements.append(float(weightList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from weightList
         return sum(elements)
 
-    def Get1DYield(self, WeightList, coefficient, value):
+    def Get1DYield(self, weightList, coefficient, value):
         # input is a list of (the sum of) weights (output from BinContentToList)
         # one specific coefficients with given values e.g. cpt, 2
         # GetYield matches the prefactors p_C[i] from the arg_weight_string output with the entry in Weightlist and calculates the yield for the given weights in kwargs
@@ -160,9 +160,8 @@ class WeightInfo:
            index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
            if len(item.split('*'))>1: factor = float(item.split('*')[1])
            else: factor = 1.
-           elements.append(float(WeightList[index])*factor) #replace p_C[i] with the entry from WeightList
+           elements.append(float(weightList[index])*factor) #replace p_C[i] with the entry from weightList
         return sum(elements)
-
     
 if __name__ == "__main__":
 
