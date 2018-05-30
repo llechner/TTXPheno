@@ -89,4 +89,3 @@ fwlite_ttgamma_LO_order2_15weights_ref_delphes = Sample.fromDirectory("fwlite_tt
 #fwlite_ttZ_ll_LO_order2_15weights_ref.addFriend(  fwlite_ttZ_ll_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttW_LO_order2_15weights_ref.addFriend(  fwlite_ttW_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttgamma_LO_order2_15weights_ref.addFriend(  fwlite_ttgamma_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
-

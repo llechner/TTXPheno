@@ -51,8 +51,8 @@ c.Draw("p_C[" + str(index) + "]>>h_pcptZ(50,-1,1)",'(Z_pt>345)*(Z_pt<355)') # "w
 #c.Draw("p_C[14]>>h_pc14ptZ(50," + minrange + "," + maxrange + ")",'(Z_pt>340)*(Z_pt<360)') # "weight*(%s)" % weightString(cpt=0.2)
 #c.Draw("p_C[" + str(index) + "]>>h_pc1(50,-.00005,.00005)") # "weight*(%s)" % weightString(cpt=0.2)
 #c.Draw("p_C[" + str(index) + "]>>h_pc1ptZ(50,-.00005,.00005)",'(Z_pt>340)*(Z_pt<360)') # "weight*(%s)" % weightString(cpt=0.2)
-#c.Draw("Z_pt>>h_Zpt1(50,0,550)", '(' + w.arg_weight_string(cpt=vcpt, cpQM=vcpQM) + ')/p_C[0]')
-#c.Draw("p_C[1]>>h_pc1(50,0,550)", '(' + w.arg_weight_string(cpt=vcpt, cpQM=vcpQM, ctZ=vctZ, ctZI=vctZI) + ')')
+#c.Draw("Z_pt>>h_Zpt1(50,0,550)", '(' + w.get_weight_string(cpt=vcpt, cpQM=vcpQM) + ')/p_C[0]')
+#c.Draw("p_C[1]>>h_pc1(50,0,550)", '(' + w.get_weight_string(cpt=vcpt, cpQM=vcpQM, ctZ=vctZ, ctZI=vctZI) + ')')
 
 # Line Color
 ROOT.h_pc.SetLineColor(ROOT.kBlue)

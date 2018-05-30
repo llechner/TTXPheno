@@ -25,8 +25,12 @@ class WeightInfo:
         if 'ref_point' in data.keys(): self.ref_point = data['ref_point']
         else: self.ref_point = None
 
+        # store all variables (Wilson coefficients)
         self.variables = self.data.keys()[0].split('_')[::2]
         self.nvar      = len(self.variables)
+
+        # compute reference point coordinates
+        self.ref_point_coordinates = [ float( self.ref_point[var] ) if (self.ref_point is not None and var in self.ref_point.keys()) else 0 for var in self.variables ]
 
         # Sort wrt to position in ntuple
         self.id = self.data.keys()
@@ -46,62 +50,78 @@ class WeightInfo:
     def get_ndof( nvar, order ):
         return sum( [ int(scipy.special.binom(nvar + o - 1, o)) for o in xrange(order+1) ] )
 
+    # compute combinations on demand
+    @property
+    def combinations( self ):
+        if hasattr( self, "_combinations"):
+            return self._combinations
+        else:
+            self._combinations = []
+            for o in xrange(self.order+1):
+                self._combinations.extend( list(itertools.combinations_with_replacement( self.variables, o )) )
+            return self._combinations
+
     def weight_string(self):
+        ''' get the full reweight string
+        '''
         substrings = []
-        counter = 0
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                substrings.append(  "*".join( ["p_C[%i]"%counter] + [ "(rw_%s-%s)"%(v,self.ref_point[v].rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  comb] )  )
-                counter += 1
+        for i_comb, comb in enumerate(self.combinations):
+            substrings.append(  "*".join( ["p_C[%i]"%i_comb] + [ "(rw_%s-%s)"%(v,self.ref_point[v].rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  comb] )  )
 
         return "+".join( substrings )
 
-    def arg_weight_string(self, **kwargs):
-        kwargs = {x:y for x,y in kwargs.items() if y!=0} # remove entries which are 0
+    def complement_args(self, args ):
+        ''' prepare the args; add the ref_point ones and check that there is no inconsistency''' 
+        args = {x:y for x,y in args.items() if y!=0} # remove entries which are 0
 
-        if len(kwargs)==0 and self.ref_point is None: return 'p_C[0]'
+        # add WC that are in the ref point but not in args
+        if self.ref_point is not None:
+            for item in self.ref_point.keys():
+                if item not in args.keys(): args[item] = 0
 
-        # add WC that are in the ref point but not in kwargs
-        for item in self.ref_point.keys():
-            if item not in kwargs.keys(): kwargs[item] = 0
-
-        # check if WC in kwargs that are not in the gridpack
-        unused_args = set(kwargs.keys()) - set(self.variables)
+        # check if WC in args that are not in the gridpack
+        unused_args = set(args.keys()) - set(self.variables)
         if len(unused_args) > 0:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
-        substrings = []
-        counter = -1
+        
+    def get_weight_string(self, **kwargs):
+        '''make a root draw string that evaluates the weight in terms of the p_C coefficient vector using the kwargs as WC'''
 
-        # run all combinations of WC
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                counter += 1
-                if False in [v in kwargs for v in comb]: continue
-                substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
+        # add the arguments from the ref-point 
+        self.complement_args( kwargs )
+
+        substrings = []
+        for i_comb, comb in enumerate(self.combinations):
+            if False in [v in kwargs for v in comb]: continue
+            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
-    def arg_weight_func(self, **kwargs):
-        kwargs = {x:y for x,y in kwargs.items() if y!=0} # remove entries which are 0
+    def get_weight_func(self, **kwargs):
+        '''construct a lambda function that evaluates the weight in terms of the event.p_C coefficient vector using the kwargs as WC'''
 
-        if len(kwargs)==0 and self.ref_point is None: return lambda event, sample: event.p_C[0]
+        # add the arguments from the ref-point 
+        self.complement_args( kwargs )
 
-        # add WC that are in the ref point but not in kwargs
-        for item in self.ref_point.keys():
-            if item not in kwargs.keys(): kwargs[item] = 0
-
-        # check if WC in kwargs that are not in the gridpack
-        unused_args = set(kwargs.keys()) - set(self.variables)
-        if len(unused_args) > 0:
-            raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
         terms = []
-        counter = -1
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                counter += 1
-                if False in [v in kwargs for v in comb]: continue
-                # store [ ncoeff, factor ]
-                terms.append( [ counter, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
+        for i_comb, comb in enumerate(self.combinations):
+            if False in [v in kwargs for v in comb]: continue
+            # store [ ncoeff, factor ]
+            terms.append( [ i_comb, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
+
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
+
+    def get_weight_yield(self, coeffList, **kwargs):
+        '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC'''
+
+        # add the arguments from the ref-point 
+        self.complement_args( kwargs )
+
+        result = 0 
+        for i_comb, comb in enumerate(self.combinations):
+            if False in [v in kwargs for v in comb]: continue
+            result += coeffList[i_comb]*float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))
+
+        return result
 
     @staticmethod
     def differentiate( comb, var ):
@@ -119,56 +139,31 @@ class WeightInfo:
         if var not in self.variables:
             raise ValueError( "Variable %s not in list of variables %r" % (var, self.variables) )
         substrings = []
-        counter = 0
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                prefac, diff_comb = WeightInfo.differentiate( comb, var)
-                if prefac!=0:
-                    substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, counter) if prefac!=1 else "p_C[%i]"% counter] + [ "rw_%s"%v for v in diff_comb] )  )
-                counter += 1
+        for i_comb, comb in enumerate(self.combinations):
+            prefac, diff_comb = WeightInfo.differentiate( comb, var)
+            if prefac!=0:
+                substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, i_comb) if prefac!=1 else "p_C[%i]"% i_comb] + [ "rw_%s"%v for v in diff_comb] )  )
 
         return "+".join( substrings )
 
-    def FisherParametrization( self, var1, var2):
+    def fisherParametrization( self, var1, var2):
         if var1==var2:
             return "(%s)**2/(%s)"%( self.diff_weight_string( var1 ), self.weight_string() )
         else:
             return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
 
-    def GetNDYield(self, WeightList, **kwargs):
-        # input is a list of (the sum of) weights (output from BinContentToList)
-        # kwargs are specific coefficients with given values (for a 2D plot, 2 coefficients) e.g. cpt=2, cpQM=3
-        # GetYield matches the prefactors p_C[i] from the arg_weight_string output with the entry in Weightlist and calculates the yield for the given weights in kwargs
-        elements = []
-        for item in self.arg_weight_string(**kwargs).split('+'):
-           index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
-           elements.append(float(WeightList[index])*float(item.split('*')[1])) #replace p_C[i] with the entry from WeightList
-        return sum(elements)
+    # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
+    @staticmethod
+    def BinContentToList(histo):
+        return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
-    def Get1DYield(self, WeightList, coefficient, value):
-        # input is a list of (the sum of) weights (output from BinContentToList)
-        # one specific coefficients with given values e.g. cpt, 2
-        # GetYield matches the prefactors p_C[i] from the arg_weight_string output with the entry in Weightlist and calculates the yield for the given weights in kwargs
-        dict = {coefficient:value}
-        elements = []
-        for item in self.arg_weight_string(**dict).split('+'):
-           index = int(filter(str.isdigit, item.split('*')[0])) #get the index i of p_C[i] from arg_weight_string
-           if len(item.split('*'))>1: factor = float(item.split('*')[1])
-           else: factor = 1.
-           elements.append(float(WeightList[index])*factor) #replace p_C[i] with the entry from WeightList
-        return sum(elements)
-
-def BinContentToList(histo):
-    return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
-
-    
 if __name__ == "__main__":
 
     #w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_currentplane_highStat_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
-    #w.FisherParametrization(2, 'cpt', 'cpt')
+    #w.fisherParametrization(2, 'cpt', 'cpt')
     #c = ROOT.TChain( "Events" )
     #c.Add("/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2/fwlite_ttZ_ll_LO_currentplane_highStat_scan/fwlite_ttZ_ll_LO_currentplane_highStat_scan_0.root" )
-    #fisher_string = ":".join( [ w.FisherParametrization(2, 'cpt', 'cpt'),  w.FisherParametrization(2, 'cpt', 'cpQM'),  w.FisherParametrization(2, 'cpQM', 'cpQM') ] )
+    #fisher_string = ":".join( [ w.fisherParametrization(2, 'cpt', 'cpt'),  w.fisherParametrization(2, 'cpt', 'cpQM'),  w.fisherParametrization(2, 'cpQM', 'cpQM') ] )
     #c.Scan(fisher_string)
     import ROOT
     c = ROOT.TChain("Events")
@@ -180,12 +175,12 @@ if __name__ == "__main__":
 
 #    para = {'cpt':3, 'cpQM':5}
 #    w.arg_weight_func(**para)
-#    fisher_string = ":".join( [ w.FisherParametrization( 'cpt', 'cpt'),  w.FisherParametrization( 'cpt', 'cpQM'),  w.FisherParametrization('cpQM', 'cpQM') ] )
+#    fisher_string = ":".join( [ w.fisherParametrization( 'cpt', 'cpt'),  w.fisherParametrization( 'cpt', 'cpQM'),  w.fisherParametrization('cpQM', 'cpQM') ] )
 
     print(w.ref_point)
     print(w.weight_string())
     w.weight_string()
-    print(w.arg_weight_string(ctW=4, ctZ=5, ctGI=2))
+    print(w.get_weight_string(ctW=4, ctZ=5, ctGI=2))
 #    print(w.weight_string())
 #    print(w.arg_weight_string(ctZI=2, cpt=5))
 #     print(w.arg_weight_string())

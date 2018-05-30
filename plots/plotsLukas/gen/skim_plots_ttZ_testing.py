@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 ''' Analysis script for standard plots
 '''
@@ -49,10 +48,11 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile = None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
+
 # Make subdirectory
 subDirectory = []
-if args.scaleLumi:  subDirectory.append("shape")
-else:               subDirectory.append("lumi")
+if args.scaleLumi:  subDirectory.append('shape')
+else:               subDirectory.append('lumi')
 if args.small:      subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 

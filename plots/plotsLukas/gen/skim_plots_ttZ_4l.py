@@ -50,9 +50,9 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
 # Make subdirectory
 subDirectory = []
-if args.scaleLumi:  subDirectory.append("shape")
-else:               subDirectory.append("lumi")
-if args.small:      subDirectory.append("small")
+if args.scaleLumi: subDirectory.append("shape")
+else:              subDirectory.append("lumi")
+if args.small:     subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
 # Import samples
@@ -84,7 +84,7 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
 
 # Make stack and weight
 stack  = Stack(*[ [ sample ] for param in params ] )
-weight = [ [ w.arg_weight_func( **param['WC'] ) ] for param in params ]
+weight = [ [ w.get_weight_func( **param['WC'] ) ] for param in params ]
 
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()

@@ -1,4 +1,3 @@
-
 # Standard imports and batch mode
 import ROOT
 ROOT.gROOT.SetBatch(True)

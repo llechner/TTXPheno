@@ -30,7 +30,7 @@ w = WeightInfo(sample.reweight_pkl)
 w.set_order( 2 )
 
 c.Draw("Z_pt>>h_Zpt(50,0,500)") # "weight*(%s)" % weightString(cpt=0.2)
-c.Draw("Z_pt>>h_Zpt1(50,0,500)", '(' + w.arg_weight_string(cpt=0, cpQM=0, ctZI=-1, ctZ=0) + ')/p_C[0]')
+c.Draw("Z_pt>>h_Zpt1(50,0,500)", '(' + w.get_weight_string(cpt=0, cpQM=0, ctZI=-1, ctZ=0) + ')/p_C[0]')
 
 # Remove StatsBox
 ROOT.h_Zpt.SetStats(False)

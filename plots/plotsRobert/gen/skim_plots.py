@@ -52,8 +52,8 @@ params += [ {'legendText':'ctZI %i'%ctZI, 'color':ROOT.kRed,  'WC':{'ctZI':ctZI}
 #    print param
 #    samples[-1].style = styles.lineStyle( param['color'] )
 #    samples[-1].texName = param['legendText']
-#    #samples[-1].ttreeFormula = ROOT.TTreeFormula("weightstring_%i"%i_param,  w.arg_weight_string(**param['WC']), samples[-1].chain )
-#    samples[-1].paramWeightFunc =  w.arg_weight_func(**param['WC'])
+#    #samples[-1].ttreeFormula = ROOT.TTreeFormula("weightstring_%i"%i_param,  w.get_weight_string(**param['WC']), samples[-1].chain )
+#    samples[-1].paramWeightFunc =  w.get_weight_func(**param['WC'])
 
 #def getWeightFunc(sample):
 #    formula = sample.ttreeFormula
@@ -62,7 +62,7 @@ params += [ {'legendText':'ctZI %i'%ctZI, 'color':ROOT.kRed,  'WC':{'ctZI':ctZI}
 #    return rw 
 
 stack = Stack(*[ [ sample ] for param in params ] )
-weight= [ [ w.arg_weight_func(**param['WC']) ] for param in params ]
+weight= [ [ w.get_weight_func(**param['WC']) ] for param in params ]
 #print weight
 
 ##
