@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 ''' Analysis script for standard plots
 '''
@@ -50,9 +51,9 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
 # Make subdirectory
 subDirectory = []
+if args.scaleLumi:  subDirectory.append("shape")
+else:               subDirectory.append("lumi")
 if args.small:      subDirectory.append("small")
-else:               subDirectory.append("full")
-if args.scaleLumi:  subDirectory.append('scaleLumi')
 subDirectory = '_'.join( subDirectory )
 
 # Import samples
@@ -85,13 +86,13 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
 
 # Make stack and weight
 stack  = Stack(*[ [ sample ] for param in params ] )
-#weight = [ [ w.arg_weight_func( **param['WC'] ) ] for param in params ]
+weight = [ [ w.arg_weight_func( **param['WC'] ) ] for param in params ]
 
-param_dict = {}
-for i, item in enumerate(coeffs):
-    param_dict[item] = vals[i]
+#param_dict = {}
+#for i, item in enumerate(coeffs):
+#    param_dict[item] = vals[i]
 
-weight = [ [ w.arg_weight_func( **param_dict ) ] for param in params ]
+#weight = [ [ w.arg_weight_func( **param_dict ) ] for param in params ]
 
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
@@ -140,7 +141,7 @@ def drawPlots(plots):
         logX = False, logY = log, sorting = True,
         #yRange = (0.03, "auto") if log else (0., "auto"),
         #scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
-        legend =  ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/2,1.,0.9), 2),
+        legend =  ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/3,1.,0.9), 3),
         drawObjects = drawObjects( ),
         copyIndexPHP = True,
     )
@@ -155,7 +156,7 @@ def drawPlots(plots):
 	    logX = False, logY = log, sorting = True,
 	    yRange = (0.03, "auto") if log else (0., "auto"),
 	    scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
-	    legend =  None, #( (0.17,0.9-0.05*sum(map(len, plot.histos))/2,1.,0.9), 2),
+	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,1.,0.9), 3),
 	    drawObjects = drawObjects( ),
         copyIndexPHP = True,
       )
@@ -325,10 +326,8 @@ plots = []
 plots.append(Plot( name = "Z_pt",
   texX = 'p_{T}(Z) [GeV]', texY = 'Number of Events / bin',
   attribute = lambda event, sample: event.Z_pt if event.passing_3lep else float('nan'),
-  binning=[20,0,400],
+  binning=[20,0,500],
 ))
-
-'''
 
 plots.append(Plot( name = "Z_mass",
   texX = 'm(ll) [GeV]', texY = 'Number of Events / bin',
@@ -516,7 +515,6 @@ plots.append(Plot( name = 'mT_t',
   binning=[20,0,300],
 ))
 
-'''
 
 plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_events = -1 if args.small else -1)
 
