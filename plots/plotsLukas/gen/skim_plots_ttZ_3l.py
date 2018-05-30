@@ -36,6 +36,7 @@ argParser.add_argument('--order',              action='store',      default=3)
 argParser.add_argument('--selection',          action='store',      default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',          action='store_true', help='Scale lumi only??')
+argParser.add_argument('--reweightPtZToSM',    action='store_true',     help='Reweight Pt(Z) to the SM for all the signals?', )
 argParser.add_argument('--parameters',         action='store',      default = ['ctZI', '2'], type=str, nargs='+', help = "argument parameters")
 
 args = argParser.parse_args()
@@ -52,6 +53,9 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 subDirectory = []
 if args.scaleLumi: subDirectory.append("shape")
 else:              subDirectory.append("lumi")
+
+if args.reweightPtZToSM: subDirectory.append("reweightPtZToSM")
+
 if args.small:     subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
@@ -61,6 +65,9 @@ subDirectory = '_'.join( subDirectory )
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 sample = getattr( samples, args.sample )
+
+if args.small:
+    sample.reduceFiles( to = 1 )
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
@@ -83,9 +90,44 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
         'color'     : colors[i_param], 
         })
 
-# Make stack and weight
+# Make stack 
 stack  = Stack(*[ [ sample ] for param in params ] )
-weight = [ [ w.get_weight_func( **param['WC'] ) ] for param in params ]
+
+#def plotme(param):
+#    c1 = ROOT.TCanvas()
+#    param['ptZ_reweight_histo'].SetLineColor(ROOT.kRed)
+#    param['ptZ_reweight_histo'].Draw('hist')
+#    param['ptZ_histo'].Draw('histsame')
+#    c1.SetLogy()
+#    c1.Print('/afs/hephy.at/user/r/rschoefbeck/www/etc/f_'+'-'.join(param['WC'].keys())+'.png')
+#    del c1
+
+# reweighting of pTZ 
+if args.reweightPtZToSM:
+
+    for i_param, param in enumerate(params):
+        param['ptZ_histo'] = sample.get1DHistoFromDraw("Z_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
+        if param['ptZ_histo'].Integral()>0: param['ptZ_histo'].Scale(1./param['ptZ_histo'].Integral())
+        param['ptZ_reweight_histo'] = params[0]['ptZ_histo'].Clone()
+        param['ptZ_reweight_histo'].Divide(param['ptZ_histo'])
+        logger.info( 'Made reweighting histogram for ptZ and param-point %r with integral %f', param, param['ptZ_reweight_histo'].Integral())
+        #plotme( param )
+
+    def get_reweight( param ):
+
+        histo = param['ptZ_reweight_histo']
+        var = 'Z_pt'
+        bsm_rw = w.get_weight_func( **param['WC'] )
+        def reweight(event, sample):
+            i_bin = histo.FindBin(getattr( event, var ) )
+            return histo.GetBinContent(i_bin)*bsm_rw( event, sample )
+
+        return reweight
+
+    #weight = [ [ lambda event, sample: w.get_weight_func( **param['WC'] )(event, sample) * get_reweight(param)(event, sample)] for param in params ]
+    weight = [ [ get_reweight( param ) ] for param in params ]
+else:
+    weight = [ [ w.get_weight_func( **param['WC'] ) ] for param in params ]
 
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
@@ -141,6 +183,8 @@ def drawPlots(plots):
 
     # plot the plots
     for plot in plots:
+      for i_h, h in enumerate(plot.histos):
+        h[0].legendText = params[i_h]['legendText']
       if not max(l[0].GetMaximum() for l in plot.histos): continue # Empty plot
 
       plotting.draw(plot,
@@ -170,10 +214,6 @@ read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 logger.info( "Translating cut %s to %s", args.selection, cutInterpreter.cutString(args.selection) )
 sample.setSelectionString( cutInterpreter.cutString(args.selection) )
 sample.style = styles.lineStyle(ROOT.kBlue)
-
-if args.small:
-    for sample in stack.samples:
-        sample.reduceFiles( to = 1 )
 
 #sequence functions
 sequence = []
@@ -272,7 +312,6 @@ def makeLeps( event, sample ):
 
 sequence.append( makeLeps )
 
-
 def makeObservables( event, sample):
     ''' Compute all relevant observables
     '''
@@ -322,7 +361,8 @@ plots = []
 
 plots.append(Plot( name = "Z_pt",
   texX = 'p_{T}(Z) [GeV]', texY = 'Number of Events / bin',
-  attribute = lambda event, sample: event.Z_pt if event.passing_3lep else float('nan'),
+  #attribute = lambda event, sample: event.Z_pt if event.passing_3lep else float('nan'),
+  attribute = lambda event, sample: event.Z_pt,
   binning=[20,0,500],
 ))
 
