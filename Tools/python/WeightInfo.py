@@ -65,10 +65,8 @@ class WeightInfo:
         ''' get the full reweight string
         '''
         substrings = []
-        counter = 0
-        for comb in self.combinations:
-            substrings.append(  "*".join( ["p_C[%i]"%counter] + [ "(rw_%s-%s)"%(v,self.ref_point[v].rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  comb] )  )
-            counter += 1
+        for i_comb, comb in enumerate(self.combinations):
+            substrings.append(  "*".join( ["p_C[%i]"%i_comb] + [ "(rw_%s-%s)"%(v,self.ref_point[v].rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  comb] )  )
 
         return "+".join( substrings )
 
@@ -93,13 +91,11 @@ class WeightInfo:
         self.complement_args( kwargs )
 
         substrings = []
-        counter = -1
 
         # run all combinations of WC
-        for comb in self.combinations:
-            counter += 1
+        for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
-            substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
+            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
     def get_weight_func(self, **kwargs):
@@ -109,12 +105,10 @@ class WeightInfo:
         self.complement_args( kwargs )
 
         terms = []
-        counter = -1
-        for comb in self.combinations:
-            counter += 1
+        for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
             # store [ ncoeff, factor ]
-            terms.append( [ counter, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
+            terms.append( [ i_comb, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
@@ -125,11 +119,9 @@ class WeightInfo:
         self.complement_args( kwargs )
 
         result = 0 
-        counter = -1
-        for comb in self.combinations:
-            counter += 1
+        for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
-            result += coeffList[counter]*float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))
+            result += coeffList[i_comb]*float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))
 
         return result
 
@@ -149,12 +141,10 @@ class WeightInfo:
         if var not in self.variables:
             raise ValueError( "Variable %s not in list of variables %r" % (var, self.variables) )
         substrings = []
-        counter = 0
-        for comb in self.combinations:
+        for i_comb, comb in enumerate(self.combinations):
             prefac, diff_comb = WeightInfo.differentiate( comb, var)
             if prefac!=0:
-                substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, counter) if prefac!=1 else "p_C[%i]"% counter] + [ "rw_%s"%v for v in diff_comb] )  )
-            counter += 1
+                substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, i_comb) if prefac!=1 else "p_C[%i]"% i_comb] + [ "rw_%s"%v for v in diff_comb] )  )
 
         return "+".join( substrings )
 
