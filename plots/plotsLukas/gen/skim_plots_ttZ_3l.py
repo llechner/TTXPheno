@@ -24,9 +24,7 @@ from TTXPheno.samples.benchmarks         import *
 # Import helpers
 from plot_helpers                        import *
 
-#
 # Arguments
-# 
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
@@ -41,9 +39,7 @@ argParser.add_argument('--parameters',         action='store',      default = ['
 
 args = argParser.parse_args()
 
-#
 # Logger
-#
 import TTXPheno.Tools.logger as logger
 import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile = None )
@@ -59,72 +55,53 @@ if args.reweightPtZToSM: subDirectory.append("reweightPtZToSM")
 if args.small:     subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
-
 # Import samples
-#sample = fwlite_ttZ_ll_LO_order3_8weights 
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 sample = getattr( samples, args.sample )
 
-if args.small:
-    sample.reduceFiles( to = 1 )
+if args.small: sample.reduceFiles( to = 1 )
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
-
-# Parameters
-params = [  
-    {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack},
-   ] 
 
 colors = [ ROOT.kMagenta+1, ROOT.kOrange, ROOT.kBlue, ROOT.kCyan+1, ROOT.kGreen+1, ROOT.kRed, ROOT.kViolet, ROOT.kYellow+2 ]
 
 coeffs = args.parameters[::2]
 str_vals = args.parameters[1::2]
 vals   = list( map( float, str_vals ) )
+params = []
 for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
     params.append( { 
         'legendText': ' '.join([coeff,str_val]),
         'WC'        : { coeff:val },
         'color'     : colors[i_param], 
         })
+params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
+
 
 # Make stack 
 stack  = Stack(*[ [ sample ] for param in params ] )
 
-#def plotme(param):
-#    c1 = ROOT.TCanvas()
-#    param['ptZ_reweight_histo'].SetLineColor(ROOT.kRed)
-#    param['ptZ_reweight_histo'].Draw('hist')
-#    param['ptZ_histo'].Draw('histsame')
-#    c1.SetLogy()
-#    c1.Print('/afs/hephy.at/user/r/rschoefbeck/www/etc/f_'+'-'.join(param['WC'].keys())+'.png')
-#    del c1
-
 # reweighting of pTZ 
 if args.reweightPtZToSM:
-
-    for i_param, param in enumerate(params):
+    for param in params[::-1]:
         param['ptZ_histo'] = sample.get1DHistoFromDraw("Z_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
         if param['ptZ_histo'].Integral()>0: param['ptZ_histo'].Scale(1./param['ptZ_histo'].Integral())
-        param['ptZ_reweight_histo'] = params[0]['ptZ_histo'].Clone()
+        param['ptZ_reweight_histo'] = params[-1]['ptZ_histo'].Clone()
         param['ptZ_reweight_histo'].Divide(param['ptZ_histo'])
         logger.info( 'Made reweighting histogram for ptZ and param-point %r with integral %f', param, param['ptZ_reweight_histo'].Integral())
-        #plotme( param )
 
     def get_reweight( param ):
-
         histo = param['ptZ_reweight_histo']
         var = 'Z_pt'
         bsm_rw = w.get_weight_func( **param['WC'] )
         def reweight(event, sample):
             i_bin = histo.FindBin(getattr( event, var ) )
             return histo.GetBinContent(i_bin)*bsm_rw( event, sample )
-
         return reweight
 
-    #weight = [ [ lambda event, sample: w.get_weight_func( **param['WC'] )(event, sample) * get_reweight(param)(event, sample)] for param in params ]
     weight = [ [ get_reweight( param ) ] for param in params ]
 else:
     weight = [ [ w.get_weight_func( **param['WC'] ) ] for param in params ]
@@ -141,7 +118,6 @@ def drawObjects( hasData = False ):
     return [tex.DrawLatex(*l) for l in lines] 
 
 def drawPlots(plots):
-
   for plot in plots:
     for i_h, h in enumerate(plot.histos):
       h[0].style = styles.lineStyle(params[i_h]['color'])
@@ -192,16 +168,14 @@ def drawPlots(plots):
 	    ratio = None, #{'yRange':(0.1,1.9)} if not args.noData else None,
 	    logX = False, logY = log, sorting = True,
 	    yRange = (0.03, "auto") if log else (0., "auto"),
-	    scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
+            scaling = {i:(len(params)-1) for i in range(len(params)-1)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
+#	    scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
 	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,1.,0.9), 3),
 	    drawObjects = drawObjects( ),
         copyIndexPHP = True,
       )
 
-#
 # Read variables and sequences
-#
-
 read_variables = [
     "GenMet_pt/F", "GenMet_phi/F", 
     "nGenJet/I", "GenJet[pt/F,eta/F,phi/F,matchBParton/I]", 
@@ -217,13 +191,6 @@ sample.style = styles.lineStyle(ROOT.kBlue)
 
 #sequence functions
 sequence = []
-
-#def check( event, sample ):
-#    print(sample.chain.GetEntries())
-#    exit()
-#
-#sequence.append( check )
-
 
 def makeJets( event, sample ):
     ''' Add a list of filtered jets to the event
@@ -251,7 +218,6 @@ def makeJets( event, sample ):
     
 sequence.append( makeJets )
 
-
 def makeMET( event, sample ):
     ''' Make a MET vector to facilitate further calculations
     '''
@@ -259,7 +225,6 @@ def makeMET( event, sample ):
     addTransverseVector( event.MET )
 
 sequence.append( makeMET )
-
 
 def makeZ( event, sample ):
     ''' Make a Z vector to facilitate further calculations
@@ -270,7 +235,6 @@ def makeZ( event, sample ):
     event.Z_unitVec3D = event.Z_vec4D.Vect().Unit()
 
 sequence.append( makeZ )
-
 
 def makeLeps( event, sample ):
     ''' Add a list of filtered leptons to the event
@@ -349,13 +313,8 @@ def makeObservables( event, sample):
 
 sequence.append( makeObservables )
 
-
-# Weight <- Here we remove events where leptons fail the analysis selection despite passing the preselection
-weight_ = None # lambda event, sample: event.passing_3lep
-    
 # Use some defaults
 Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
-
   
 plots = []
 
@@ -551,7 +510,6 @@ plots.append(Plot( name = 'mT_t',
   attribute = lambda event, sample: event.t_MT if event.passing_3lep else float('nan'),
   binning=[20,0,300],
 ))
-
 
 plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_events = -1 if args.small else -1)
 
