@@ -50,13 +50,25 @@ class WeightInfo:
     def get_ndof( nvar, order ):
         return sum( [ int(scipy.special.binom(nvar + o - 1, o)) for o in xrange(order+1) ] )
 
+    # compute combinations on demand
+    @property
+    def combinations( self ):
+        if hasattr( self, "_combinations"):
+            return self._combinations
+        else:
+            self._combinations = []
+            for o in xrange(self.order+1):
+                self._combinations.extend( list(itertools.combinations_with_replacement( self.variables, o )) )
+            return self._combinations
+
     def weight_string(self):
+        ''' get the full reweight string
+        '''
         substrings = []
         counter = 0
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                substrings.append(  "*".join( ["p_C[%i]"%counter] + [ "(rw_%s-%s)"%(v,self.ref_point[v].rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  comb] )  )
-                counter += 1
+        for comb in self.combinations:
+            substrings.append(  "*".join( ["p_C[%i]"%counter] + [ "(rw_%s-%s)"%(v,self.ref_point[v].rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  comb] )  )
+            counter += 1
 
         return "+".join( substrings )
 
@@ -84,11 +96,10 @@ class WeightInfo:
         counter = -1
 
         # run all combinations of WC
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                counter += 1
-                if False in [v in kwargs for v in comb]: continue
-                substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
+        for comb in self.combinations:
+            counter += 1
+            if False in [v in kwargs for v in comb]: continue
+            substrings.append( "p_C[%i]*%s" %(counter, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
     def get_weight_func(self, **kwargs):
@@ -99,12 +110,11 @@ class WeightInfo:
 
         terms = []
         counter = -1
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                counter += 1
-                if False in [v in kwargs for v in comb]: continue
-                # store [ ncoeff, factor ]
-                terms.append( [ counter, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
+        for comb in self.combinations:
+            counter += 1
+            if False in [v in kwargs for v in comb]: continue
+            # store [ ncoeff, factor ]
+            terms.append( [ counter, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
@@ -116,11 +126,10 @@ class WeightInfo:
 
         result = 0 
         counter = -1
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                counter += 1
-                if False in [v in kwargs for v in comb]: continue
-                result += coeffList[counter]*float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))
+        for comb in self.combinations:
+            counter += 1
+            if False in [v in kwargs for v in comb]: continue
+            result += coeffList[counter]*float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))
 
         return result
 
@@ -141,12 +150,11 @@ class WeightInfo:
             raise ValueError( "Variable %s not in list of variables %r" % (var, self.variables) )
         substrings = []
         counter = 0
-        for o in xrange(self.order+1):
-            for comb in itertools.combinations_with_replacement( self.variables, o ):
-                prefac, diff_comb = WeightInfo.differentiate( comb, var)
-                if prefac!=0:
-                    substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, counter) if prefac!=1 else "p_C[%i]"% counter] + [ "rw_%s"%v for v in diff_comb] )  )
-                counter += 1
+        for comb in self.combinations:
+            prefac, diff_comb = WeightInfo.differentiate( comb, var)
+            if prefac!=0:
+                substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, counter) if prefac!=1 else "p_C[%i]"% counter] + [ "rw_%s"%v for v in diff_comb] )  )
+            counter += 1
 
         return "+".join( substrings )
 
@@ -184,7 +192,7 @@ if __name__ == "__main__":
     print(w.ref_point)
     print(w.weight_string())
     w.weight_string()
-    print(w.arg_weight_string(ctW=4, ctZ=5, ctGI=2))
+    print(w.get_weight_string(ctW=4, ctZ=5, ctGI=2))
 #    print(w.weight_string())
 #    print(w.arg_weight_string(ctZI=2, cpt=5))
 #     print(w.arg_weight_string())
