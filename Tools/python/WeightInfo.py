@@ -91,8 +91,6 @@ class WeightInfo:
         self.complement_args( kwargs )
 
         substrings = []
-
-        # run all combinations of WC
         for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
             substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )

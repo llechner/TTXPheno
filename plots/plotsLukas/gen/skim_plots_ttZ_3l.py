@@ -50,10 +50,11 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
 # Make subdirectory
 subDirectory = []
+if args.scaleLumi:  subDirectory.append('shape')
+else:               subDirectory.append('lumi')
 if args.small:      subDirectory.append("small")
-else:               subDirectory.append("full")
-if args.scaleLumi:  subDirectory.append('scaleLumi')
 subDirectory = '_'.join( subDirectory )
+
 
 # Import samples
 #sample = fwlite_ttZ_ll_LO_order3_8weights 
@@ -133,7 +134,7 @@ def drawPlots(plots):
         logX = False, logY = log, sorting = True,
         #yRange = (0.03, "auto") if log else (0., "auto"),
         #scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
-        legend =  ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/2,1.,0.9), 2),
+        legend =  ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/3,1.,0.9), 3),
         drawObjects = drawObjects( ),
         copyIndexPHP = True,
     )
@@ -148,7 +149,7 @@ def drawPlots(plots):
 	    logX = False, logY = log, sorting = True,
 	    yRange = (0.03, "auto") if log else (0., "auto"),
 	    scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
-	    legend =  None, #( (0.17,0.9-0.05*sum(map(len, plot.histos))/2,1.,0.9), 2),
+	    legend =  ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,1.,0.9), 3),
 	    drawObjects = drawObjects( ),
         copyIndexPHP = True,
       )
