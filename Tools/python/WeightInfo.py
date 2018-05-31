@@ -73,7 +73,10 @@ class WeightInfo:
     def complement_args(self, args ):
         ''' prepare the args; add the ref_point ones and check that there is no inconsistency
         '''
-        args = {x:y for x,y in args.items() if y!=0} # remove entries which are 0
+
+        # Remove zeros
+        for x,y in args.iteritems():
+            if y==0.: del args[x] 
 
         # add WC that are in the ref point but not in args
         if self.ref_point is not None:
@@ -85,31 +88,31 @@ class WeightInfo:
         if len(unused_args) > 0:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
 
-        return args
+        #return args
 
     def get_weight_string(self, **kwargs):
         '''make a root draw string that evaluates the weight in terms of the p_C coefficient vector using the kwargs as WC
         '''
         # add the arguments from the ref-point 
-        args = self.complement_args( kwargs )
+        self.complement_args( kwargs )
 
         substrings = []
         for i_comb, comb in enumerate(self.combinations):
-            if False in [v in args for v in comb]: continue
-            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( float(args[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(args[v]) for v in comb],1))).rstrip('0') ) )
+            if False in [v in kwargs for v in comb]: continue
+            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
     def get_weight_func(self, **kwargs):
         '''construct a lambda function that evaluates the weight in terms of the event.p_C coefficient vector using the kwargs as WC
         '''
         # add the arguments from the ref-point 
-        args = self.complement_args( kwargs )
+        self.complement_args( kwargs )
 
         terms = []
         for i_comb, comb in enumerate(self.combinations):
-            if False in [v in args for v in comb]: continue
+            if False in [v in kwargs for v in comb]: continue
             # store [ ncoeff, factor ]
-            terms.append( [ i_comb, float(reduce(mul,[ ( float(args[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(args[v]) for v in comb],1)) ] )
+            terms.append( [ i_comb, float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in comb],1)) ] )
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
@@ -117,12 +120,12 @@ class WeightInfo:
         '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC'''
 
         # add the arguments from the ref-point 
-        args = self.complement_args( kwargs )
+        self.complement_args( kwargs )
 
         result = 0 
         for i_comb, comb in enumerate(self.combinations):
-            if False in [v in args for v in comb]: continue
-            result += coeffList[i_comb]*float(reduce(mul,[ ( float(args[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(args[v]) for v in comb],1))
+            if False in [v in kwargs for v in comb]: continue
+            result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in comb],1))
 
         return result
 
