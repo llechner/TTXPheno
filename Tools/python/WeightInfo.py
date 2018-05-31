@@ -71,7 +71,8 @@ class WeightInfo:
         return "+".join( substrings )
 
     def complement_args(self, args ):
-        ''' prepare the args; add the ref_point ones and check that there is no inconsistency''' 
+        ''' prepare the args; add the ref_point ones and check that there is no inconsistency
+        '''
         args = {x:y for x,y in args.items() if y!=0} # remove entries which are 0
 
         # add WC that are in the ref point but not in args
@@ -83,30 +84,32 @@ class WeightInfo:
         unused_args = set(args.keys()) - set(self.variables)
         if len(unused_args) > 0:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
-        
-    def get_weight_string(self, **kwargs):
-        '''make a root draw string that evaluates the weight in terms of the p_C coefficient vector using the kwargs as WC'''
 
+        return args
+
+    def get_weight_string(self, **kwargs):
+        '''make a root draw string that evaluates the weight in terms of the p_C coefficient vector using the kwargs as WC
+        '''
         # add the arguments from the ref-point 
-        self.complement_args( kwargs )
+        args = self.complement_args( kwargs )
 
         substrings = []
         for i_comb, comb in enumerate(self.combinations):
-            if False in [v in kwargs for v in comb]: continue
-            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))).rstrip('0') ) )
+            if False in [v in args for v in comb]: continue
+            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( float(args[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(args[v]) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
     def get_weight_func(self, **kwargs):
-        '''construct a lambda function that evaluates the weight in terms of the event.p_C coefficient vector using the kwargs as WC'''
-
+        '''construct a lambda function that evaluates the weight in terms of the event.p_C coefficient vector using the kwargs as WC
+        '''
         # add the arguments from the ref-point 
-        self.complement_args( kwargs )
+        args = self.complement_args( kwargs )
 
         terms = []
         for i_comb, comb in enumerate(self.combinations):
-            if False in [v in kwargs for v in comb]: continue
+            if False in [v in args for v in comb]: continue
             # store [ ncoeff, factor ]
-            terms.append( [ i_comb, float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1)) ] )
+            terms.append( [ i_comb, float(reduce(mul,[ ( float(args[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(args[v]) for v in comb],1)) ] )
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
@@ -114,12 +117,12 @@ class WeightInfo:
         '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC'''
 
         # add the arguments from the ref-point 
-        self.complement_args( kwargs )
+        args = self.complement_args( kwargs )
 
         result = 0 
         for i_comb, comb in enumerate(self.combinations):
-            if False in [v in kwargs for v in comb]: continue
-            result += coeffList[i_comb]*float(reduce(mul,[ ( kwargs.get(v) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else kwargs.get(v) for v in comb],1))
+            if False in [v in args for v in comb]: continue
+            result += coeffList[i_comb]*float(reduce(mul,[ ( float(args[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(args[v]) for v in comb],1))
 
         return result
 
@@ -177,9 +180,6 @@ if __name__ == "__main__":
 #    w.arg_weight_func(**para)
 #    fisher_string = ":".join( [ w.fisherParametrization( 'cpt', 'cpt'),  w.fisherParametrization( 'cpt', 'cpQM'),  w.fisherParametrization('cpQM', 'cpQM') ] )
 
-    print(w.ref_point)
-    print(w.weight_string())
-    w.weight_string()
     print(w.get_weight_string(ctW=4, ctZ=5, ctGI=2))
 #    print(w.weight_string())
 #    print(w.arg_weight_string(ctZI=2, cpt=5))

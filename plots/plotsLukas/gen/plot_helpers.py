@@ -32,12 +32,12 @@ def UnitVectorT2( phi ):
 def isGoodJet( j ):
     ''' jet object selection
     '''
-    return j['pt']>30 and abs(j['eta'])<2.4
+    return j['pt'] > 30 and abs( j['eta'] ) < 2.4
 
 def isGoodLepton( l ):
     ''' lepton object selection
     '''
-    return l['pt']>10 and abs(l['eta'])<2.5
+    return l['pt'] > 10 and abs( l['eta'] ) < 2.5 and abs( int(l['pdgId']) ) in [11,13]
 
 def MTSquared( p1, p2 ):
     ''' compute MT from 2 particles

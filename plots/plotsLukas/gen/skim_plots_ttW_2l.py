@@ -24,9 +24,7 @@ from TTXPheno.samples.benchmarks         import *
 # Import helpers
 from plot_helpers                        import *
 
-#
 # Arguments
-# 
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
@@ -36,13 +34,12 @@ argParser.add_argument('--order',              action='store',      default=3)
 argParser.add_argument('--selection',          action='store',      default='nlep2p-njet2p-nbjet1p-Wpt0', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',          action='store_true', help='Scale lumi only??')
+argParser.add_argument('--reweightPtWToSM',    action='store_true',     help='Reweight Pt(W) to the SM for all the signals?', )
 argParser.add_argument('--parameters',         action='store',      default = ['ctWI', '2'], type=str, nargs='+', help = "argument parameters")
 
 args = argParser.parse_args()
 
-#
 # Logger
-#
 import TTXPheno.Tools.logger as logger
 import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile = None )
@@ -52,39 +49,67 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 subDirectory = []
 if args.scaleLumi:  subDirectory.append("shape")
 else:               subDirectory.append("lumi")
+
+if args.reweightPtWToSM: subDirectory.append("reweightPtWToSM")
+
 if args.small:      subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
 # Import samples
-#sample = fwlite_ttZ_ll_LO_order3_8weights 
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 sample = getattr( samples, args.sample )
+
+if args.small: sample.reduceFiles( to = 1 )
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
 
-# Parameters
-params = [  
-    {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack},
-   ] 
 
 colors = [ ROOT.kMagenta+1, ROOT.kOrange, ROOT.kBlue, ROOT.kCyan+1, ROOT.kGreen+1, ROOT.kRed, ROOT.kViolet, ROOT.kYellow+2 ]
 
 coeffs = args.parameters[::2]
 str_vals = args.parameters[1::2]
 vals   = list( map( float, str_vals ) )
+# Parameters
+params = []
 for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
     params.append( { 
         'legendText': ' '.join([coeff,str_val]),
         'WC'        : { coeff:val },
         'color'     : colors[i_param], 
         })
+params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
+
 
 # Make stack and weight
 stack = Stack(*[ [ sample ] for param in params ] )
-weight= [ [ w.get_weight_func( **param['WC'] ) ] for param in params ]
+
+# reweighting of pTW 
+if args.reweightPtWToSM:
+
+    for param in params[::-1]:
+        param['ptW_histo'] = sample.get1DHistoFromDraw("W_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
+        if param['ptW_histo'].Integral()>0: param['ptW_histo'].Scale(1./param['ptW_histo'].Integral())
+        param['ptW_reweight_histo'] = params[-1]['ptW_histo'].Clone()
+        param['ptW_reweight_histo'].Divide(param['ptW_histo'])
+        logger.info( 'Made reweighting histogram for ptW and param-point %r with integral %f', param, param['ptW_reweight_histo'].Integral())
+
+    def get_reweight( param ):
+
+        histo = param['ptW_reweight_histo']
+        var = 'W_pt'
+        bsm_rw = w.get_weight_func( **param['WC'] )
+        def reweight(event, sample):
+            i_bin = histo.FindBin(getattr( event, var ) )
+            return histo.GetBinContent(i_bin)*bsm_rw( event, sample )
+
+        return reweight
+
+    weight = [ [ get_reweight( param ) ] for param in params ]
+else:
+    weight = [ [ w.get_weight_func( **param['WC'] ) ] for param in params ]
 
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
@@ -98,7 +123,6 @@ def drawObjects( hasData = False ):
     return [tex.DrawLatex(*l) for l in lines] 
 
 def drawPlots(plots):
-
   for plot in plots:
     for i_h, h in enumerate(plot.histos):
       h[0].style = styles.lineStyle(params[i_h]['color'])
@@ -140,6 +164,8 @@ def drawPlots(plots):
 
     # plot the plots
     for plot in plots:
+      for i_h, h in enumerate(plot.histos):
+        h[0].legendText = params[i_h]['legendText']
       if not max(l[0].GetMaximum() for l in plot.histos): continue # Empty plot
 
       plotting.draw(plot,
@@ -147,16 +173,14 @@ def drawPlots(plots):
 	    ratio = None, #{'yRange':(0.1,1.9)} if not args.noData else None,
 	    logX = False, logY = log, sorting = True,
 	    yRange = (0.03, "auto") if log else (0., "auto"),
-	    scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
+            scaling = {i:(len(params)-1) for i in range(len(params)-1)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
+	    #scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
 	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,1.,0.9), 3),
 	    drawObjects = drawObjects( ),
         copyIndexPHP = True,
       )
 
-#
 # Read variables and sequences
-#
-
 read_variables = [
     "GenMet_pt/F", "GenMet_phi/F", 
     "nGenJet/I", "GenJet[pt/F,eta/F,phi/F,matchBParton/I]", 
@@ -170,20 +194,8 @@ logger.info( "Translating cut %s to %s", args.selection, cutInterpreter.cutStrin
 sample.setSelectionString( cutInterpreter.cutString(args.selection) )
 sample.style = styles.lineStyle(ROOT.kBlue)
 
-stack = Stack(*[ [ sample ] for param in params] )
-
-if args.small:
-    for sample in stack.samples:
-        sample.reduceFiles( to = 1 )
-
 #sequence functions
 sequence = []
-
-#def check( event, sample ):
-#    print(sample.chain.GetEntries())
-#    exit()
-#
-#sequence.append( check )
 
 def makeJets( event, sample ):
     ''' Add a list of filtered jets to the event
