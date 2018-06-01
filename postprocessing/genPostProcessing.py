@@ -163,7 +163,9 @@ def filler( event ):
 
     event.run, event.lumi, event.evt = reader.evt
 
-    event.lumiweight1fb = sample.xsec*1000./sample.nEvents
+    print(reader.getxsec()*1000./reader.getnEvents())
+    exit()
+    event.lumiweight1fb = reader.getxsec()*1000./reader.getnEvents()
 
     if reader.position % 100==0: logger.info("At event %i/%i", reader.position, reader.nEvents)
 
