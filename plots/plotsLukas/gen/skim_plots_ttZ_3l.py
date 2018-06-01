@@ -177,6 +177,7 @@ def drawPlots(plots):
 
 # Read variables and sequences
 read_variables = [
+    "lumiweight1fb/F", 
     "GenMet_pt/F", "GenMet_phi/F", 
     "nGenJet/I", "GenJet[pt/F,eta/F,phi/F,matchBParton/I]", 
     "nGenLep/I", "GenLep[pt/F,eta/F,phi/F,pdgId/I,motherPdgId/I]", 
