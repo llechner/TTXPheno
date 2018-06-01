@@ -35,7 +35,7 @@ argParser.add_argument('--selection',          action='store',      default='lep
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',          action='store_true', help='Scale lumi only??')
 argParser.add_argument('--reweightPtZToSM',    action='store_true',     help='Reweight Pt(Z) to the SM for all the signals?', )
-argParser.add_argument('--parameters',         action='store',      default = ['ctZI', '2'], type=str, nargs='+', help = "argument parameters")
+argParser.add_argument('--parameters',         action='store',      default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 
 args = argParser.parse_args()
 

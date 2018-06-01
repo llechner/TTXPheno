@@ -116,6 +116,10 @@ def varnames( vec_vars ):
 
 # standard variables
 variables  = ["run/I", "lumi/I", "evt/l"]
+
+# Lumi weight 1fb
+variables += ["lumiweight1fb/F"]
+
 # MET
 variables += ["GenMet_pt/F", "GenMet_phi/F"]
 
@@ -158,6 +162,8 @@ reader = sample.fwliteReader( products = products )
 def filler( event ):
 
     event.run, event.lumi, event.evt = reader.evt
+
+    event.lumiweight1fb = sample.xsec*1000./sample.nEvents
 
     if reader.position % 100==0: logger.info("At event %i/%i", reader.position, reader.nEvents)
 

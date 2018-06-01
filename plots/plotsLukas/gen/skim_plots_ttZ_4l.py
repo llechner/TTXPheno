@@ -29,13 +29,13 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
 argParser.add_argument('--plot_directory',     action='store',      default='gen')
-argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order3_8weights')
-argParser.add_argument('--order',              action='store',      default=3)
+argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order2_15weights_ref')
+argParser.add_argument('--order',              action='store',      default=2)
 argParser.add_argument('--selection',          action='store',      default='lepSel4-onZ-njet2p-nbjet1p-Zpt0', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',          action='store_true', help='Scale lumi only??')
 argParser.add_argument('--reweightPtZToSM',    action='store_true',     help='Reweight Pt(Z) to the SM for all the signals?', )
-argParser.add_argument('--parameters',         action='store',      default = ['ctZI', '2'], type=str, nargs='+', help = "argument parameters")
+argParser.add_argument('--parameters',         action='store',      default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 
 args = argParser.parse_args()
 
