@@ -32,7 +32,7 @@ class WeightInfo:
         self.nvar      = len(self.variables)
 
         # compute reference point coordinates
-        self.ref_point_coordinates = [ float( self.ref_point[var] ) if (self.ref_point is not None and var in self.ref_point.keys()) else 0 for var in self.variables ]
+        self.ref_point_coordinates = { var: float( self.ref_point[var] ) if (self.ref_point is not None and var in self.ref_point.keys()) else 0 for var in self.variables }
 
         # Sort wrt to position in ntuple
         self.id = self.data.keys()
@@ -99,7 +99,7 @@ class WeightInfo:
         substrings = []
         for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
-            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in comb],1))).rstrip('0') ) )
+            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul, [ (float(kwargs[v]) - self.ref_point_coordinates[v]) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
     def get_weight_func(self, **kwargs):
@@ -112,11 +112,11 @@ class WeightInfo:
         for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
             # store [ ncoeff, factor ]
-            terms.append( [ i_comb, float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in comb],1)) ] )
+            terms.append( [ i_comb, float(reduce(mul,[ ( float(kwargs[v]) - self.ref_point_coordinates[v]) for v in comb],1)) ] )
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
-    def get_weight_yield(self, coeffList, **kwargs):
+    def get_weight_yield(self, coeffLists, **kwargs):
         '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
         '''
 
@@ -126,7 +126,9 @@ class WeightInfo:
         result = 0 
         for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
-            result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in comb],1))
+            for coeffList in coeffLists:
+                if coeffList[i_comb]==0: continue
+                result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - self.ref_point_coordinates[v]) for v in comb],1))
 
         return result
 
@@ -161,7 +163,8 @@ class WeightInfo:
         return "+".join( substrings )
 
     def get_diff_weight_string(self, var, **kwargs):
-        '''make a root draw string that evaluates the diff weight in terms of the p_C coefficient vector using the kwargs as WC
+        '''make a root draw string that evaluates the diff weight 
+           in terms of the p_C coefficient vector using the kwargs as WC
         '''
 
         # add the arguments from the ref-point 
@@ -195,7 +198,7 @@ class WeightInfo:
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
 
-    def get_diff_weight_yield(self, var, coeffList, **kwargs):
+    def get_diff_weight_yield(self, var, coeffLists, **kwargs):
         '''compute diff yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
         '''
 
@@ -207,7 +210,9 @@ class WeightInfo:
             if False in [v in kwargs for v in comb]: continue
             prefac, diff_comb = WeightInfo.differentiate( comb, var)
             if prefac == 0: continue
-            result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in diff_comb] + [prefac],1))
+            for coeffList in coeffLists:
+                if coeffList[i_comb]==0: continue
+                result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in diff_comb] + [prefac],1))
 
         return result
 
@@ -222,26 +227,27 @@ class WeightInfo:
             return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
 
 
-    def get_fisherParametrization_entry( self, var1, var2, coeffList, **kwargs):
+    def get_fisherParametrization_entry( self, var1, var2, coeffLists, **kwargs):
         ''' return the value of the fisher information matrix entry ij
         '''
 
         if var1==var2:
-            return self.get_diff_weight_yield( var1, coeffList, **kwargs )**2 / self.get_weight_yield( coeffList, **kwargs )
+            return self.get_diff_weight_yield( var1, coeffLists, **kwargs )**2 / self.get_weight_yield( coeffLists, **kwargs )
         else:
-            return self.get_diff_weight_yield( var1, coeffList, **kwargs ) * self.get_diff_weight_yield( var2, coeffList, **kwargs ) / self.get_weight_yield( coeffList, **kwargs )
+            return self.get_diff_weight_yield( var1, coeffLists, **kwargs ) * self.get_diff_weight_yield( var2, coeffLists, **kwargs ) / self.get_weight_yield( coeffLists, **kwargs )
 
-    def get_fisherInformation_matrix( self, coeffList, **kwargs):
+    def get_fisherInformation_matrix( self, coeffLists, **kwargs):
         ''' return the full fisher information matrix
         '''
 
         # initialize FI matrix
         fi_matrix = np.full((self.nvar, self.nvar), float('nan'))
 
-        for i in range(self.nvar):
-            for j in range(self.nvar):
+        for i in range( self.nvar ):
+            for j in range( self.nvar ):
                 if i>j: fi_matrix[i,j] = fi_matrix[j,i]
-                fi_matrix[i,j] = self.get_fisherParametrization_entry( self.variables[i], self.variables[j], coeffList, **kwargs)
+                fi_matrix[i,j] = self.get_fisherParametrization_entry( self.variables[i], self.variables[j], coeffLists, **kwargs )
+
         return fi_matrix
 
     # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
@@ -277,7 +283,7 @@ if __name__ == "__main__":
     coefflist = list(range(1,137))
 #    w.get_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2)
 
-    print w.matrix_to_string(w.get_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2))
+    print w.matrix_to_string(w.get_fisherInformation_matrix([coefflist]))
 #    print(w.get_weight_string(ctW=4, ctZ=5, ctGI=2))
 #    print(w.weight_string())
 #    print('')
