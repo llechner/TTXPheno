@@ -216,7 +216,6 @@ class WeightInfo:
 
         return result
 
-
     def fisherParametrization( self, var1, var2):
         ''' return string of the fisher information matrix entry ij
         '''
@@ -225,7 +224,6 @@ class WeightInfo:
             return "(%s)**2/(%s)"%( self.diff_weight_string( var1 ), self.weight_string() )
         else:
             return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
-
 
     def get_fisherParametrization_entry( self, var1, var2, coeffLists, **kwargs):
         ''' return the value of the fisher information matrix entry ij
@@ -250,43 +248,63 @@ class WeightInfo:
 
         return fi_matrix
 
-    # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
-    @staticmethod
-    def bins_to_list( histo ):
-        return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
     def matrix_to_string( self, matrix ):
         ''' return the matrix in a terminal visualization string (print)
         '''
-        return '\n'.join( ['\t'.join( (map('{:.2f}'.format, item) + [self.variables[i-1]] if i!=0 else item) ) for i, item in enumerate([self.variables] + matrix.tolist()) ] )                
+        return '\n'.join( ['\t'.join( (map('{:.5f}'.format, item) + [self.variables[i-1]] if i!=0 else item) ) for i, item in enumerate([self.variables] + matrix.tolist()) ] )                
 
+# Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
+def histo_to_list( histo ):
+    return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
 if __name__ == "__main__":
 
-    #w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_currentplane_highStat_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
-    #w.fisherParametrization(2, 'cpt', 'cpt')
-    #c = ROOT.TChain( "Events" )
-    #c.Add("/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2/fwlite_ttZ_ll_LO_currentplane_highStat_scan/fwlite_ttZ_ll_LO_currentplane_highStat_scan_0.root" )
-    #fisher_string = ":".join( [ w.fisherParametrization(2, 'cpt', 'cpt'),  w.fisherParametrization(2, 'cpt', 'cpQM'),  w.fisherParametrization(2, 'cpQM', 'cpQM') ] )
-    #c.Scan(fisher_string)
-    import ROOT
-    c = ROOT.TChain("Events")
-    c.Add("/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2_small/fwlite_ttZ_ll_LO_highStat_scan/fwlite_ttZ_ll_LO_highStat_scan.root")
-#    w = WeightInfo("/afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/Refpoint_test/gridpacks/addons/cards/ttZ0j_rwgt/ttZ0j_rwgt_reweight_card.pkl")
-#    w = WeightInfo("/afs/hephy.at/data/rschoefbeck02/TopEFT/results/gridpacks/ttZ0j_rwgt_patch_625_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
-    w = WeightInfo("/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl")
+    # RootTools
+    from RootTools.core.standard import *
+    # Logger
+    import TTXPheno.Tools.logger as logger
+    import RootTools.core.logger as logger_rt
+    logger    = logger.get_logger(   'INFO', logFile = None)
+    logger_rt = logger_rt.get_logger('INFO', logFile = None)
+    # TTXPheno
+    from TTXPheno.Tools.cutInterpreter import cutInterpreter
+    from TTXPheno.samples.benchmarks import * 
+
+    # Sample
+    sample = fwlite_ttZ_ll_LO_order2_15weights_ref
+    sample.reduceFiles( to = -1 )
+    w = WeightInfo(sample.reweight_pkl)
     w.set_order( 2 )
 
-#    para = {'cpt':3, 'cpQM':5}
-#    w.arg_weight_func(**para)
-#    fisher_string = ":".join( [ w.fisherParametrization( 'cpt', 'cpt'),  w.fisherParametrization( 'cpt', 'cpQM'),  w.fisherParametrization('cpQM', 'cpQM') ] )
-    coefflist = list(range(1,137))
-#    w.get_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2)
+    selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p')
 
-    print w.matrix_to_string(w.get_fisherInformation_matrix([coefflist]))
-#    print(w.get_weight_string(ctW=4, ctZ=5, ctGI=2))
-#    print(w.weight_string())
-#    print('')
-#    print(w.diff_weight_string('cpt'))
-#    print(w.arg_weight_string(ctZI=2, cpt=5))
-#     print(w.arg_weight_string())
+    # Make a coeff histo from a sample
+    def getCoeffListFromDraw( sample, selectionString, weightString = None):
+        histo = sample.get1DHistoFromDraw( 
+            "Iteration$", 
+            [ len(w.combinations), 0, len(w.combinations) ], 
+            selectionString = selectionString, 
+            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+        return histo_to_list( histo )
+
+    # Make a coeff histo from a sample
+    def getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString = None):
+        # 2D Plot, Iteration$ is on x
+        histo = sample.get2DHistoFromDraw( 
+            "Iteration$:%s"%variableString, 
+            [ len(w.combinations), 0, len(w.combinations) ] + binning, 
+            selectionString = selectionString, 
+            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+
+        return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
+#        return histo_to_list( histo )
+
+    # Fisher information in ptZ histo
+    coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*lumiweight1fb')
+    # Fisher information in x-sec
+    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
+
+#
+    print w.matrix_to_string(w.get_fisherInformation_matrix([coeff_tot]))
+    print w.matrix_to_string(w.get_fisherInformation_matrix(coeff_Z_pt))
