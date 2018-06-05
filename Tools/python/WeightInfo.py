@@ -246,7 +246,7 @@ class WeightInfo:
 
     # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
     @staticmethod
-    def BinContentToList( self, histo ):
+    def BinContentToList( histo ):
         return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
     def matrixToString( self, matrix ):
