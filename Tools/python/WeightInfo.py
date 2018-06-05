@@ -246,10 +246,10 @@ class WeightInfo:
 
     # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
     @staticmethod
-    def BinContentToList( histo ):
+    def bins_to_list( histo ):
         return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
-    def matrixToString( self, matrix ):
+    def matrix_to_string( self, matrix ):
         ''' return the matrix in a terminal visualization string (print)
         '''
         return '\n'.join( ['\t'.join( (map('{:.2f}'.format, item) + [self.variables[i-1]] if i!=0 else item) ) for i, item in enumerate([self.variables] + matrix.tolist()) ] )                
@@ -277,7 +277,7 @@ if __name__ == "__main__":
     coefflist = list(range(1,137))
 #    w.get_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2)
 
-    print w.matrixToString(w.get_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2))
+    print w.matrix_to_string(w.get_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2))
 #    print(w.get_weight_string(ctW=4, ctZ=5, ctGI=2))
 #    print(w.weight_string())
 #    print('')
