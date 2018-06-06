@@ -176,10 +176,7 @@ class WeightInfo:
             if prefac == 0: continue
             fac = prefac
             for v in diff_comb:
-                if self.ref_point_coordinates[v]==0:
-                    fac *= kwargs[v]
-                else:
-                    fac *= kwargs[v] - self.ref_point_coordinates[v]
+                fac *= kwargs[v] - self.ref_point_coordinates[v]
             if fac==1:
                 substrings.append( "+p_C[%i]"%i_comb  )
             else:
@@ -230,7 +227,10 @@ class WeightInfo:
             prefac, diff_comb = WeightInfo.differentiate( comb, var)
             if prefac == 0: continue
             # store [ ncoeff, factor ]
-            terms.append( [ i_comb, float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in diff_comb] + [prefac],1)) ] )
+            fac = prefac
+            for v in diff_comb:
+                fac *= kwargs[v] - self.ref_point_coordinates[v]
+            terms.append( [ i_comb, fac ] )
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
@@ -249,7 +249,11 @@ class WeightInfo:
             if prefac == 0: continue
             for coeffList in coeffLists:
                 if coeffList[i_comb]==0: continue
-                result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in diff_comb] + [prefac],1))
+                fac = prefac
+                for v in diff_comb:
+                    fac *= kwargs[v] - self.ref_point_coordinates[v]
+                
+                result += coeffList[i_comb]*fac
 
         return result
 
@@ -306,33 +310,33 @@ if __name__ == "__main__":
     w = WeightInfo(sample.reweight_pkl)
     w.set_order( 2 )
 
-#    selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p')
-#
-#    # Make a coeff histo from a sample
-#    def getCoeffListFromDraw( sample, selectionString, weightString = None):
-#        histo = sample.get1DHistoFromDraw( 
-#            "Iteration$", 
-#            [ len(w.combinations), 0, len(w.combinations) ], 
-#            selectionString = selectionString, 
-#            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+    selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p')
+
+    # Make a coeff histo from a sample
+    def getCoeffListFromDraw( sample, selectionString, weightString = None):
+        histo = sample.get1DHistoFromDraw( 
+            "Iteration$", 
+            [ len(w.combinations), 0, len(w.combinations) ], 
+            selectionString = selectionString, 
+            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+        return histo_to_list( histo )
+
+    # Make a coeff histo from a sample
+    def getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString = None):
+        # 2D Plot, Iteration$ is on x
+        histo = sample.get2DHistoFromDraw( 
+            "Iteration$:%s"%variableString, 
+            [ len(w.combinations), 0, len(w.combinations) ] + binning, 
+            selectionString = selectionString, 
+            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+
+        return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
 #        return histo_to_list( histo )
-#
-#    # Make a coeff histo from a sample
-#    def getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString = None):
-#        # 2D Plot, Iteration$ is on x
-#        histo = sample.get2DHistoFromDraw( 
-#            "Iteration$:%s"%variableString, 
-#            [ len(w.combinations), 0, len(w.combinations) ] + binning, 
-#            selectionString = selectionString, 
-#            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
-#
-#        return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
-##        return histo_to_list( histo )
-#
-#    # Fisher information in ptZ histo
-#    coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*lumiweight1fb')
-#    # Fisher information in x-sec
-#    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
-#
-#    print w.matrix_to_string(w.get_fisherInformation_matrix([coeff_tot]))
-#    print w.matrix_to_string(w.get_fisherInformation_matrix(coeff_Z_pt))
+
+    # Fisher information in ptZ histo
+    coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*lumiweight1fb')
+    # Fisher information in x-sec
+    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
+
+    print w.matrix_to_string(w.get_fisherInformation_matrix([coeff_tot]))
+    print w.matrix_to_string(w.get_fisherInformation_matrix(coeff_Z_pt))
