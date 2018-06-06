@@ -41,7 +41,7 @@ class WeightInfo:
 
         logger.debug( "Found %i variables: %s. Found %i weights." %(self.nvar, ",".join( self.variables ), self.nid) )
 
-    def set_order( self, order):
+    def set_order( self, order ):
         if self.pkl_order == None:
             print( "WARNING: Could not find the polynomial order of the gridpack!")
         elif order > self.pkl_order:
@@ -63,7 +63,7 @@ class WeightInfo:
                 self._combinations.extend( list(itertools.combinations_with_replacement( self.variables, o )) )
             return self._combinations
 
-    def weight_string(self):
+    def weight_string( self ):
         ''' get the full reweight string
         '''
         substrings = []
@@ -72,7 +72,7 @@ class WeightInfo:
 
         return "+".join( substrings )
 
-    def complement_args(self, args ):
+    def complement_args( self, args ):
         ''' prepare the args; add the ref_point ones and check that there is no inconsistency
         '''
 
@@ -90,7 +90,7 @@ class WeightInfo:
         if len(unused_args) > 0:
             raise ValueError( "Variable %s not in the gridpack! Please use only the following variables: %s" % (' && '.join(unused_args), ', '.join(self.variables)) )
 
-    def get_weight_string(self, **kwargs):
+    def get_weight_string( self, **kwargs ):
         '''make a root draw string that evaluates the weight in terms of the p_C coefficient vector using the kwargs as WC
         '''
         # add the arguments from the ref-point 
@@ -102,7 +102,7 @@ class WeightInfo:
             substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
-    def get_weight_func(self, **kwargs):
+    def get_weight_func( self, **kwargs ):
         '''construct a lambda function that evaluates the weight in terms of the event.p_C coefficient vector using the kwargs as WC
         '''
         # add the arguments from the ref-point 
@@ -116,7 +116,7 @@ class WeightInfo:
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
-    def get_weight_yield(self, coeffList, **kwargs):
+    def get_weight_yield( self, coeffList, **kwargs ):
         '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
         '''
 
@@ -145,7 +145,7 @@ class WeightInfo:
 
         return prefac, tuple(diff_comb)
 
-    def diff_weight_string(self, var):
+    def diff_weight_string( self, var ):
         ''' return string of the differentiated full weight string
         '''
 
@@ -155,12 +155,12 @@ class WeightInfo:
         substrings = []
         for i_comb, comb in enumerate(self.combinations):
             prefac, diff_comb = WeightInfo.differentiate( comb, var)
-            if prefac!=0:
-                substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, i_comb) if prefac!=1 else "p_C[%i]"% i_comb] + [ "(rw_%s-%s)"%(v, str(float(self.ref_point[v])).rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  diff_comb] ) )
+            if prefac == 0: continue
+            substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, i_comb) if prefac!=1 else "p_C[%i]"% i_comb] + [ "(rw_%s-%s)"%(v, str(float(self.ref_point[v])).rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  diff_comb] ) )
 
         return "+".join( substrings )
 
-    def get_diff_weight_string(self, var, **kwargs):
+    def get_diff_weight_string( self, var, **kwargs ):
         '''make a root draw string that evaluates the diff weight in terms of the p_C coefficient vector using the kwargs as WC
         '''
 
@@ -177,25 +177,7 @@ class WeightInfo:
         return "+".join( substrings )
 
 
-    def get_diff_weight_func(self, var, **kwargs):
-        '''construct a lambda function that evaluates the diff weight in terms of the event.p_C coefficient vector using the kwargs as WC
-        '''
-
-        # add the arguments from the ref-point 
-        self.complement_args( kwargs )
-
-        terms = []
-        for i_comb, comb in enumerate(self.combinations):
-            if False in [v in kwargs for v in comb]: continue
-            prefac, diff_comb = WeightInfo.differentiate( comb, var)
-            if prefac == 0: continue
-            # store [ ncoeff, factor ]
-            terms.append( [ i_comb, float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in diff_comb] + [prefac],1)) ] )
-
-        return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
-
-
-    def get_diff_weight_yield(self, var, coeffList, **kwargs):
+    def get_diff_weight_yield( self, var, coeffList, **kwargs ):
         '''compute diff yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
         '''
 
@@ -212,47 +194,62 @@ class WeightInfo:
         return result
 
 
-    def fisherParametrization( self, var1, var2):
+    def fisherParametrization( self, var1, var2 ):
         ''' return string of the fisher information matrix entry ij
         '''
 
-        if var1==var2:
+        if var1 == var2:
             return "(%s)**2/(%s)"%( self.diff_weight_string( var1 ), self.weight_string() )
         else:
-            return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
+            return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string() )
 
 
-    def get_fisherParametrization_entry( self, var1, var2, coeffList, **kwargs):
+    def get_fisherParametrization_entry( self, var1, var2, coeffList, **kwargs ):
         ''' return the value of the fisher information matrix entry ij
         '''
 
-        if var1==var2:
+        if var1 == var2:
             return self.get_diff_weight_yield( var1, coeffList, **kwargs )**2 / self.get_weight_yield( coeffList, **kwargs )
         else:
             return self.get_diff_weight_yield( var1, coeffList, **kwargs ) * self.get_diff_weight_yield( var2, coeffList, **kwargs ) / self.get_weight_yield( coeffList, **kwargs )
 
-    def get_fisherInformation_matrix( self, coeffList, **kwargs):
+
+    def get_fisherParametrization_entry_func( self, var1, var2, **kwargs ):
+        ''' return function for the value of the fisher information matrix entry ij
+        '''
+
+        if var1 == var2:
+            return lambda event, sample: self.get_diff_weight_yield( var1, [item for item in event.p_C if item == item], **kwargs )**2 / self.get_weight_yield( [item for item in event.p_C if item == item], **kwargs )
+        else:
+            return lambda event, sample: self.get_diff_weight_yield( var1, [item for item in event.p_C if item == item], **kwargs ) * self.get_diff_weight_yield( var2, [item for item in event.p_C if item == item], **kwargs ) / self.get_weight_yield( [item for item in event.p_C if item == item], **kwargs )
+
+
+    def calculate_fisherInformation_matrix( self, coeffList, **kwargs ):
         ''' return the full fisher information matrix
         '''
 
-        # initialize FI matrix
-        fi_matrix = np.full((self.nvar, self.nvar), float('nan'))
+        # calculate derivatives for all variables
+        diff_weight_yield = { var:self.get_diff_weight_yield( var, coeffList, **kwargs ) for var in self.variables }
 
-        for i in range(self.nvar):
-            for j in range(self.nvar):
-                if i>j: fi_matrix[i,j] = fi_matrix[j,i]
-                fi_matrix[i,j] = self.get_fisherParametrization_entry( self.variables[i], self.variables[j], coeffList, **kwargs)
+        # initialize FI matrix with 1/weight (same for all entries)
+        fi_matrix = np.full( ( self.nvar, self.nvar ), 1./self.get_weight_yield( coeffList, **kwargs ) )
+
+        for i, var_i in enumerate(self.variables):
+            for j, var_j in enumerate(self.variables):
+                fi_matrix[i,j] *= diff_weight_yield[var_i] * diff_weight_yield[var_j]
+
         return fi_matrix
 
-    # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
     @staticmethod
     def BinContentToList( self, histo ):
+        ''' Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
+        '''
         return [histo.GetBinContent(i) for i in range(1,histo.GetNbinsX()+1)]
 
-    def matrixToString( self, matrix ):
+    def matrixToString( self, matrix, formatstring='{:.2f}' ):
         ''' return the matrix in a terminal visualization string (print)
         '''
-        return '\n'.join( ['\t'.join( (map('{:.2f}'.format, item) + [self.variables[i-1]] if i!=0 else item) ) for i, item in enumerate([self.variables] + matrix.tolist()) ] )                
+        return '\n'.join( ['\t'.join( (map(formatstring.format, item) + [self.variables[i-1]] if i!=0 else item) ) for i, item in enumerate([self.variables] + matrix.tolist()) ] )                
 
 
 if __name__ == "__main__":
@@ -277,7 +274,13 @@ if __name__ == "__main__":
     coefflist = list(range(1,137))
 #    w.get_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2)
 
-    print w.matrixToString(w.get_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2))
+    import time
+    start = time.time()
+    matrix = w.calculate_fisherInformation_matrix(coefflist, ctW=4, ctZ=5, ctGI=2)
+    stop = time.time()
+    print w.matrixToString(matrix)
+    print np.linalg.eigvals(matrix)
+
 #    print(w.get_weight_string(ctW=4, ctZ=5, ctGI=2))
 #    print(w.weight_string())
 #    print('')
