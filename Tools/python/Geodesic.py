@@ -57,18 +57,71 @@ class Geodesic:
         #.set_integrator('vode', method='bdf') 
         #integrator.set_initial_value(self.initial_conditions, q0).set_f_params(2.0).set_jac_params(2.0) 
 
+def phase_space_dict(  point ):
+    return { var:val for var,val in zip( sum( [ [v, v+'_dot'] for v in variables ], [] ), point ) }
+
 if __name__ == '__main__':
-
-    # https://en.wikipedia.org/wiki/Schwarzschild_geodesics#Geodesic_equation
-
-    # Schwartzschield
-    variables = ( 't', 'r', 'phi' )
     
     # Schwartschild radius
     r_s = 1.
+
+    variables = ( 't', 'r', 'phi' )
     #                     t  r  phi
-    initial_point      = (0, 50, 0)
-    initial_derivative = (1., -.1, 0.0027 )
+    initial_point      = (0, 50., 0)
+    initial_derivative = (1., -.01, 3./initial_point[1]**2 )
+
+    # How far we want to go in the parameter q
+    q_max = 18000
+    nq    = 6000
+
+    # Schwartzschild from Metric
+    metric_tensor = lambda position: [\
+        [ (1.-r_s/position[1]), 0, 0],
+        [ 0, -1./(1.-r_s/position[1]), 0],
+        [ 0, 0, -position[1]**2 ],
+        #[ 0, 0, 0, -position[1]**2*sin(position[2])**2 ],
+    ]
+    metric_tensor_inverse = lambda position: [\
+        [ 1./(1.-r_s/position[1]), 0, 0],
+        [ 0, -(1.-r_s/position[1]), 0],
+        [ 0, 0, -1./position[1]**2 ],
+        #[ 0, 0, 0, -1./(position[1]**2*sin(position[2])**2) ],
+    ]
+    
+    # Gamma^i_jk = 1/2*g^il( - d_l g_jk + d_j g_lk + d_k g_jl ) 
+
+    # Deltas used for differentiating
+    diff = 0.0001
+    delta_diff = np.array( [ diff]*len(variables) ) 
+
+    def christoffel(index):
+        delta_diff_vec = [ [0]*len(variables) for i in range(len(variables)) ]
+        for i in range(len(variables)):
+            delta_diff_vec[i][i] = delta_diff[i]
+        def __christoffel( position ):
+            # differentiate metric
+            dg = [(np.array( metric_tensor(position + delta_diff_vec[l])) - np.array(metric_tensor(position)))/delta_diff[l] for l in range(len(variables)) ] 
+            result = [ [ 0 for i in range(len(variables))] for j in range(len(variables)) ]
+            for l in xrange(len(variables)):
+                gil = metric_tensor_inverse(position)[index][l]
+                if gil==0.: continue
+                #print index, gil, dg[index] 
+                for j in range(len(variables)):
+                    for k in range(len(variables)):
+                        #print index, l, j, k, 0.5*gil, -dg[l][j][k],  0.5*gil*(-dg[l][j][k]), 0.5*gil*dg[j][k][l], 0.5*gil*dg[k][j][l]
+                        result[j][k] += 0.5*gil*( -dg[l][j][k] + dg[j][k][l] + dg[k][j][l] )
+            return result
+        return __christoffel
+
+
+    christoffel_symboles = [ christoffel(i) for i in range(len(variables)) ]
+
+    # Initialize Geodesic
+    geodesic = Geodesic( initial_point, initial_derivative, christoffel_symboles )
+
+    ## https://en.wikipedia.org/wiki/Schwarzschild_geodesics#Geodesic_equation
+
+    ## Schwartzschild from Christoffel
 
     christoffel_symboles = [\
 
@@ -78,7 +131,7 @@ if __name__ == '__main__':
             [ 0, 0, 0]
         ],
         lambda position: [
-            [ r_s/position[1]**3*(position[1]-r_s), 0, 0],
+            [ r_s/(2*position[1]**3)*(position[1]-r_s), 0, 0],
             [ 0, r_s/(2*position[1]*(position[1]-r_s)), 0],
             [ 0, 0, -(position[1]-r_s)]
         ],
@@ -88,16 +141,8 @@ if __name__ == '__main__':
             [ 0, 1./position[1], 0]
         ],
     ] 
-
-    def phase_space_dict(  point ):
-        return { var:val for var,val in zip( sum( [ [v, v+'_dot'] for v in variables ], [] ), point ) }
-    
     # Initialize Geodesic
-    geodesic = Geodesic( initial_point, initial_derivative, christoffel_symboles )
-
-    # How far we want to go in the parameter q
-    q_max = 80000
-    nq    = 1000 
+    #geodesic = Geodesic( initial_point, initial_derivative, christoffel_symboles )
 
     # Define q values & solve
     q_values = np.linspace(0, q_max, nq+1)
@@ -122,10 +167,10 @@ if __name__ == '__main__':
 
     ax = plt.subplot(111, projection='polar')
     ax.plot([y['phi'] for y in solution], [y['r'] for y in solution])
-    ax.set_rmax(160)
-    ax.set_rticks([20, 50, 100, 150])  # radial ticks
+    ax.set_rmax(60)
+    ax.set_rticks([5, 10, 20, 30, 40, 50])  # radial ticks
     ax.set_rlabel_position(-22.5)      # get radial labels away from plotted line
     ax.grid(True)
 
     ax.set_title("A Schwartzschild geodesic (rS = 1)", va='bottom')
-    plt.savefig('/afs/hephy.at/user/r/rschoefbeck/www/etc/geodesic5.png')
+    plt.savefig('/afs/hephy.at/user/r/rschoefbeck/www/etc/geodesic_diff_6.png')

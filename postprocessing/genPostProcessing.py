@@ -71,10 +71,6 @@ if args.small:
     maxEvents=10 # Number of files
     sample.files=sample.files[:1]
 
-# get number of events and xsec from sample
-nEvents = sample.nEvents
-xsec = sample.xsec #pb
-
 # Load reweight pickle file if supposed to keep weights. 
 extra_variables = []
 if args.addReweights:
@@ -167,7 +163,7 @@ def filler( event ):
 
     event.run, event.lumi, event.evt = reader.evt
 
-    event.lumiweight1fb = xsec*1000./nEvents
+    event.lumiweight1fb = sample.xsec*1000./sample.nEvents
 
     if reader.position % 100==0: logger.info("At event %i/%i", reader.position, reader.nEvents)
 

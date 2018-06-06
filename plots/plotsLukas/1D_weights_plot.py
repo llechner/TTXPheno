@@ -31,7 +31,7 @@ h = ROOT.TH1F('h_weights','weights',15,0,15)
 c.Draw('Iteration$>>h_weights','p_C')
 #c.Draw('Iteration$>>h_weights_Zpt','p_C*(Z_pt>300)')
 
-sum_weights = WeightInfo.BinContentToList(ROOT.h_weights)
+sum_weights = WeightInfo.histo_to_list(ROOT.h_weights)
 
 def plot1Dcoefficient(coeff, range):
 
