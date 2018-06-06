@@ -25,7 +25,9 @@ class WeightInfo:
         else: self.pkl_order = None
 
         if 'ref_point' in data.keys(): self.ref_point = data['ref_point']
-        else: self.ref_point = None
+        else: 
+            self.ref_point = None
+            logger.warning( "No reference point found in pkl file!" )
 
         # store all variables (Wilson coefficients)
         self.variables = self.data.keys()[0].split('_')[::2]
@@ -68,7 +70,14 @@ class WeightInfo:
         '''
         substrings = []
         for i_comb, comb in enumerate(self.combinations):
-            substrings.append(  "*".join( ["p_C[%i]"%i_comb] + [ "(rw_%s-%s)" %( v, str(float(self.ref_point[v])).rstrip('0') ) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  comb] )  )
+            subsubstrings = ["p_C[%i]"%i_comb]
+            for v in comb:
+                if self.ref_point_coordinates[v]==0:
+                    subsubstrings.append( v ) 
+                else:
+                    subsubstrings.append( "(%s-%s)" %( v, str(self.ref_point_coordinates[v]).rstrip('0')) ) 
+
+            substrings.append(  "*".join( subsubstrings )  )
 
         return "+".join( substrings )
 
@@ -102,6 +111,82 @@ class WeightInfo:
             substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul, [ (float(kwargs[v]) - self.ref_point_coordinates[v]) for v in comb],1))).rstrip('0') ) )
         return "+".join( substrings )
 
+    @staticmethod
+    def differentiate( comb, var ):
+        ''' Differentiate a polynomial wrt to a variable represented by a combination of terms.
+            Returns prefactor new combination.
+            d\dv_i (v_i^n * X) -> n v_i^(n-1) * X 
+        '''
+
+        prefac = comb.count( var ) 
+
+        if prefac==0:
+            diff_comb = tuple()
+        else:
+            diff_comb = list(comb)
+            diff_comb.remove( var )
+
+        return prefac, tuple(diff_comb)
+
+
+    # String methods
+    def diff_weight_string_WC(self, var):
+        ''' return string of the full weight string, differentiated wrt to var1 as a function of all WC
+        '''
+
+        if var not in self.variables:
+            raise ValueError( "Variable %s not in list of variables %r" % (var, self.variables) )
+
+        substrings = []
+        for i_comb, comb in enumerate(self.combinations):
+            prefac, diff_comb = WeightInfo.differentiate( comb, var)
+            if prefac!=0:
+                subsubstrings = ["%i*p_C[%i]"%(prefac, i_comb)  if prefac!=1 else "p_C[%i]"% i_comb ]
+                for v in diff_comb:
+                    if self.ref_point_coordinates[v]==0:
+                        subsubstrings.append( v )
+                    else:
+                        subsubstrings.append(  "(%s-%s)"%(v, str(float(self.ref_point[v])).rstrip('0')) )
+                substrings.append( "*".join( subsubstrings ) ) 
+        
+        return "+".join( substrings )
+
+    # Get a string for the fisher information vor variables var1, vars as a function of the weight coefficients and the W.C
+    def fisher_parametrization_string_WC( self, var1, var2):
+        ''' return a string for the fisher information vor variables var1, vars as a function of the weight coefficients and all WC 
+        '''
+
+        if var1==var2:
+            return "(%s)**2/(%s)"%( self.diff_weight_string_WC( var1 ), self.weight_string_WC() )
+        else:
+            return "(%s)*(%s)/(%s)"%( self.diff_weight_string_WC( var1 ), self.diff_weight_string_WC( var2 ), self.weight_string_WC( ) )
+
+    def diff_weight_string(self, var, **kwargs):
+        '''make a root draw string that evaluates the diff weight 
+           in terms of the p_C coefficient vector using the kwargs as WC
+        '''
+
+        # add the arguments from the ref-point 
+        self.complement_args( kwargs )
+
+        substrings = []
+        for i_comb, comb in enumerate(self.combinations):
+            if False in [v in kwargs for v in comb]: continue
+            prefac, diff_comb = WeightInfo.differentiate( comb, var)
+            if prefac == 0: continue
+            fac = prefac
+            for v in diff_comb:
+                if self.ref_point_coordinates[v]==0:
+                    fac *= kwargs[v]
+                else:
+                    fac *= kwargs[v] - self.ref_point_coordinates[v]
+            if fac==1:
+                substrings.append( "+p_C[%i]"%i_comb  )
+            else:
+                substrings.append( ("%+f"%fac).rstrip('0')+"*p_C[%i]"%i_comb  )
+
+        return "".join( substrings ).lstrip('+')
+
     def get_weight_func(self, **kwargs):
         '''construct a lambda function that evaluates the weight in terms of the event.p_C coefficient vector using the kwargs as WC
         '''
@@ -131,54 +216,6 @@ class WeightInfo:
                 result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - self.ref_point_coordinates[v]) for v in comb],1))
 
         return result
-
-    @staticmethod
-    def differentiate( comb, var ):
-        ''' Differentiate a product
-        '''
-
-        prefac = comb.count( var ) 
-
-        if prefac==0:
-            diff_comb = tuple()
-        else:
-            diff_comb = list(comb)
-            diff_comb.remove( var )
-
-        return prefac, tuple(diff_comb)
-
-    def diff_weight_string(self, var):
-        ''' return string of the differentiated full weight string
-        '''
-
-        if var not in self.variables:
-            raise ValueError( "Variable %s not in list of variables %r" % (var, self.variables) )
-
-        substrings = []
-        for i_comb, comb in enumerate(self.combinations):
-            prefac, diff_comb = WeightInfo.differentiate( comb, var)
-            if prefac!=0:
-                substrings.append(  "*".join( ["%i*p_C[%i]"%(prefac, i_comb) if prefac!=1 else "p_C[%i]"% i_comb] + [ "(rw_%s-%s)"%(v, str(float(self.ref_point[v])).rstrip('0')) if self.ref_point is not None and v in self.ref_point.keys() else "rw_%s"%(v) for v in  diff_comb] ) )
-
-        return "+".join( substrings )
-
-    def get_diff_weight_string(self, var, **kwargs):
-        '''make a root draw string that evaluates the diff weight 
-           in terms of the p_C coefficient vector using the kwargs as WC
-        '''
-
-        # add the arguments from the ref-point 
-        self.complement_args( kwargs )
-
-        substrings = []
-        for i_comb, comb in enumerate(self.combinations):
-            if False in [v in kwargs for v in comb]: continue
-            prefac, diff_comb = WeightInfo.differentiate( comb, var)
-            if prefac == 0: continue
-            substrings.append( "p_C[%i]*%s" %(i_comb, str(float(reduce(mul,[ ( float(kwargs[v]) - float(self.ref_point[v]) ) if self.ref_point is not None and v in self.ref_point.keys() else float(kwargs[v]) for v in diff_comb] + [prefac],1))).rstrip('0') ) )
-
-        return "+".join( substrings )
-
 
     def get_diff_weight_func(self, var, **kwargs):
         '''construct a lambda function that evaluates the diff weight in terms of the event.p_C coefficient vector using the kwargs as WC
@@ -216,14 +253,6 @@ class WeightInfo:
 
         return result
 
-    def fisherParametrization( self, var1, var2):
-        ''' return string of the fisher information matrix entry ij
-        '''
-
-        if var1==var2:
-            return "(%s)**2/(%s)"%( self.diff_weight_string( var1 ), self.weight_string() )
-        else:
-            return "(%s)*(%s)/(%s)"%( self.diff_weight_string( var1 ), self.diff_weight_string( var2 ), self.weight_string( ) )
 
     def get_fisherParametrization_entry( self, var1, var2, coeffLists, **kwargs):
         ''' return the value of the fisher information matrix entry ij
@@ -277,34 +306,33 @@ if __name__ == "__main__":
     w = WeightInfo(sample.reweight_pkl)
     w.set_order( 2 )
 
-    selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p')
-
-    # Make a coeff histo from a sample
-    def getCoeffListFromDraw( sample, selectionString, weightString = None):
-        histo = sample.get1DHistoFromDraw( 
-            "Iteration$", 
-            [ len(w.combinations), 0, len(w.combinations) ], 
-            selectionString = selectionString, 
-            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
-        return histo_to_list( histo )
-
-    # Make a coeff histo from a sample
-    def getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString = None):
-        # 2D Plot, Iteration$ is on x
-        histo = sample.get2DHistoFromDraw( 
-            "Iteration$:%s"%variableString, 
-            [ len(w.combinations), 0, len(w.combinations) ] + binning, 
-            selectionString = selectionString, 
-            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
-
-        return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
-#        return histo_to_list( histo )
-
-    # Fisher information in ptZ histo
-    coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*lumiweight1fb')
-    # Fisher information in x-sec
-    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
-
+#    selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p')
 #
-    print w.matrix_to_string(w.get_fisherInformation_matrix([coeff_tot]))
-    print w.matrix_to_string(w.get_fisherInformation_matrix(coeff_Z_pt))
+#    # Make a coeff histo from a sample
+#    def getCoeffListFromDraw( sample, selectionString, weightString = None):
+#        histo = sample.get1DHistoFromDraw( 
+#            "Iteration$", 
+#            [ len(w.combinations), 0, len(w.combinations) ], 
+#            selectionString = selectionString, 
+#            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+#        return histo_to_list( histo )
+#
+#    # Make a coeff histo from a sample
+#    def getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString = None):
+#        # 2D Plot, Iteration$ is on x
+#        histo = sample.get2DHistoFromDraw( 
+#            "Iteration$:%s"%variableString, 
+#            [ len(w.combinations), 0, len(w.combinations) ] + binning, 
+#            selectionString = selectionString, 
+#            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+#
+#        return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
+##        return histo_to_list( histo )
+#
+#    # Fisher information in ptZ histo
+#    coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*lumiweight1fb')
+#    # Fisher information in x-sec
+#    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
+#
+#    print w.matrix_to_string(w.get_fisherInformation_matrix([coeff_tot]))
+#    print w.matrix_to_string(w.get_fisherInformation_matrix(coeff_Z_pt))
