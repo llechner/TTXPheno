@@ -254,7 +254,6 @@ class WeightInfo:
                     fac *= kwargs[v] - self.ref_point_coordinates[v]
                 
                 result += coeffList[i_comb]*fac
-
         return result
 
 
@@ -285,7 +284,11 @@ class WeightInfo:
     def matrix_to_string( self, matrix ):
         ''' return the matrix in a terminal visualization string (print)
         '''
-        return '\n'.join( ['\t'.join( (map('{:.5f}'.format, item) + [self.variables[i-1]] if i!=0 else item) ) for i, item in enumerate([self.variables] + matrix.tolist()) ] )                
+        res = [ ' '.join( map( "{:>9}".format, self.variables ) ) ]
+        for i_line, line in enumerate(matrix.tolist()):
+            res.append( ' '.join( map('{:+.2E}'.format, line) + [self.variables[i_line]] ) )
+
+        return '\n'.join( res ) 
 
 # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
 def histo_to_list( histo ):
@@ -306,7 +309,7 @@ if __name__ == "__main__":
 
     # Sample
     sample = fwlite_ttZ_ll_LO_order2_15weights_ref
-    sample.reduceFiles( to = -1 )
+    sample.reduceFiles( to = 1 )
     w = WeightInfo(sample.reweight_pkl)
     w.set_order( 2 )
 
