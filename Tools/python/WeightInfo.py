@@ -319,14 +319,12 @@ class WeightInfo:
 
         for i, var_i in enumerate(variables):
             for j, var_j in enumerate(variables):
-                if i>j: fi_matrix[i,j] = fi_matrix[j,i]
-                if fi_matrix[i,j]==0:
-                    continue
-		else:
+                if i<=j: 
                     fi_matrix[i,j] *= diff_weight_yield[var_i] * diff_weight_yield[var_j]
+                else:
+                    fi_matrix[i,j] = fi_matrix[j,i]
 
         return variables, fi_matrix
-
 
     def get_total_fisherInformation_matrix( self, coeffLists, variables = None, **kwargs ):
         ''' return the full fisher information matrix, sum the FI matrices over all coefflists
@@ -407,7 +405,7 @@ if __name__ == "__main__":
 #    w.get_weight_yield(coeff_Z_pt, ctG=10)
 
     print w.matrix_to_string(*w.get_total_fisherInformation_matrix(coeff_Z_pt, None, ctG=10))
-    print np.linalg.eigh(w.get_total_fisherInformation_matrix(coeff_Z_pt, None, ctG=10)[1])
+    ##print np.linalg.eigh(w.get_total_fisherInformation_matrix(coeff_Z_pt, None, ctG=10)[1])
 #    print w.matrix_to_string(*w.get_fisherInformation_matrix(coeff_Z_pt))
 #    print w.variables
 #    print w.get_weight_string(ctZ=5)
