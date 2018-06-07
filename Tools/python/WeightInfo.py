@@ -272,10 +272,10 @@ class WeightInfo:
         '''
 
         # calculate derivatives for all variables
-        diff_weight_yield = { var:self.get_diff_weight_yield( var, coeffList, **kwargs ) for var in self.variables }
+        diff_weight_yield = { var:self.get_diff_weight_yield( var, coeffLists, **kwargs ) for var in self.variables }
 
         # initialize FI matrix with 1/weight (same for all entries)
-        fi_matrix = np.full( ( self.nvar, self.nvar ), 1./self.get_weight_yield( coeffList, **kwargs ) )
+        fi_matrix = np.full( ( self.nvar, self.nvar ), 1./self.get_weight_yield( coeffLists, **kwargs ) )
 
         for i, var_i in enumerate(self.variables):
             for j, var_j in enumerate(self.variables):
