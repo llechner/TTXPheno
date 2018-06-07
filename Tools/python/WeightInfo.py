@@ -400,12 +400,14 @@ if __name__ == "__main__":
     coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*lumiweight1fb')
     # Fisher information in x-sec
     #coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
-    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString=None )
+    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb' )
 
 #    w.get_weight_yield(coeff_Z_pt, ctG=10)
 
-    print w.matrix_to_string(*w.get_total_fisherInformation_matrix(coeff_Z_pt, None, ctG=10))
-    ##print np.linalg.eigh(w.get_total_fisherInformation_matrix(coeff_Z_pt, None, ctG=10)[1])
+    variables = ['cpQM', 'cpt']
+
+    print w.matrix_to_string(*w.get_total_fisherInformation_matrix(coeff_Z_pt, variables))
+    print np.linalg.eigh(w.get_total_fisherInformation_matrix(coeff_Z_pt, variables)[1])
 #    print w.matrix_to_string(*w.get_fisherInformation_matrix(coeff_Z_pt))
 #    print w.variables
 #    print w.get_weight_string(ctZ=5)
