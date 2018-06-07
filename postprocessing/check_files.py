@@ -21,6 +21,12 @@ samples = [
     'fwlite_ttZ_ll_LO_order2_15weights_ref',
     'fwlite_ttW_LO_order2_15weights_ref',
     'fwlite_ttgamma_LO_order2_15weights_ref', 
+
+#    'fwlite_tt_LO_order2_15weights_ref',
+#    'fwlite_wZ_LO_order2_15weights',
+
+#    'fwlite_tt_lep_LO_order2_15weights_ref',
+#    'fwlite_WZ_lep_LO_order2_15weights',
 ]
 
 
@@ -42,11 +48,11 @@ for sample in samples:
     # list of not processed files
     nonProcessedFiles = [item for item in indices if item not in fileIndices]
 
-#    print(sample)
+    print(sample)
 
     # run missing files locally or on batch
     for job in nonProcessedFiles:
-#        print(job)
+        print(job)
 #        os.system('python genPostProcessing.py --nJobs %s --job %s --overwrite --logLevel DEBUG --sample %s --addReweights --interpolationOrder %s --delphes > logs/%s_%s.log 2>&1' %(nJobs, job, sample, order, sample, job))
-        os.system('submitBatch.py --dpm "./genPostProcessing.py --nJobs %s --job %s --overwrite --logLevel DEBUG --sample %s --addReweights --interpolationOrder %s --delphes"' %(nJobs, job, sample, order, sample, job))
+#        os.system('submitBatch.py --dpm "./genPostProcessing.py --nJobs %s --job %s --overwrite --logLevel DEBUG --sample %s --addReweights --interpolationOrder %s --delphes"' %(nJobs, job, sample, order, sample, job))
 

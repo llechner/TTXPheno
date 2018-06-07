@@ -32,6 +32,7 @@ test = FWLiteSample.fromFiles("test", files = ["/afs/hephy.at/work/r/rschoefbeck
 test.reweight_pkl = '/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/07052018/ttZ/order3/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl'
 
 
+# no reference point samples 8/3
 fwlite_ttZ_ll_LO_order3_8weights               = FWLiteSample.fromDAS("fwlite_ttZ_ll_LO_order3_8weights", "/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttZ0j_order3_8weights-7a5fde3f5bf89006ee3acec926ca87d8/USER", "phys03", dbFile = dbFile)
 fwlite_ttZ_ll_LO_order3_8weights.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/07052018/ttZ/order3/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttZ_ll_LO_order3_8weights.nEvents       = 995000
@@ -48,6 +49,7 @@ fwlite_ttgamma_LO_order3_8weights.nEvents      = 1000000
 fwlite_ttgamma_LO_order3_8weights.xsec         = 3.697 #pb ttgamma
 
 
+# no reference point samples 15/2
 fwlite_ttZ_ll_LO_order2_15weights               = FWLiteSample.fromDAS("fwlite_ttZ_ll_LO_order2_15weights", "/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttZ0j_order2_15weights_18052018-7a5fde3f5bf89006ee3acec926ca87d8/USER", "phys03", dbFile = dbFile)
 fwlite_ttZ_ll_LO_order2_15weights.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttZ_ll_LO_order2_15weights.nEvents	= 970000
@@ -64,6 +66,7 @@ fwlite_ttgamma_LO_order2_15weights.nEvents	= 990000
 fwlite_ttgamma_LO_order2_15weights.xsec         = 3.697 #pb ttgamma
 
 
+# reference point samples 15/2
 fwlite_ttZ_ll_LO_order2_15weights_ref               = FWLiteSample.fromDAS("fwlite_ttZ_ll_LO_order2_15weights_ref", "/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttZ0j_order2_15weights_18052018_ref-7a5fde3f5bf89006ee3acec926ca87d8/USER", "phys03", dbFile = dbFile)
 fwlite_ttZ_ll_LO_order2_15weights_ref.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttZ_ll_LO_order2_15weights_ref.nEvents       = 990000
@@ -79,4 +82,28 @@ fwlite_ttgamma_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechn
 fwlite_ttgamma_LO_order2_15weights_ref.nEvents      = 970000
 fwlite_ttgamma_LO_order2_15weights_ref.xsec         = 3.697 #pb ttgamma
 
+'''
+# background samples 0/2 (WZ) or 15/2 (ttbar with reference point)
+#leptonic decays W > lnu, Z > ll, t > Wb
+fwlite_tt_lep_LO_order2_15weights_ref               = FWLiteSample.fromDAS("fwlite_tt_lep_LO_order2_15weights_ref", "https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fphys03&input=%2Ftt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball%2Fllechner-bg_lep_dim6top_05June18-399ed716eb7225402bb4416ff36fe4d6%2FUSER", "phys03", dbFile = dbFile)
+fwlite_tt_lep_LO_order2_15weights_ref.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/05062018/tt/order2/tt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_tt_lep_LO_order2_15weights_ref.nEvents       = 1000000 #? not checked!
+#fwlite_tt_lep_LO_order2_15weights_ref.xsec          = 0.0915 #pb ttZ, Z->ll
 
+fwlite_WZ_lep_LO_order2_15weights               = FWLiteSample.fromDAS("fwlite_WZ_lep_LO_order2_15weights", "/WZ_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-bg_lep_dim6top_05June18-6dade6042d6868e7bb87de85663e8a54/USER", "phys03", dbFile = dbFile)
+fwlite_WZ_lep_LO_order2_15weights.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/05062018/WZ/order2/WZ_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_WZ_lep_LO_order2_15weights.nEvents       = 1000000 #? not checked!
+#fwlite_WZ_lep_LO_order2_15weights.xsec          = 0.0915 #pb ttZ, Z->ll
+
+#hadronic and leptonic decays
+fwlite_tt_LO_order2_15weights_ref               = FWLiteSample.fromDAS("fwlite_tt_LO_order2_15weights_ref", "/tt_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-bg_dim6top_04June18-db4155f01c4c21dc10125760597b536e/USER", "phys03", dbFile = dbFile)
+fwlite_tt_LO_order2_15weights_ref.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/04062018/tt/order2/tt_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_tt_LO_order2_15weights_ref.nEvents       = 1000000 #? not checked!
+#fwlite_tt_LO_order2_15weights_ref.xsec          = 0.0915 #pb ttZ, Z->ll
+
+fwlite_WZ_LO_order2_15weights               = FWLiteSample.fromDAS("fwlite_WZ_LO_order2_15weights", "/WZ_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-bg_dim6top_04June18-a4eb1cf113188459e4c517c4aa52c31c/USER", "phys03", dbFile = dbFile)
+fwlite_WZ_LO_order2_15weights.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/04062018/WZ/order2/WZ_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_WZ_LO_order2_15weights.nEvents       = 1000000 #? not checked!
+#fwlite_WZ_LO_order2_15weights.xsec          = 0.0915 #pb ttZ, Z->ll
+
+'''
