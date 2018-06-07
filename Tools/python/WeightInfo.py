@@ -195,22 +195,6 @@ class WeightInfo:
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
-    def get_weight_yield(self, coeffLists, **kwargs):
-        '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
-        '''
-
-        # add the arguments from the ref-point 
-        self.set_default_args( kwargs )
-
-        result = 0 
-        for i_comb, comb in enumerate(self.combinations):
-            if False in [v in kwargs for v in comb]: continue
-            for coeffList in coeffLists:
-                if coeffList[i_comb]==0: continue
-                result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - self.ref_point_coordinates[v]) for v in comb],1))
-
-        return result
-
     def get_diff_weight_func(self, var, **kwargs):
         '''construct a lambda function that evaluates the diff weight in terms of the event.p_C coefficient vector using the kwargs as WC
         '''
@@ -230,10 +214,27 @@ class WeightInfo:
             fac = prefac
             for v in diff_comb:
                 fac *= kwargs[v] - self.ref_point_coordinates[v]
+                if fac==0.: break
+            if fac==0.: continue 
             terms.append( [ i_comb, fac ] )
 
         return lambda event, sample: sum( event.p_C[term[0]]*term[1] for term in terms )
 
+    def get_weight_yield(self, coeffLists, **kwargs):
+        '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
+        '''
+
+        # add the arguments from the ref-point 
+        self.set_default_args( kwargs )
+
+        result = 0 
+        for i_comb, comb in enumerate(self.combinations):
+            if False in [v in kwargs for v in comb]: continue
+            for coeffList in coeffLists:
+                if coeffList[i_comb]==0: continue
+                result += coeffList[i_comb]*float(reduce(mul,[ ( float(kwargs[v]) - self.ref_point_coordinates[v]) for v in comb],1))
+
+        return result
 
     def get_diff_weight_yield(self, var, coeffLists, **kwargs):
         '''compute diff yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
@@ -257,7 +258,8 @@ class WeightInfo:
                 for v in diff_comb:
                     fac *= kwargs[v] - self.ref_point_coordinates[v]
                     #print "factor", v, kwargs[v] - self.ref_point_coordinates[v], "kwargs[v],  self.ref_point_coordinates[v]",  kwargs[v], self.ref_point_coordinates[v]
-                
+                    if fac==0.: break
+                if fac==0.: continue 
                 result += coeffList[i_comb]*fac
         return result
 
