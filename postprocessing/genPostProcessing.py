@@ -166,7 +166,7 @@ def filler( event ):
 
     event.run, event.lumi, event.evt = reader.evt
 
-    event.lumiweight1fb = sample.xsecSM_NNLO * 1000. / sample.nEvents
+    event.lumiweight1fb = sample.xsec * 1000. / sample.nEvents
 
     if reader.position % 100==0: logger.info("At event %i/%i", reader.position, reader.nEvents)
 
@@ -202,10 +202,6 @@ def filler( event ):
         logger.debug( "chi2_ndof %f", event.chi2_ndof )
         for n in xrange(hyperPoly.ndof):
             event.p_C[n] = coeff[n]
-
-        # scale to ref point
-        if not all([ val == 0 for val in ref_point_coordinates ]):
-            event.lumiweight1fb *= sample.xsecBSM_LO / sample.xsecSM_LO
 
         # lumi weight / w0
         event.ref_lumiweight1fb = event.lumiweight1fb / coeff[0]
