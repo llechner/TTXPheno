@@ -67,6 +67,7 @@ if args.small:
 
 xsec = sample.xsec
 nEvents = sample.nEvents
+lumiweight1fb = xsec * 1000. / nEvents
 
 # output directory
 output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, sample.name) 
@@ -120,9 +121,6 @@ def varnames( vec_vars ):
 # standard variables
 variables  = ["run/I", "lumi/I", "evt/l"]
 
-# Lumi weight 1fb
-variables += ["lumiweight1fb/F"]
-
 # MET
 variables += ["GenMet_pt/F", "GenMet_phi/F"]
 
@@ -151,6 +149,9 @@ variables     += ["Z_pt/F", "Z_phi/F", "Z_eta/F", "Z_mass/F", "Z_cosThetaStar/F"
 variables     += ["W_pt/F", "W_phi/F", "W_eta/F", "W_mass/F", "W_daughterPdg/I"]
 # gamma vector
 variables     += ["gamma_pt/F", "gamma_phi/F", "gamma_eta/F", "gamma_mass/F"]
+
+# Lumi weight 1fb
+variables += ["lumiweight1fb/F"]
 if args.addReweights:
     variables.append('rw_nominal/F')
     # Lumi weight 1fb / w_0
@@ -168,8 +169,6 @@ reader = sample.fwliteReader( products = products )
 def filler( event ):
 
     event.run, event.lumi, event.evt = reader.evt
-
-    event.lumiweight1fb = xsec * 1000. / nEvents
 
     if reader.position % 100==0: logger.info("At event %i/%i", reader.position, reader.nEvents)
 
@@ -207,7 +206,9 @@ def filler( event ):
             event.p_C[n] = coeff[n]
 
         # lumi weight / w0
-        event.ref_lumiweight1fb = event.lumiweight1fb / coeff[0]
+        event.lumiweight1fb = lumiweight1fb
+        if args.addReweights:
+            event.ref_lumiweight1fb = event.lumiweight1fb / coeff[0]
 
     # All gen particles
     gp      = reader.products['gp']
