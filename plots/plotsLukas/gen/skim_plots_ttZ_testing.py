@@ -29,12 +29,12 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
 argParser.add_argument('--plot_directory',     action='store',      default='gen')
-argParser.add_argument('--sample',             action='store',      default='fwlite_ttW_LO_order2_15weights_ref')
+argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--order',              action='store',      default=2)
-argParser.add_argument('--selection',          action='store',      default='nlep2p-njet2p-nbjet1p-Wpt0', help="Specify cut.")
+argParser.add_argument('--selection',          action='store',      default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',          action='store_true', help='Scale lumi only??')
-argParser.add_argument('--reweightPtWToSM',    action='store_true', help='Reweight Pt(W) to the SM for all the signals?', )
+argParser.add_argument('--reweightPtZToSM',    action='store_true', help='Reweight Pt(Z) to the SM for all the signals?', )
 argParser.add_argument('--parameters',         action='store',      default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',         action='store',      default=150)
 
@@ -48,12 +48,12 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
 # Make subdirectory
 subDirectory = []
-if args.scaleLumi:  subDirectory.append("shape")
-else:               subDirectory.append("lumi")
+if args.scaleLumi: subDirectory.append("shape")
+else:              subDirectory.append("lumi")
 
-if args.reweightPtWToSM: subDirectory.append("reweightPtWToSM")
+if args.reweightPtZToSM: subDirectory.append("reweightPtZToSM")
 
-if args.small:      subDirectory.append("small")
+if args.small:     subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
 # Import samples
@@ -71,13 +71,11 @@ if args.small:
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
 
-
 colors = [ ROOT.kMagenta+1, ROOT.kOrange, ROOT.kBlue, ROOT.kCyan+1, ROOT.kGreen+1, ROOT.kRed, ROOT.kViolet, ROOT.kYellow+2 ]
 
 coeffs = args.parameters[::2]
 str_vals = args.parameters[1::2]
 vals   = list( map( float, str_vals ) )
-# Parameters
 params = []
 for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
     params.append( { 
@@ -88,28 +86,27 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
 params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
 
 
-# Make stack and weight
-stack = Stack(*[ [ sample ] for param in params ] )
+# Make stack 
+stack  = Stack(*[ [ sample ] for param in params ] )
 
-# reweighting of pTW 
-if args.reweightPtWToSM:
-
+# reweighting of pTZ 
+if args.reweightPtZToSM:
     for param in params[::-1]:
-        param['ptW_histo'] = sample.get1DHistoFromDraw("W_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
-        if param['ptW_histo'].Integral()>0: param['ptW_histo'].Scale(1./param['ptW_histo'].Integral())
-        param['ptW_reweight_histo'] = params[-1]['ptW_histo'].Clone()
-        param['ptW_reweight_histo'].Divide(param['ptW_histo'])
-        logger.info( 'Made reweighting histogram for ptW and param-point %r with integral %f', param, param['ptW_reweight_histo'].Integral())
+        param['ptZ_histo'] = sample.get1DHistoFromDraw("Z_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
+        if param['ptZ_histo'].Integral()>0: param['ptZ_histo'].Scale(1./param['ptZ_histo'].Integral())
+        param['ptZ_reweight_histo'] = params[-1]['ptZ_histo'].Clone()
+        param['ptZ_reweight_histo'].Divide(param['ptZ_histo'])
+        logger.info( 'Made reweighting histogram for ptZ and param-point %r with integral %f', param, param['ptZ_reweight_histo'].Integral())
 
     def get_reweight( param ):
-
-        histo = param['ptW_reweight_histo']
-        var = 'W_pt'
+        histo = param['ptZ_reweight_histo']
+        var = 'Z_pt'
         bsm_rw = w.get_weight_func( **param['WC'] )
         def reweight(event, sample):
             i_bin = histo.FindBin(getattr( event, var ) )
-            return histo.GetBinContent(i_bin) * bsm_rw( event, sample ) * event.ref_lumiweight1fb * args.luminosity * event_factor
-
+            ref_lumiweight1fb = sample.xsecSM_NNLO * 1000. * sample.xsecBSM_LO / (sample.xsecSM_LO * sample.nEvents * event.p_C[0])
+#            return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * args.luminosity * event_factor
+            return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * ref_lumiweight1fb * args.luminosity * event_factor
         return reweight
 
     weight = [ [ get_reweight( param ) ] for param in params ]
@@ -117,7 +114,9 @@ else:
     def get_reweight( param ):
 
         def reweight(event, sample):
-            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * args.luminosity * event_factor
+            ref_lumiweight1fb = sample.xsecSM_NNLO * 1000. * sample.xsecBSM_LO / (sample.xsecSM_LO * sample.nEvents * event.p_C[0])
+#            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * args.luminosity * event_factor
+            return w.get_weight_func( **param['WC'] )( event, sample ) * ref_lumiweight1fb * args.luminosity * event_factor
 
         return reweight
 
@@ -186,7 +185,7 @@ def drawPlots(plots):
 	    logX = False, logY = log, sorting = True,
 	    yRange = (0.03, "auto") if log else (0., "auto"),
             scaling = {i:(len(params)-1) for i in range(len(params)-1)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
-	    #scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
+#	    scaling = {i:0 for i in range(1, len(params))} if args.scaleLumi else {}, #Scale BSM shapes to SM (first in list)
 	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,1.,0.9), 3),
 	    drawObjects = drawObjects( ),
         copyIndexPHP = True,
@@ -194,12 +193,12 @@ def drawPlots(plots):
 
 # Read variables and sequences
 read_variables = [
-    "ref_lumiweight1fb/F",
+#    "ref_lumiweight1fb/F", 
     "GenMet_pt/F", "GenMet_phi/F", 
     "nGenJet/I", "GenJet[pt/F,eta/F,phi/F,matchBParton/I]", 
     "nGenLep/I", "GenLep[pt/F,eta/F,phi/F,pdgId/I,motherPdgId/I]", 
     "ntop/I", "top[pt/F,eta/F,phi/F]", 
-    "W_pt/F", "W_eta/F", "W_phi/F", "W_mass/F", "W_daughterPdg/I",
+    "Z_pt/F", "Z_eta/F", "Z_phi/F", "Z_mass/F", "Z_cosThetaStar/F", "Z_daughterPdg/I",
 ]
 read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
@@ -236,17 +235,23 @@ def makeJets( event, sample ):
     
 sequence.append( makeJets )
 
+def makeMET( event, sample ):
+    ''' Make a MET vector to facilitate further calculations
+    '''
+    event.MET = {'pt':event.GenMet_pt, 'phi':event.GenMet_phi}
+    addTransverseVector( event.MET )
 
-def makeW( event, sample ):
+sequence.append( makeMET )
+
+def makeZ( event, sample ):
     ''' Make a Z vector to facilitate further calculations
     '''
-    event.W_unitVec2D = UnitVectorT2( event.W_phi )
-    event.W_vec4D     = ROOT.TLorentzVector()
-    event.W_vec4D.SetPtEtaPhiM( event.W_pt, event.W_eta, event.W_phi, event.W_mass )
-    event.W_unitVec3D = event.W_vec4D.Vect().Unit()
+    event.Z_unitVec2D = UnitVectorT2( event.Z_phi )
+    event.Z_vec4D     = ROOT.TLorentzVector()
+    event.Z_vec4D.SetPtEtaPhiM( event.Z_pt, event.Z_eta, event.Z_phi, event.Z_mass )
+    event.Z_unitVec3D = event.Z_vec4D.Vect().Unit()
 
-sequence.append( makeW )
-
+sequence.append( makeZ )
 
 def makeLeps( event, sample ):
     ''' Add a list of filtered leptons to the event
@@ -254,7 +259,7 @@ def makeLeps( event, sample ):
     # load leps
     event.leps = getCollection( event, 'GenLep', ['pt', 'eta', 'phi', 'pdgId', 'motherPdgId'], 'nGenLep' )
 
-    # filter, pre-selection requires 2 leptons (no default leptons necessary)
+    # filter, pre-selection requires 3 leptons (no default leptons necessary)
     event.leps = list( filter( lambda l:isGoodLepton( l ), event.leps ) )
 
     # Cross-cleaning: remove leptons that overlap with a jet within 0.4
@@ -268,17 +273,25 @@ def makeLeps( event, sample ):
         addTransverseVector( p )
         addTLorentzVector( p )
 
-    # Define W leptons
-    event.l0, event.l1 = ( event.leps + [NanLepton(), NanLepton()] )[:2]
-
-    event.deltaPhi_ll = deltaPhi( event.l0['phi'], event.l1['phi'] )
-    event.deltaR_ll   = deltaR( event.l0, event.l1 )
+    # find leptons from Z
+    event.lepsFromZ = list( filter( lambda j: j['motherPdgId'] == 23, event.leps ) )
+    event.foundZ    = len( event.lepsFromZ )==2 and event.lepsFromZ[0]['pdgId'] * event.lepsFromZ[1]['pdgId'] < 0 and abs(event.lepsFromZ[0]['pdgId']) == abs(event.lepsFromZ[1]['pdgId'])
+    event.Z_deltaPhi_ll = deltaPhi( event.lepsFromZ[0]['phi'], event.lepsFromZ[1]['phi'] ) if event.foundZ else float('nan')
+    event.Z_deltaR_ll   = deltaR( *event.lepsFromZ ) if event.foundZ else float('nan')
  
-#    # We may loose some events by cross-cleaning or by thresholds.
-    event.passing_2lep = len(event.leps)>=2 and event.l0['pdgId']*event.l1['pdgId'] > 0.
+    # find leptons that are NOT from Z 
+    event.lepsNotFromZ = list( filter( lambda j: j['motherPdgId'] != 23, event.leps ) )
+
+    # We may loose some events by cross-cleaning or by thresholds.
+    event.passing_3lep    = event.foundZ and len(event.lepsNotFromZ)>=1
+
+    # Add default lepton if leptons got filtered
+    event.lepsNotFromZ += [NanLepton()]
+
+    # Define non-Z leptons
+    event.l0 = event.lepsNotFromZ[0]
 
 sequence.append( makeLeps )
-
 
 def makeObservables( event, sample):
     ''' Compute all relevant observables
@@ -287,181 +300,235 @@ def makeObservables( event, sample):
     event.deltaPhi_bb = deltaPhi( event.bj0['phi'], event.bj1['phi'] )
     event.deltaR_bb = deltaR( event.bj0, event.bj1 )
 
-    # signed lepton pt
-    event.getlep0chargept = event.l0['pt'] if event.l0['pdgId']>0 else -event.l0['pt']
-    event.getlep1chargept = event.l1['pt'] if event.l1['pdgId']>0 else -event.l1['pt']
+    # Resolve pairing ambiguity by maximizing resulting top-lep pt  
+    event.b_lep, event.b_had = NanJet(), NanJet()
+    if ( event.bj0['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2() > ( event.bj1['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2():
+        event.b_lep = event.bj0
+        event.b_had = event.bj1
+    # Cross check if not NaN in particles
+    elif ( event.bj0['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2() < ( event.bj1['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2():
+	event.b_lep = event.bj1
+        event.b_had = event.bj0
+
+    # Make leptonic W, Nan if len(event.lepsNotFromZ == 0)
+    event.Wlep_vec2D = event.MET['vec2D'] + event.l0['vec2D']
+    # Lp, Nan if len(event.lepsNotFromZ == 0)
+    event.Wlep_Lp = ( event.Wlep_vec2D*event.l0['vec2D'] ) / ( event.Wlep_vec2D*event.Wlep_vec2D )
+    # classic MT, Nan if len(event.lepsNotFromZ == 0)
+    event.Wlep_MT = sqrt( MTSquared( event.MET, event.l0 ) )
+
+    # blep+lep subsystem, Nan if len(event.lepsNotFromZ == 0)
+    event.bleplep_vec2D = event.b_lep['vec2D'] + event.l0['vec2D']
+    event.bleplep_vec4D = event.b_lep['vec4D'] + event.l0['vec4D']
+
+    # transverse mass of top, Nan if len(event.lepsNotFromZ == 0)
+    event.t_MT = sqrt( MTSquared( event.l0, event.MET ) + MSquared( event.l0, event.b_lep ) + MTSquared( event.MET, event.b_lep ) )
+    event.t_vec2D = event.l0['vec2D'] + event.MET['vec2D'] + event.b_lep['vec2D']
+
+    # signed lepton pt, Nan if len(event.lepsNotFromZ == 0)
+    event.getnonZlepchargept = event.l0['pt'] if event.l0['pdgId']>0 else -event.l0['pt']
 
 sequence.append( makeObservables )
 
-
 # Use some defaults
 Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
-
+  
 if args.scaleLumi: y_label = 'norm. diff. xsec'
 else: y_label = 'diff. x-sec'
-  
+
 plots = []
 
-plots.append(Plot( name = "W_pt",
-  texX = 'p_{T}(W) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.W_pt if event.passing_2lep else float('nan'),
+plots.append(Plot( name = "Z_pt",
+  texX = 'p_{T}(Z) [GeV]', texY = y_label,
+  #attribute = lambda event, sample: event.Z_pt if event.passing_3lep else float('nan'),
+  attribute = lambda event, sample: event.Z_pt,
   binning=[20,0,500],
 ))
 
-plots.append(Plot( name = "W_mass",
-  texX = 'm(W) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.W_mass if event.passing_2lep else float('nan'),
-  binning=[20,60,100],
+plots.append(Plot( name = "Z_mass",
+  texX = 'm(ll) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.Z_mass if event.passing_3lep else float('nan'),
+  binning=[20,70,110],
 ))
 
-plots.append(Plot( name = 'W_phi',
-  texX = '#phi(W) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.W_phi if event.passing_2lep else float('nan'),
+plots.append(Plot( name = 'Z_phi',
+  texX = '#phi(Z) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.Z_phi if event.passing_3lep else float('nan'),
   binning=[20,-pi,pi],
 ))
 
-plots.append(Plot( name = 'W_eta',
-  texX = '#eta(W) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.W_eta if event.passing_2lep else float('nan'),
+plots.append(Plot( name = 'Z_eta',
+  texX = '#eta(Z) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.Z_eta if event.passing_3lep else float('nan'),
   binning=[20,-3,3],
+))
+
+plots.append(Plot( name = "Z_cosThetaStar",
+  texX = 'cos(#theta*)', texY = y_label,
+  attribute = lambda event, sample: event.Z_cosThetaStar if event.passing_3lep else float('nan'),
+  binning=[20,-1.2,1.2],
 ))
 
 plots.append(Plot( name = "b0_pt",
   texX = 'p_{T}(b_{0}) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.bj0['pt'] if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.bj0['pt'] if event.passing_3lep else float('nan'),
   binning=[20,0,400],
 ))
 
 plots.append(Plot( name = "b1_pt",
   texX = 'p_{T}(b_{1}) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.bj1['pt'] if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.bj1['pt'] if event.passing_3lep else float('nan'),
   binning=[20,0,400],
 ))
 
 plots.append(Plot( name = "b0_eta",
   texX = '#eta(b_{0})', texY = y_label,
-  attribute = lambda event, sample: event.bj0['eta'] if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.bj0['eta'] if event.passing_3lep else float('nan'),
   binning=[20,-3,3],
 ))
 
 plots.append(Plot( name = "b1_eta",
   texX = '#eta(b_{1})', texY = y_label,
-  attribute = lambda event, sample: event.bj1['eta'] if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.bj1['eta'] if event.passing_3lep else float('nan'),
   binning=[20,-3,3],
 ))
 
 plots.append(Plot( name = "b0_phi",
   texX = '#phi(b_{0})', texY = y_label,
-  attribute = lambda event, sample: event.bj0['phi'] if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.bj0['phi'] if event.passing_3lep else float('nan'),
   binning=[20,pi,pi],
 ))
 
 plots.append(Plot( name = "b1_phi",
   texX = '#phi(b_{1})', texY = y_label,
-  attribute = lambda event, sample: event.bj1['phi'] if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.bj1['phi'] if event.passing_3lep else float('nan'),
   binning=[20,pi,pi],
 ))
 
 plots.append(Plot( name = 'deltaPhi_bb',
   texX = '#Delta#phi(bb)', texY = y_label,
-  attribute = lambda event, sample: event.deltaPhi_bb if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.deltaPhi_bb if event.passing_3lep else float('nan'),
   binning=[20,0,pi],
 ))
 
 plots.append(Plot( name = 'deltaR_bb',
   texX = '#DeltaR(bb)', texY = y_label,
-  attribute = lambda event, sample: event.deltaR_bb if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.deltaR_bb if event.passing_3lep else float('nan'),
   binning=[20,0,6],
 ))
 
-plots.append(Plot( name = 'deltaPhi_ll',
+plots.append(Plot( name = 'Z_deltaPhi_ll',
   texX = '#Delta#phi(ll)', texY = y_label,
-  attribute = lambda event, sample: event.deltaPhi_ll if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.Z_deltaPhi_ll if event.passing_3lep else float('nan'),
   binning=[20,0,pi],
 ))
 
-plots.append(Plot( name = 'deltaR_ll',
+plots.append(Plot( name = 'Z_deltaR_ll',
   texX = '#DeltaR(ll)', texY = y_label,
-  attribute = lambda event, sample: event.deltaR_ll if event.passing_2lep else float('nan'),
-  binning=[20,0,6],
+  attribute = lambda event, sample: event.Z_deltaR_ll if event.passing_3lep else float('nan'),
+  binning=[20,0,4],
 ))
 
-plots.append(Plot( name = '2nu_Met_pt',
-  texX = 'E_{T}^{miss}(2#nu) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.GenMet_pt if event.passing_2lep else float('nan'),
+plots.append(Plot( name = 'Met_pt',
+  texX = 'E_{T}^{miss} [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.GenMet_pt if event.passing_3lep else float('nan'),
   binning=[20,0,400],
 ))
 
-plots.append(Plot( name	= '2nu_Met_phi',
-  texX = '#phi(E_{T}^{miss}(2#nu))', texY = y_label,
-  attribute = lambda event, sample: event.GenMet_phi if event.passing_2lep else float('nan'),
+plots.append(Plot( name	= 'Met_phi',
+  texX = '#phi(E_{T}^{miss})', texY = y_label,
+  attribute = lambda event, sample: event.GenMet_phi if event.passing_3lep else float('nan'),
   binning=[20,-pi,pi],
 ))
 
 plots.append(Plot( name = 'nbjets',
   texX = 'Number of b-Jets', texY = 'Number of Events',
-  attribute = lambda event, sample: len( event.trueBjets ) if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: len( event.trueBjets ) if event.passing_3lep else float('nan'),
   binning=[4,0,4],
 ))
 
 plots.append(Plot( name = 'njets',
   texX = 'Number of Jets', texY = 'Number of Events',
-  attribute = lambda event, sample: len( event.jets ) if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: len( event.jets ) if event.passing_3lep else float('nan'),
   binning=[10,0,10],
 ))
 
 plots.append(Plot( name = 'nleps',
   texX = 'Number of Leptons', texY = 'Number of Events',
-  attribute = lambda event, sample: len( event.leps ) if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: len( event.leps ) if event.passing_3lep else float('nan'),
   binning=[8,0,8],
 ))
 
-plots.append(Plot( name = 'l0_phi',
-  texX = '#phi(l_{0}) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.l0['phi'] if event.passing_2lep else float('nan'),
-  binning=[20,-pi,pi],
+plots.append(Plot( name = 'W_pt',
+  texX = 'p_{T}(W_{lep}) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.Wlep_vec2D.Mod() if event.passing_3lep else float('nan'),
+  binning=[20,0,400],
 ))
 
-plots.append(Plot( name = 'l0_eta',
-  texX = '#eta(l_{0}) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.l0['eta'] if event.passing_2lep else float('nan'),
+plots.append(Plot( name = 'W_Lp',
+  texX = 'L_{p} from W_{lep}', texY = y_label,
+  attribute = lambda event, sample: event.Wlep_Lp if event.passing_3lep else float('nan'),
   binning=[20,-3,3],
 ))
 
-plots.append(Plot( name = 'l1_pt',
-  texX = 'p_{T}(l_{1}) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.l1['pt'] if event.passing_2lep else float('nan'),
-  binning=[20,0,200],
+plots.append(Plot( name = 'bleplep_dot_nZ_2D',
+  texX = 'p_{T}(b_{lep} + l) [GeV] #upoint n(Z) (2D)', texY = y_label,
+  attribute = lambda event, sample: event.bleplep_vec2D*event.Z_unitVec2D if event.passing_3lep else float('nan'),
+  binning=[20,-400,400],
 ))
 
-plots.append(Plot( name = 'l1_phi',
-  texX = '#phi(l_{1}) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.l1['phi'] if event.passing_2lep else float('nan'),
+plots.append(Plot( name = 'bleplep_dot_nZ_3D',
+  texX = 'p_{T}(b_{lep} + l) [GeV] #upoint n(Z) (3D)', texY = y_label,
+  attribute = lambda event, sample: event.bleplep_vec4D.Vect()*event.Z_unitVec3D if event.passing_3lep else float('nan'),
+  binning=[20,-400,400],
+))
+
+plots.append(Plot( name = 'top_dot_nZ',
+  texX = 'p_{T}(t_{lep}) [GeV] #upoint n(Z)', texY = y_label,
+  attribute = lambda event, sample: event.t_vec2D*event.Z_unitVec2D if event.passing_3lep else float('nan'),
+  binning=[20,-400,400],
+))
+
+plots.append(Plot( name = 'top_lep_pt',
+  texX = 'p_{T}(t_{lep}) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.t_vec2D.Mod() if event.passing_3lep else float('nan'),
+  binning=[20,0,400],
+))
+
+plots.append(Plot( name = 'lnonZ_phi',
+  texX = '#phi(l^{non-Z}) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.l0['phi'] if event.passing_3lep else float('nan'),
   binning=[20,-pi,pi],
 ))
 
-plots.append(Plot( name = 'l1_eta',
-  texX = '#eta(l_{1}) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.l1['eta'] if event.passing_2lep else float('nan'),
+plots.append(Plot( name = 'lnonZ_eta',
+  texX = '#eta(l^{non-Z}) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.l0['eta'] if event.passing_3lep else float('nan'),
   binning=[20,-3,3],
 ))
 
-plots.append(Plot( name = 'l0_pt',
-  texX = 'p_{T}(l_{0}) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.l0['pt'] if event.passing_2lep else float('nan'),
+plots.append(Plot( name = 'lnonZ_pt',
+  texX = 'p_{T}(l^{non-Z}) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.l0['pt'] if event.passing_3lep else float('nan'),
   binning=[20,0,200],
 ))
 
-plots.append(Plot( name = 'l0_pt_charge',
-  texX = 'p_{T}(l_{0}) [GeV] signed with lepton charge', texY = y_label,
-  attribute = lambda event, sample: event.getlep0chargept if event.passing_2lep else float('nan'),
+plots.append(Plot( name = 'lnonZ_pt_charge',
+  texX = 'p_{T}(l^{non-Z}) [GeV] signed with lepton charge', texY = y_label,
+  attribute = lambda event, sample: event.getnonZlepchargept if event.passing_3lep else float('nan'),
   binning=[20,-200,200],
 ))
 
-plots.append(Plot( name = 'l1_pt_charge',
-  texX = 'p_{T}(l_{1}) [GeV] signed with lepton charge', texY = y_label,
-  attribute = lambda event, sample: event.getlep1chargept if event.passing_2lep else float('nan'),
-  binning=[20,-200,200],
+plots.append(Plot( name = 'mT_W',
+  texX = 'm_{T}(W_{lep}) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.Wlep_MT if event.passing_3lep else float('nan'),
+  binning=[20,0,150],
+))
+
+plots.append(Plot( name = 'mT_t',
+  texX = 'm_{T}(t_{lep}) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.t_MT if event.passing_3lep else float('nan'),
+  binning=[20,0,300],
 ))
 
 plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_events = -1 if args.small else -1)

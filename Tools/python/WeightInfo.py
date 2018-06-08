@@ -315,10 +315,11 @@ class WeightInfo:
 
         # initialize FI matrix with 1/weight (same for all entries)
         weight_yield = self.get_weight_yield( coeffList, **kwargs ) 
-        fi_matrix = np.full( ( len(variables), len(variables) ), 1. / weight_yield if weight_yield!=0 else 0)
+        fi_matrix = np.full( ( len(variables), len(variables) ), 1. / weight_yield if weight_yield != 0 else 0)
 
         for i, var_i in enumerate(variables):
             for j, var_j in enumerate(variables):
+                if fi_matrix[i,j] == 0: continue
                 if i<=j: 
                     fi_matrix[i,j] *= diff_weight_yield[var_i] * diff_weight_yield[var_j]
                 else:
@@ -366,13 +367,13 @@ if __name__ == "__main__":
     from TTXPheno.samples.benchmarks import * 
 
     # Sample
-    sample = fwlite_ttZ_ll_LO_order2_15weights_ref
+    sample = fwlite_ttZ_ll_LO_order2_15weights
     # Debug 1 event
     sample.reduceFiles( to = 1 )
     w = WeightInfo(sample.reweight_pkl)
     w.set_order( 2 )
 
-    selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p')
+    selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
     #selection_string = "evt==955001&&run==1&&lumi==9551"
 
     # Make a coeff histo from a sample
@@ -406,8 +407,11 @@ if __name__ == "__main__":
 
     variables = ['cpQM', 'cpt']
 
+    print(len(coeff_Z_pt))
     print w.matrix_to_string(*w.get_total_fisherInformation_matrix(coeff_Z_pt, variables))
-    print np.linalg.eigh(w.get_total_fisherInformation_matrix(coeff_Z_pt, variables)[1])
+    print np.linalg.eigvals(w.get_total_fisherInformation_matrix(coeff_Z_pt, variables)[1])
+
+
 #    print w.matrix_to_string(*w.get_fisherInformation_matrix(coeff_Z_pt))
 #    print w.variables
 #    print w.get_weight_string(ctZ=5)
