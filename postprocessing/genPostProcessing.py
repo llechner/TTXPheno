@@ -59,17 +59,17 @@ else:
     sample = getattr( samples, args.sample )
     logger.debug( 'Loaded sample %s with %i files.', sample.name, len(sample.files) )
 
-# output directory
-output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, sample.name) 
-if not os.path.exists( output_directory ): 
-    os.makedirs( output_directory )
-    logger.info( "Created output directory %s", output_directory )
-
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
     maxEvents=10 # Number of files
     sample.files=sample.files[:1]
+
+# output directory
+output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, sample.name) 
+if not os.path.exists( output_directory ): 
+    os.makedirs( output_directory )
+    logger.info( "Created output directory %s", output_directory )
 
 # Load reweight pickle file if supposed to keep weights. 
 extra_variables = []
@@ -150,6 +150,9 @@ variables     += ["W_pt/F", "W_phi/F", "W_eta/F", "W_mass/F", "W_daughterPdg/I"]
 variables     += ["gamma_pt/F", "gamma_phi/F", "gamma_eta/F", "gamma_mass/F"]
 if args.addReweights:
     variables.append('rw_nominal/F')
+    # Lumi weight 1fb / w_0
+    variables.append("ref_lumiweight1fb/F")
+
 
 def fill_vector( event, collection_name, collection_varnames, objects):
     setattr( event, "n"+collection_name, len(objects) )
@@ -163,7 +166,7 @@ def filler( event ):
 
     event.run, event.lumi, event.evt = reader.evt
 
-    event.lumiweight1fb = sample.xsec*1000./sample.nEvents
+    event.lumiweight1fb = sample.xsecSM_NNLO * 1000. / sample.nEvents
 
     if reader.position % 100==0: logger.info("At event %i/%i", reader.position, reader.nEvents)
 
@@ -185,8 +188,11 @@ def filler( event ):
             # weight data for interpolation
             if not hyperPoly.initialized: param_points.append( tuple(interpreted_weight[var] for var in weightInfo.variables) )
 
+        # get list of values of ref point in specific order
+        ref_point_coordinates = [weightInfo.ref_point_coordinates[var] for var in weightInfo.variables]
+
         # Initialize with Reference Point
-        if not hyperPoly.initialized: hyperPoly.initialize( param_points, weightInfo.ref_point_coordinates )
+        if not hyperPoly.initialized: hyperPoly.initialize( param_points, ref_point_coordinates )
         coeff = hyperPoly.get_parametrization( weights )
 
         # = HyperPoly(weight_data, args.interpolationOrder)
@@ -196,6 +202,13 @@ def filler( event ):
         logger.debug( "chi2_ndof %f", event.chi2_ndof )
         for n in xrange(hyperPoly.ndof):
             event.p_C[n] = coeff[n]
+
+        # scale to ref point
+        if not all([ val == 0 for val in ref_point_coordinates ]):
+            event.lumiweight1fb *= sample.xsecBSM_LO / sample.xsecSM_LO
+
+        # lumi weight / w0
+        event.ref_lumiweight1fb = event.lumiweight1fb / coeff[0]
 
     # All gen particles
     gp      = reader.products['gp']
