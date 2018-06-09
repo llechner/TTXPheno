@@ -123,33 +123,33 @@ def varnames( vec_vars ):
 variables  = ["run/I", "lumi/I", "evt/l"]
 
 # MET
-variables += ["GenMet_pt/F", "GenMet_phi/F"]
+variables += ["genMet_pt/F", "genMet_phi/F"]
 
 # jet vector
 jet_read_vars       =  "pt/F,eta/F,phi/F"
 jet_read_varnames   =  varnames( jet_read_vars )
 jet_write_vars      = jet_read_vars+',matchBParton/I' 
 jet_write_varnames  =  varnames( jet_write_vars )
-variables     += ["GenJet[%s]"%jet_write_vars]
+variables     += ["genJet[%s]"%jet_write_vars]
 # lepton vector 
 lep_vars       =  "pt/F,eta/F,phi/F,pdgId/I"
 lep_extra_vars =  "motherPdgId/I"
 lep_varnames   =  varnames( lep_vars ) 
 lep_all_varnames = lep_varnames + varnames(lep_extra_vars)
-variables     += ["GenLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
+variables     += ["genLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
 # top vector
 top_vars       =  "pt/F,eta/F,phi/F"
 top_varnames   =  varnames( top_vars ) 
-variables     += ["top[%s]"%top_vars]
+variables     += ["genTop[%s]"%top_vars]
 
 # to be stored for each boson
 boson_read_varnames= [ 'pt', 'phi', 'eta', 'mass']
 # Z vector
-variables     += ["Z_pt/F", "Z_phi/F", "Z_eta/F", "Z_mass/F", "Z_cosThetaStar/F", "Z_daughterPdg/I"]
+variables     += ["genZ_pt/F", "genZ_phi/F", "genZ_eta/F", "genZ_mass/F", "genZ_cosThetaStar/F", "genZ_daughterPdg/I"]
 # W vector
-variables     += ["W_pt/F", "W_phi/F", "W_eta/F", "W_mass/F", "W_daughterPdg/I"]
+variables     += ["genW_pt/F", "genW_phi/F", "genW_eta/F", "genW_mass/F", "genW_daughterPdg/I"]
 # gamma vector
-variables     += ["gamma_pt/F", "gamma_phi/F", "gamma_eta/F", "gamma_mass/F"]
+variables     += ["genGamma_pt/F", "genGamma_phi/F", "genGamma_eta/F", "genGamma_mass/F"]
 
 # Lumi weight 1fb
 variables += ["lumiweight1fb/F"]
@@ -202,7 +202,7 @@ def filler( event ):
         event.np = hyperPoly.ndof
         event.chi2_ndof = hyperPoly.chi2_ndof(coeff, weights)
         #logger.debug( "chi2_ndof %f coeff %r", event.chi2_ndof, coeff )
-        logger.debug( "chi2_ndof %f", event.chi2_ndof )
+        if event.chi2_ndof>10**-6: logger.warning( "chi2_ndof is large: %f", event.chi2_ndof )
         for n in xrange(hyperPoly.ndof):
             event.p_C[n] = coeff[n]
 
@@ -218,91 +218,91 @@ def filler( event ):
     search  = GenSearch( gp )
 
     # find heavy objects before they decay
-    tops = map( lambda t:{var: getattr(t, var)() for var in top_varnames}, filter( lambda p:abs(p.pdgId())==6 and search.isLast(p),  gp) )
+    genTops = map( lambda t:{var: getattr(t, var)() for var in top_varnames}, filter( lambda p:abs(p.pdgId())==6 and search.isLast(p),  gp) )
 
-    tops.sort( key = lambda p:-p['pt'] )
-    fill_vector( event, "top", top_varnames, tops ) 
+    genTops.sort( key = lambda p:-p['pt'] )
+    fill_vector( event, "genTop", top_varnames, genTops ) 
 
     # generated Z's
-    gen_Zs = filter( lambda p:abs(p.pdgId())==23 and search.isLast(p), gp)
-    gen_Zs.sort( key = lambda p: -p.pt() )
-    if len(gen_Zs)>0: 
-        gen_Z = gen_Zs[0]
+    genZs = filter( lambda p:abs(p.pdgId())==23 and search.isLast(p), gp)
+    genZs.sort( key = lambda p: -p.pt() )
+    if len(genZs)>0: 
+        genZ = genZs[0]
         for var in boson_read_varnames:
-           setattr( event, "Z_"+var,  getattr(gen_Z, var)() )
+           setattr( event, "genZ_"+var,  getattr(genZ, var)() )
     else:
-        gen_Z = None
+        genZ = None
     
-    if gen_Z is not None:
+    if genZ is not None:
 
-        d1, d2 = gen_Z.daughter(0), gen_Z.daughter(1)
+        d1, d2 = genZ.daughter(0), genZ.daughter(1)
         if d1.pdgId()>0: 
             lm, lp = d1, d2
         else:
             lm, lp = d2, d1
-        event.Z_daughterPdg = lm.pdgId()
-        event.Z_cosThetaStar = cosThetaStar(gen_Z.mass(), gen_Z.pt(), gen_Z.eta(), gen_Z.phi(), lm.pt(), lm.eta(), lm.phi())
+        event.genZ_daughterPdg = lm.pdgId()
+        event.genZ_cosThetaStar = cosThetaStar(genZ.mass(), genZ.pt(), genZ.eta(), genZ.phi(), lm.pt(), lm.eta(), lm.phi())
 
     # generated W's
-    gen_Ws = filter( lambda p:abs(p.pdgId())==24 and search.isLast(p), gp)
-    gen_Ws.sort( key = lambda p: -p.pt() )
+    genWs = filter( lambda p:abs(p.pdgId())==24 and search.isLast(p), gp)
+    genWs.sort( key = lambda p: -p.pt() )
     # W can't have a top-mother - We're looking for the extra boson (there is always an extra boson)
-    gen_Ws = filter( lambda p: abs(search.ascend(p).mother(0).pdgId())!=6, gen_Ws )
-    if len(gen_Ws)>0: 
-        gen_W = gen_Ws[0]
+    genWs = filter( lambda p: abs(search.ascend(p).mother(0).pdgId())!=6, genWs )
+    if len(genWs)>0: 
+        genW = genWs[0]
         for var in boson_read_varnames:
-           setattr( event, "W_"+var,  getattr(gen_W, var)() )
+           setattr( event, "genW_"+var,  getattr(genW, var)() )
     else:
-        gen_W = None
+        genW = None
     
-    if gen_W is not None:
+    if genW is not None:
 
-        d1, d2 = gen_W.daughter(0), gen_W.daughter(1)
+        d1, d2 = genW.daughter(0), genW.daughter(1)
         if abs(d1.pdgId()) in [11, 13, 15]: 
             lep, neu = d1, d2
         else:
             lep, neu = d2, d1
 
-        event.W_daughterPdg = lep.pdgId()
+        event.genW_daughterPdg = lep.pdgId()
 
-    gen_Gammas = filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp)
-    gen_Gammas.sort( key = lambda p: -p.pt() )
-    if len(gen_Gammas)>0: 
-        gen_Gamma = gen_Gammas[0]
+    genGammas = filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp)
+    genGammas.sort( key = lambda p: -p.pt() )
+    if len(genGammas)>0: 
+        genGamma = genGammas[0]
         for var in boson_read_varnames:
-           setattr( event, "gamma_"+var,  getattr(gen_Gamma, var)() )
+           setattr( event, "genGamma_"+var,  getattr(genGamma, var)() )
     else:
-        gen_Gamma = None
+        genGamma = None
     
-    # find all leptons 
-    leptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0,  gp) ]
-    leps    = []
-    for first, last in leptons:
+    # find all genLeptons 
+    genLeptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0,  gp) ]
+    genLeps    = []
+    for first, last in genLeptons:
         mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
-        leps.append( {var: getattr(last, var)() for var in lep_varnames} )
-        leps[-1]['motherPdgId'] = mother_pdgId
+        genLeps.append( {var: getattr(last, var)() for var in lep_varnames} )
+        genLeps[-1]['motherPdgId'] = mother_pdgId
 
-    leps.sort( key = lambda p:-p['pt'] )
-    fill_vector( event, "GenLep", lep_all_varnames, leps)
+    genLeps.sort( key = lambda p:-p['pt'] )
+    fill_vector( event, "genLep", lep_all_varnames, genLeps)
 
     # MET
-    event.GenMet_pt = reader.products['genMET'][0].pt()
-    event.GenMet_phi = reader.products['genMET'][0].phi()
+    event.genMet_pt = reader.products['genMET'][0].pt()
+    event.genMet_phi = reader.products['genMET'][0].phi()
 
     # jets
-    jets = map( lambda t:{var: getattr(t, var)() for var in jet_read_varnames}, filter( lambda j:j.pt()>30, reader.products['genJets']) )
+    genJets = map( lambda t:{var: getattr(t, var)() for var in jet_read_varnames}, filter( lambda j:j.pt()>30, reader.products['genJets']) )
 
     # jet/lepton disambiguation
-    jets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in leps if l['pt']>10]) > 0.3**2 ), jets )
+    genJets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in genLeps if l['pt']>10]) > 0.3**2 ), genJets )
 
     # find b's from tops:
     b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
 
-    for jet in jets:
-        jet['matchBParton'] = ( min([999]+[deltaR2(jet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
+    for genJet in genJets:
+        genJet['matchBParton'] = ( min([999]+[deltaR2(genJet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
 
-    jets.sort( key = lambda p:-p['pt'] )
-    fill_vector( event, "GenJet", jet_write_varnames, jets)
+    genJets.sort( key = lambda p:-p['pt'] )
+    fill_vector( event, "genJet", jet_write_varnames, genJets)
 
     # Reco quantities
     #if args.delphes:
