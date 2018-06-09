@@ -5,6 +5,7 @@ See https://twiki.cern.ch/twiki/bin/viewauth/CMS/DelphesUPG
 # Standard imports
 import os
 import subprocess
+import ROOT
 
 # Logger
 import logging

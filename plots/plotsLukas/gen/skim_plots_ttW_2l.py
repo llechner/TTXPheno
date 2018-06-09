@@ -17,6 +17,7 @@ from TTXPheno.Tools.user                 import plot_directory
 from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.Tools.cutInterpreter       import cutInterpreter
+from TTXPheno.Tools.objectSelection      import isGoodGenJet, isGoodGenLepton
 
 # Import samples
 from TTXPheno.samples.benchmarks         import *
@@ -217,7 +218,7 @@ def makeJets( event, sample ):
     event.jets = getCollection( event, 'GenJet', ['pt', 'eta', 'phi', 'matchBParton'], 'nGenJet' )
 
     # filter, pre-selection requires 3 leptons (no default leptons necessary)
-    event.jets = list( filter( lambda j:isGoodJet( j ), event.jets ) )
+    event.jets = list( filter( lambda j:isGoodGenJet( j ), event.jets ) )
 
     # sort
     event.jets = sorted( event.jets, key=lambda k: -k['pt'] )
@@ -255,7 +256,7 @@ def makeLeps( event, sample ):
     event.leps = getCollection( event, 'GenLep', ['pt', 'eta', 'phi', 'pdgId', 'motherPdgId'], 'nGenLep' )
 
     # filter, pre-selection requires 2 leptons (no default leptons necessary)
-    event.leps = list( filter( lambda l:isGoodLepton( l ), event.leps ) )
+    event.leps = list( filter( lambda l:isGoodGenLepton( l ), event.leps ) )
 
     # Cross-cleaning: remove leptons that overlap with a jet within 0.4
     event.leps = list(filter( lambda l: min( [ deltaR(l, j) for j in event.jets ] + [999] ) > 0.4 , event.leps ))
