@@ -35,7 +35,7 @@ argParser.add_argument('--order',               action='store',      default=2)
 argParser.add_argument('--selection',           action='store',      default='gammapt40-nlep2p-njet2p-nbjet1p', help="Specify cut.")
 argParser.add_argument('--small',               action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',           action='store_true', help='Scale lumi only??')
-argParser.add_argument('--reweightPtGammaToSM', action='store_true', help='Reweight Pt(gamma) to the SM for all the signals?', )
+argParser.add_argument('--reweightPtPhotonToSM', action='store_true', help='Reweight Pt(gamma) to the SM for all the signals?', )
 argParser.add_argument('--parameters',          action='store',      default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',          action='store',      default=150)
 
@@ -52,7 +52,7 @@ subDirectory = []
 if args.scaleLumi:  subDirectory.append("shape")
 else:               subDirectory.append("lumi")
 
-if args.reweightPtGammaToSM: subDirectory.append("reweightPtGammaToSM")
+if args.reweightPtPhotonToSM: subDirectory.append("reweightPtPhotonToSM")
 
 if args.small:      subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
@@ -93,8 +93,8 @@ def get_weight_function( param ):
     return reweight
 
 
-# reweighting of pTGamma 
-if args.reweightPtGammaToSM:
+# reweighting of pTPhoton 
+if args.reweightPtPhotonToSM:
     for param in params[::-1]:
         param['ptgamma_histo'] = sample.get1DHistoFromDraw("gamma_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
         if param['ptgamma_histo'].Integral()>0: param['ptgamma_histo'].Scale(1./param['ptgamma_histo'].Integral())
@@ -230,7 +230,7 @@ def makeJets( event, sample ):
     
 sequence.append( makeJets )
 
-def makeGamma( event, sample ):
+def makePhoton( event, sample ):
     ''' Make a gamma vector to facilitate further calculations
     '''
     event.gamma_unitVec2D = UnitVectorT2( event.gamma_phi )
@@ -238,7 +238,7 @@ def makeGamma( event, sample ):
     event.gamma_vec4D.SetPtEtaPhiM( event.gamma_pt, event.gamma_eta, event.gamma_phi, event.gamma_mass )
     event.gamma_unitVec3D = event.gamma_vec4D.Vect().Unit()
 
-sequence.append( makeGamma )
+sequence.append( makePhoton )
 
 def makeLeps( event, sample ):
     ''' Add a list of filtered leptons to the event

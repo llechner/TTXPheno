@@ -18,6 +18,7 @@ class DelphesReader:
 
     # Read a vector collection from the Delphes reader
     def read_collection( self, collection, variables ):
+        ''' read delphes collection and rename leaves'''
         nColl   = getattr( self.reader, collection+"_size" )
         buffers = {var_old: getattr( self.reader, collection+'_'+var_old) for var_old, var_new in variables}
         return [{var_new:buffers[var_old][i] for var_old, var_new in variables} for i in range(nColl)]
@@ -30,6 +31,7 @@ class DelphesReader:
             ])
         for r in res:
             r['pdgId'] = -13*r['charge']
+            r['ehadOverEem'] = float('nan')
         return res
 
     def electrons( self ):
@@ -46,12 +48,15 @@ class DelphesReader:
     def jets( self ):
         return self.read_collection( 'Jet', 
             [   ('PT', 'pt'), ( 'Eta', 'eta'), ('Phi', 'phi'),
-                ('BTag', 'bTag'), ( 'bTagPhys', 'bTagPhys')
+                ('BTag', 'bTag'), ( 'BTagPhys', 'bTagPhys')
             ])
 
     def photons( self ):
-        return self.read_collection( 'Jet', 
+        return self.read_collection( 'Photon', 
             [   ('PT', 'pt'), ( 'Eta', 'eta'), ('Phi', 'phi'),
+                ('IsolationVar', 'isolationVar'), ('IsolationVarRhoCorr', 'isolationVarRhoCorr'),  
+                ('SumPtCharged', 'sumPtCharged'),  ('SumPtNeutral', 'sumPtNeutral'), ('SumPtChargedPU', 'sumPtChargedPU'),  ('SumPt', 'sumPt'),
+                ('EhadOverEem','ehadOverEem') 
             ])
 
     def met( self ):

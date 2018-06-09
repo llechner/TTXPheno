@@ -30,8 +30,8 @@ declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p' 'gammapt40to100-nlep2p-
 declare -a samplesizes=('')
 
 # declare reweighting
-declare -a reweightings=('' '--reweightPtGammaToSM')
-#declare -a reweightings=('--reweightPtGammaToSM')
+declare -a reweightings=('' '--reweightPtPhotonToSM')
+#declare -a reweightings=('--reweightPtPhotonToSM')
 #declare -a reweightings=('')
 
 # declare scale
