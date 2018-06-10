@@ -33,7 +33,7 @@ argParser.add_argument('--logLevel',           action='store',      default='INF
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')#, default = True)
 argParser.add_argument('--delphes',            action='store_true', help='Run Delphes?')
 argParser.add_argument('--overwrite',          action='store_true', help='Overwrite?')#, default = True)
-argParser.add_argument('--targetDir',          action='store',      default='v3')
+argParser.add_argument('--targetDir',          action='store',      default='v5')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_scan', help="Name of the sample loaded from fwlite_benchmarks. Only if no inputFiles are specified")
 argParser.add_argument('--inputFiles',         action='store',      nargs = '*', default=[])
 argParser.add_argument('--targetSampleName',   action='store',      default=None, help="Name of the sample in case inputFile are specified. Otherwise ignored")
@@ -167,7 +167,7 @@ if args.delphes:
     recoJet_varnames= varnames( recoJet_vars )
 
     # reconstructed photons
-    recoPhoton_vars = 'pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F'
+    recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F'
     variables      += ["recoPhoton[%s]"%recoPhoton_vars]
     recoPhoton_varnames = varnames( recoPhoton_vars )
 
