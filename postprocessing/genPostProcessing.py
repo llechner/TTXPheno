@@ -17,7 +17,7 @@ from RootTools.core.standard             import *
 #TTXPheno
 from TTXPheno.Tools.user                   import skim_output_directory
 from TTXPheno.Tools.GenSearch              import GenSearch
-from TTXPheno.Tools.helpers                import deltaR2, cosThetaStar
+from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cosThetaStar, closestOSDLMassToMZ
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
@@ -154,7 +154,7 @@ variables     += ["genPhoton_pt/F", "genPhoton_phi/F", "genPhoton_eta/F", "genPh
 
 if args.delphes:
     # reconstructed bosons
-    variables     += ["recoZ_pt/F", "recoZ_phi/F", "recoZ_eta/F", "recoZ_mass/F", "recoZ_cosThetaStar/F", "recoZ_daughterPdg/I"]
+    variables     += ["recoZ_l1_index/I", "recoZ_l2_index/I", "recoNonZ_l1_index/I", "recoNonZ_l2_index/I",  "recoZ_pt/F", "recoZ_eta/F", "recoZ_phi/F", "recoZ_mass/F", "recoZ_lldPhi/F", "recoZ_lldR/F", "recoZ_cosThetaStar/F"]
 
     # reconstructed leptons
     recoLep_vars       = "pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F"
@@ -345,21 +345,30 @@ def filler( event ):
     if args.delphes:
         delphesReader.getEntry(reader.position-1 )
 
+        # read jets
+        recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
+        recoJets.sort( key = lambda p:-p['pt'] )
+
         # read leptons
         recoLeps =  filter( isGoodRecoMuon, delphesReader.muons()) + filter( isGoodRecoElectron, delphesReader.electrons() )
         recoLeps.sort( key = lambda p:-p['pt'] )
 
-        # read jets
-        recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
-        recoJets.sort( key = lambda p:-p['pt'] )
-        #for i_lep, lep in enumerate(recoLeps):
-        #    min_DR=999
-        #    min_jet=None
-        #    for jet in recoJets:
-        #        if deltaR2(jet, lep)<min_DR:
-        #            min_DR_jet = jet
-        #            min_DR     = deltaR2(jet, lep)
-        #    if min_DR<0.4**2: print "Filtering", reader.position, sqrt(min_DR), lep, min_DR_jet
+        for i_lep, lep in enumerate(recoLeps):
+            min_DR=999
+            min_jet=None
+            for jet in recoJets:
+                if deltaR2(jet, lep)<min_DR:
+                    min_DR_jet = jet
+                    min_DR     = deltaR2(jet, lep)
+            if min_DR<0.4**2: 
+                print "Filtering lepton", lep, "because DR", sqrt(min_DR), "of jet", jet
+                break
+
+        # cross-cleaning of reco-objects
+        recoLeps = filter( lambda l: (min([999]+[deltaR2(l, j) for j in recoJets if j['pt']>30]) > 0.3**2 ), recoLeps )
+        # give index to leptons
+        for i_lep, lep in enumerate(recoLeps):
+            lep['index'] = i_lep
 
         # Photons
         recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
@@ -374,6 +383,32 @@ def filler( event ):
 
         event.recoMet_pt  = recoMet['pt']
         event.recoMet_phi = recoMet['phi']
+
+        # search for reco Z in reco leptons
+        (event.recoZ_mass, recoZ_l1_index, recoZ_l2_index) = closestOSDLMassToMZ(recoLeps)
+        recoNonZ_indices = [ i for i in range(len(recoLeps)) if i not in [recoZ_l1_index, recoZ_l2_index] ]
+        event.recoZ_l1_index    = recoLeps[recoZ_l1_index]['index'] if recoZ_l1_index>=0 else -1
+        event.recoZ_l2_index    = recoLeps[recoZ_l2_index]['index'] if recoZ_l2_index>=0 else -1
+        event.recoNonZ_l1_index = recoLeps[recoNonZ_indices[0]]['index'] if len(recoNonZ_indices)>0 else -1
+        event.recoNonZ_l2_index = recoLeps[recoNonZ_indices[1]]['index'] if len(recoNonZ_indices)>1 else -1
+
+        # Store Z information 
+        if event.recoZ_mass>=0:
+            if recoLeps[event.recoZ_l1_index]['pdgId']*recoLeps[event.recoZ_l2_index]['pdgId']>0 or abs(recoLeps[event.recoZ_l1_index]['pdgId'])!=abs(recoLeps[event.recoZ_l2_index]['pdgId']): 
+                raise RuntimeError( "not a Z! Should not happen" )
+            Z_l1 = ROOT.TLorentzVector()
+            Z_l1.SetPtEtaPhiM(recoLeps[event.recoZ_l1_index]['pt'], recoLeps[event.recoZ_l1_index]['eta'], recoLeps[event.recoZ_l1_index]['phi'], 0 )
+            Z_l2 = ROOT.TLorentzVector()
+            Z_l2.SetPtEtaPhiM(recoLeps[event.recoZ_l2_index]['pt'], recoLeps[event.recoZ_l2_index]['eta'], recoLeps[event.recoZ_l2_index]['phi'], 0 )
+            Z = Z_l1 + Z_l2
+            event.recoZ_pt   = Z.Pt()
+            event.recoZ_eta  = Z.Eta()
+            event.recoZ_phi  = Z.Phi()
+            event.recoZ_lldPhi = deltaPhi(recoLeps[event.recoZ_l1_index]['phi'], recoLeps[event.recoZ_l2_index]['phi'])
+            event.recoZ_lldR   = deltaR(recoLeps[event.recoZ_l1_index], recoLeps[event.recoZ_l2_index])
+            lm_index = event.recoZ_l1_index if recoLeps[event.recoZ_l1_index]['pdgId'] > 0 else event.recoZ_l2_index
+            event.recoZ_cosThetaStar = cosThetaStar(event.recoZ_mass, event.recoZ_pt, event.recoZ_eta, event.recoZ_phi, recoLeps[lm_index]['pt'], recoLeps[lm_index]['eta'], recoLeps[lm_index]['phi'] )
+
          
 tmp_dir     = ROOT.gDirectory
 #post_fix = '_%i'%args.job if args.nJobs > 1 else ''
