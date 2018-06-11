@@ -4,26 +4,15 @@
 # standard imports
 from math import *
 import numpy as np
-# scipy 
-from scipy.integrate import odeint
 
 class Geodesic:
 
-    def __init__( self,  initial_point, initial_derivative, christoffel_symbols):
-
-        if len(variables)!=len(initial_point) or len(initial_derivative)!=len(christoffel_symbols):
-            raise RuntimeError( "Inconsistent dimensions: initial_point %i initial_derivative %i christoffel_symbol %i" \
-                    %(len(initial_point), len(initial_derivative), len(christoffel_symbols)) 
-                ) 
+    def __init__( self, christoffel_symbols ):
 
         # dimension
-        self.dim                    = len(initial_point)
-        # Expect a tuple of floats
-        self.initial_point          = initial_point
-
+        self.dim                    = len(christoffel_symbols)
         # Initialize start point
         self.q0                     = 0.
-        self.initial_conditions     = sum( [ [ initial_point[i], initial_derivative[i] ] for i in range(self.dim)], [])
 
         # Expect a tuple of functions of a point returning Gamma^i_{jk} where i is the tuple index
         # christoffel_symbols[0](0,1) should evaluate to Gamma^0_{0,1}
@@ -51,11 +40,28 @@ class Geodesic:
         self.rhs = rhs
 
 
-    def solve( self, q_values):
+    def solve_ivp( self, initial_point, initial_derivative, q_values):
+        ''' Solve the initial value problem '''
+        if len(initial_point)!=len(self.christoffel_symbols) or len(initial_derivative)!=len(self.christoffel_symbols):
+            raise RuntimeError( "Inconsistent dimensions: initial_point %i initial_derivative %i christoffel_symbol %i" \
+                    %(len(initial_point), len(initial_derivative), len(christoffel_symbols)) 
+                ) 
+        # Expect a tuple of floats
+        initial_conditions     = sum( [ [ initial_point[i], initial_derivative[i] ] for i in range(self.dim)], [])
 
-        return odeint(self.rhs, self.initial_conditions, q_values )
+        from scipy.integrate import odeint
+        return odeint(self.rhs, initial_conditions, q_values )
         #.set_integrator('vode', method='bdf') 
         #integrator.set_initial_value(self.initial_conditions, q0).set_f_params(2.0).set_jac_params(2.0) 
+
+    #def solve_bvp( self, initial_point, end_point, q_values):
+    #    ''' Solve the boundary value problem '''
+    #    def bc( ya, yb ):
+    #        # Return the positions as boundary conditions
+    #        return np.array([ya[2*i]-initial_point[i] for i in range(self.dim)] + [yb[2*i]-end_point[i] for i in range(self.dim)])
+    #    
+    #    from scipy.integrate import solve_bvp
+    #    return solve_bvp( lambda x,y: self.rhs(y,x), bc, q_values )        
 
 def phase_space_dict(  point ):
     return { var:val for var,val in zip( sum( [ [v, v+'_dot'] for v in variables ], [] ), point ) }
@@ -64,17 +70,10 @@ if __name__ == '__main__':
     
     # Schwartschild radius
     r_s = 1.
-
     variables = ( 't', 'r', 'phi' )
-    #                     t  r  phi
-    initial_point      = (0, 50., 0)
-    initial_derivative = (1., -.01, 3./initial_point[1]**2 )
-
-    # How far we want to go in the parameter q
-    q_max = 18000
-    nq    = 6000
 
     # Schwartzschild from Metric
+    ## https://en.wikipedia.org/wiki/Schwarzschild_geodesics#Geodesic_equation
     metric_tensor = lambda position: [\
         [ (1.-r_s/position[1]), 0, 0],
         [ 0, -1./(1.-r_s/position[1]), 0],
@@ -91,7 +90,7 @@ if __name__ == '__main__':
     # Gamma^i_jk = 1/2*g^il( - d_l g_jk + d_j g_lk + d_k g_jl ) 
 
     # Deltas used for differentiating
-    diff = 0.0001
+    diff = 0.00001
     delta_diff = np.array( [ diff]*len(variables) ) 
 
     def christoffel(index):
@@ -114,16 +113,14 @@ if __name__ == '__main__':
         return __christoffel
 
 
-    christoffel_symboles = [ christoffel(i) for i in range(len(variables)) ]
+    christoffel_symboles_differentiated = [ christoffel(i) for i in range(len(variables)) ]
 
     # Initialize Geodesic
-    geodesic = Geodesic( initial_point, initial_derivative, christoffel_symboles )
-
-    ## https://en.wikipedia.org/wiki/Schwarzschild_geodesics#Geodesic_equation
+    geodesic_differentiated = Geodesic( christoffel_symboles_differentiated )
 
     ## Schwartzschild from Christoffel
-
-    christoffel_symboles = [\
+    ## https://en.wikipedia.org/wiki/Schwarzschild_geodesics#Geodesic_equation
+    christoffel_symboles_exact = [\
 
         lambda position: [
             [ 0, r_s/(2.*position[1]**2*(1.-r_s/position[1])), 0],
@@ -141,15 +138,42 @@ if __name__ == '__main__':
             [ 0, 1./position[1], 0]
         ],
     ] 
-    # Initialize Geodesic
-    #geodesic = Geodesic( initial_point, initial_derivative, christoffel_symboles )
 
+    # Initialize Geodesic
+    geodesic_exact          = Geodesic( christoffel_symboles_exact )
+
+    ## Boundary value problem
+    ##                     t  r  phi
+    #initial_point      = (0, 50., 0)
+    #end_point          = (1, 30, pi/2.)
+    ## How far we want to go in the parameter q
+    #q_max = 10000
+    #nq    = 50000
+    ## Define q values & solve
+    #q_values = np.linspace(0, q_max, nq+1)
+
+    #y_initial_values
+
+    #solution_exact = map( phase_space_dict, geodesic_exact.solve_bvp(initial_point, end_point, q_values) )
+
+    # Initial value problem
+    #                     t  r  phi
+    initial_point      = (0, 50., 0)
+    initial_derivative = (1., -.01, 3./initial_point[1]**2 )
+
+    # How far we want to go in the parameter q
+    q_max = 10000
+    nq    = 50000
     # Define q values & solve
     q_values = np.linspace(0, q_max, nq+1)
-    solution = map( phase_space_dict, geodesic.solve(q_values) )
+    solution_exact = map( phase_space_dict, geodesic_exact.solve_ivp(initial_point, initial_derivative, q_values) )
     # Add the parameter value
     for i_q_value, q_value in enumerate( q_values ):
-        solution[i_q_value]['q'] = q_value
+        solution_exact[i_q_value]['q'] = q_value
+    solution_diff = map( phase_space_dict, geodesic_differentiated.solve_ivp(initial_point, initial_derivative, q_values) )
+    # Add the parameter value
+    for i_q_value, q_value in enumerate( q_values ):
+        solution_diff[i_q_value]['q'] = q_value
 
     # Make a plot    
     import matplotlib
@@ -158,19 +182,19 @@ if __name__ == '__main__':
 
     # Conserved quantities
     # Angular momentum : r^2 dphi/dq
-    angular_momentum = [y['r']**2*y['phi_dot'] for y in solution]
+    #angular_momentum = [y['r']**2*y['phi_dot'] for y in solution]
     # Energy: dt/dq * w, w=1-r_s/r
-    energy           = [y['t_dot']*(1. - r_s/y['r']) for y in solution]
+    #energy           = [y['t_dot']*(1. - r_s/y['r']) for y in solution]
     #print angular_momentum   
     #print energy
  
-
     ax = plt.subplot(111, projection='polar')
-    ax.plot([y['phi'] for y in solution], [y['r'] for y in solution])
+#    ax.plot([y['phi'] for y in solution_exact ], [y['r'] for y in solution_exact ])
+#    ax.plot([y['phi'] for y in solution_diff ], [y['r'] for y in solution_diff ])
     ax.set_rmax(60)
     ax.set_rticks([5, 10, 20, 30, 40, 50])  # radial ticks
     ax.set_rlabel_position(-22.5)      # get radial labels away from plotted line
     ax.grid(True)
 
     ax.set_title("A Schwartzschild geodesic (rS = 1)", va='bottom')
-    plt.savefig('/afs/hephy.at/user/r/rschoefbeck/www/etc/geodesic_diff_6.png')
+    plt.savefig('/afs/hephy.at/user/r/rschoefbeck/www/etc/geodesic_bvp.png')

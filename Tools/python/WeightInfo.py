@@ -412,6 +412,12 @@ if __name__ == "__main__":
     print np.linalg.eigvals(w.get_total_fisherInformation_matrix(coeff_Z_pt, variables)[1])
 
 
+    #reader = sample.reader(variables = map(TreeVariable.fromString, [ "np/I", "p[C/F]", "ref_lumiweight1fb/F"]))
+    #reader.start()
+    #coeffs = []
+    #while reader.run()
+    #    coeffs.append( [reader.event.p_C[i]*150*reader.event.ref_lumiweight1fb for i in range(reader.event.np) ] )
+
 #    print w.matrix_to_string(*w.get_fisherInformation_matrix(coeff_Z_pt))
 #    print w.variables
 #    print w.get_weight_string(ctZ=5)
