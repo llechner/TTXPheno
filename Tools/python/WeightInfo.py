@@ -367,7 +367,7 @@ if __name__ == "__main__":
     from TTXPheno.samples.benchmarks import * 
 
     # Sample
-    sample = fwlite_ttZ_ll_LO_order2_15weights
+    sample = fwlite_ttZ_ll_LO_order2_15weights_ref
     # Debug 1 event
     sample.reduceFiles( to = 1 )
     w = WeightInfo(sample.reweight_pkl)
@@ -398,10 +398,10 @@ if __name__ == "__main__":
 #        return histo_to_list( histo )
 
     # Fisher information in ptZ histo
-    coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*lumiweight1fb')
+    coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*ref_lumiweight1fb')
     # Fisher information in x-sec
     #coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
-    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb' )
+    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*ref_lumiweight1fb' )
 
 #    w.get_weight_yield(coeff_Z_pt, ctG=10)
 

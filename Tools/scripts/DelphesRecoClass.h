@@ -444,7 +444,7 @@ public :
    TBranch        *b_ScalarHT_HT;   //!
    TBranch        *b_ScalarHT_size;   //!
 
-   DelphesRecoClass(TTree *tree=0);
+   DelphesRecoClass(char * filename);
    virtual ~DelphesRecoClass();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -458,25 +458,27 @@ public :
 #endif
 
 #ifdef DelphesRecoClass_cxx
-DelphesRecoClass::DelphesRecoClass(TTree *tree) : fChain(0) 
+//DelphesRecoClass::DelphesRecoClass(TTree *tree) : fChain(0) 
+DelphesRecoClass::DelphesRecoClass(char * filename) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
-   if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v3/fwlite_ttZ_ll_LO_order2_15weights/delphes/fwlite_ttZ_ll_LO_order2_15weights_118.root");
-      if (!f || !f->IsOpen()) {
-         f = new TFile("/afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v3/fwlite_ttZ_ll_LO_order2_15weights/delphes/fwlite_ttZ_ll_LO_order2_15weights_118.root");
-      }
-      f->GetObject("Delphes",tree);
 
+   TTree *tree;
+   TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+   if (!f || !f->IsOpen()) {
+      f = new TFile(filename);
+//"/afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v3/fwlite_ttZ_ll_LO_order2_15weights/delphes/fwlite_ttZ_ll_LO_order2_15weights_118.root"
    }
+   f->GetObject("Delphes",tree);
+
    Init(tree);
 }
 
 DelphesRecoClass::~DelphesRecoClass()
 {
-   if (!fChain) return;
-   delete fChain->GetCurrentFile();
+//   if (!fChain) return;
+//   delete fChain->GetCurrentFile();
 }
 
 Int_t DelphesRecoClass::GetEntry(Long64_t entry)

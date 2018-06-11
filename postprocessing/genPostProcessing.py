@@ -21,6 +21,7 @@ from TTXPheno.Tools.helpers                import deltaR2, cosThetaStar
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
+from TTXPheno.Tools.DelphesReader          import DelphesReader
 
 #
 # Arguments
@@ -301,9 +302,15 @@ def filler( event ):
         jet['matchBParton'] = ( min([999]+[deltaR2(jet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
 
     jets.sort( key = lambda p:-p['pt'] )
-
-
     fill_vector( event, "GenJet", jet_write_varnames, jets)
+
+    # Reco quantities
+    #if args.delphes:
+    #    delphesReader.getEntry(reader.position-1 )
+    #    print delphesReader.muons()
+    #    print delphesReader.electrons()
+    #    print delphesReader.photons()
+    #    print delphesReader.met()
 
 tmp_dir     = ROOT.gDirectory
 #post_fix = '_%i'%args.job if args.nJobs > 1 else ''
@@ -321,6 +328,7 @@ if args.delphes:
     delphesProducer = DelphesProducer()
     delphes_file = os.path.join( output_directory, 'delphes', sample.name+'.root' )
     delphesProducer.produce( sample.files, delphes_file )
+    delphesReader = DelphesReader( delphes_file )
 
 output_file = ROOT.TFile( output_filename, 'recreate')
 output_file.cd()
