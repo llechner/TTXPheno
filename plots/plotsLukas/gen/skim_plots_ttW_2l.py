@@ -67,6 +67,7 @@ if args.small:
     sample.reduceFiles( to = 1 )
     event_factor = sample.nEvents / 5000.
 
+
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
@@ -280,7 +281,7 @@ def makeLeps( event, sample ):
 sequence.append( makeLeps )
 
 
-def makeObservables( event, sample):
+def makeObservables( event, sample ):
     ''' Compute all relevant observables
     '''
     # double b kinematic
@@ -292,7 +293,6 @@ def makeObservables( event, sample):
     event.getlep1chargept = event.l1['pt'] if event.l1['pdgId']>0 else -event.l1['pt']
 
 sequence.append( makeObservables )
-
 
 # Use some defaults
 Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
