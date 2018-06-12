@@ -110,7 +110,7 @@ fwlite_ttgamma_LO_order2_15weights_ref_delphes      = Sample.fromDirectory("fwli
 #fwlite_ttZ_ll_LO_order2_15weights_ref.addFriend(  fwlite_ttZ_ll_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttW_LO_order2_15weights_ref.addFriend(  fwlite_ttW_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttgamma_LO_order2_15weights_ref.addFriend(  fwlite_ttgamma_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
-"""
+
 # backgrounds 15/2 (tt) or 0/2 (WZ)
 # leptonic decays W > lnu, Z > ll, t > Wb
 fwlite_tt_lep_LO_order2_15weights_ref               = Sample.fromDirectory("fwlite_tt_lep_LO_order2_15weights_ref",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_lep_LO_order2_15weights_ref" )]) 
@@ -129,7 +129,7 @@ fwlite_WZ_lep_LO_order2_15weights_delphes           = Sample.fromDirectory("fwli
 #fwlite_tt_lep_LO_order2_15weights_ref.addFriend(  fwlite_tt_lep_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_WZ_lep_LO_order2_15weights.addFriend(      fwlite_WZ_lep_LO_order2_15weights_delphes, treeName = "Delphes", sortFiles = True)
 
-
+"""
 # hadronic + leptonic decays
 fwlite_tt_LO_order2_15weights_ref               = Sample.fromDirectory("fwlite_tt_LO_order2_15weights_ref",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_LO_order2_15weights_ref" )]) 
 fwlite_tt_LO_order2_15weights_ref.reweight_pkl  = gridpack_dir + "04062018/tt/order2/tt_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
