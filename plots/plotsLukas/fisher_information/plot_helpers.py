@@ -50,14 +50,14 @@ def getCoeffListFromEvents( sample, selectionString=None, luminosity=None ):
     '''
     sample.setSelectionString( selectionString ) 
 
-    variables = map( TreeVariable.fromString, ["np/I", "ref_lumiweight1fb/F"] )
-    variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=200) )
+    variables = map( TreeVariable.fromString, ["np/I", "lumiweight1fb/F"] )
+    variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=1000) )
 
     reader = sample.treeReader( variables = variables )
     reader.start()
 
     coeffs = []
     while reader.run():
-        coeffs.append( [ reader.event.p_C[i]*reader.event.ref_lumiweight1fb*float(luminosity) if luminosity is not None else reader.event.p_C[i] for i in range(reader.event.np) ] )
+        coeffs.append( [ reader.event.p_C[i]*reader.event.lumiweight1fb*float(luminosity) if luminosity is not None else reader.event.p_C[i] for i in range(reader.event.np) ] )
 
     return coeffs

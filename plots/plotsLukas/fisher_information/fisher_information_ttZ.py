@@ -39,10 +39,6 @@ argParser.add_argument('--luminosity',         action='store',      default=150)
 
 args = argParser.parse_args()
 
-
-#args.selection = ''
-
-
 # Import samples
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
@@ -52,21 +48,14 @@ sample = getattr( samples, args.sample )
 event_factor = 1.
 if args.small:
     sample.reduceFiles( to = 1 )
-    event_factor = sample.nEvents / 5000.
-
-print list(sample.chain.GetListOfBranches())
-print sample.chain.GetBranch('evt').GetEntries()
-print sample.chain.GetBranch('evt').GetEntry(0)
-print sample.chain.GetBranch('evt').GetEntry(4)
-print sample.chain.GetBranch('evt').GetEvent(4)
-exit()
+    event_factor = sample.nEvents / float(sample.chain.GetEntries())
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
 
 selection_string = cutInterpreter.cutString( args.selection )
-weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity), str(event_factor) )
+weightString = 'lumiweight1fb*%s*%s' %( str(args.luminosity), str(event_factor) )
 
 # Format input parameters to dict + add weightstring
 WC_string = 'SM'
@@ -77,8 +66,7 @@ if len(args.parameters) != 0:
     WC = { coeff:vals[i] for i, coeff in enumerate(coeffs) }
     WC_string = '_'.join( args.parameters )
     # Add weight function to weightstring
-    weightString += '*' + w.get_weight_string( **WC )
-
+#    weightString += '*(' + w.get_weight_string( **WC ) + ')/p_C[0]'
 
 def replace_selectionstrings( selectionList ):
     ''' replace selection string elements with string shown in plots
@@ -124,13 +112,15 @@ selectionStrings.append( {'plotstring':'full pre-selection', 'selection':args.se
 
 # Additional plot variables
 plot_variables =   [
-                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 20000, 0, 500 ] },
-#                     { 'plotstring':'cos(#theta*)',        'var':'Z_cosThetaStar', 'binning':[ 20, -1.2, 1.2 ] },
-#                     { 'plotstring':'m_{ll}',              'var':'Z_mass',         'binning':[ 20, 70, 110 ] },
-#                     { 'plotstring':'#phi(Z)',             'var':'Z_phi',          'binning':[ 20, -np.pi, np.pi ] },
-#                     { 'plotstring':'#eta(Z)',             'var':'Z_eta',          'binning':[ 20, -3, 3 ] },
-#                     { 'plotstring':'p_{T}(E_{T}^{miss})', 'var':'GenMet_pt',      'binning':[ 20, 0, 500 ] },
-#                     { 'plotstring':'#phi(E_{T}^{miss})',  'var':'GenMet_phi',     'binning':[ 20, -np.pi, np.pi ] },
+                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 2000, 0, 2000 ] },
+                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 200, 0, 2000 ] },
+                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 200, 0, 2000 ] },
+                     { 'plotstring':'cos(#theta*)',        'var':'Z_cosThetaStar', 'binning':[ 2000, -1.2, 1.2 ] },
+                     { 'plotstring':'m_{ll}',              'var':'Z_mass',         'binning':[ 2000, 70, 110 ] },
+                     { 'plotstring':'#phi(Z)',             'var':'Z_phi',          'binning':[ 2000, -np.pi, np.pi ] },
+                     { 'plotstring':'#eta(Z)',             'var':'Z_eta',          'binning':[ 2000, -3, 3 ] },
+                     { 'plotstring':'p_{T}(E_{T}^{miss})', 'var':'GenMet_pt',      'binning':[ 2000, 0, 500 ] },
+                     { 'plotstring':'#phi(E_{T}^{miss})',  'var':'GenMet_phi',     'binning':[ 2000, -np.pi, np.pi ] },
 ]
 
 # Calculate coefficients for binned distribution
@@ -138,6 +128,7 @@ plot_variables =   [
 for var in plot_variables:
     var['coeff'] =  getCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
     var['detI'] = np.linalg.det( w.get_total_fisherInformation_matrix( var['coeff'], args.variables )[1] )
+    var['plotstring'] += ' (' + str(var['binning'][0]) + ' bins)'
 
 # sort by Fisher Information
 #plot_variables = sorted(plot_variables, key=lambda k: -k['detI'])
@@ -188,6 +179,7 @@ gr.GetXaxis().SetLabelOffset(999)
 gr.GetYaxis().SetTitle( '(det(I_{ij}) / det(I_{ij}^{full}))^{(1/%s)}'%len(args.variables) if len(args.variables)>1 else 'det(I_{ij}) / det(I_{ij}^{full})' )
 gr.GetYaxis().SetLabelSize(0.035)
 gr.GetYaxis().SetTitleSize(0.035)
+gr.GetYaxis().SetRangeUser(0., 1.1)
 gr.Draw( 'AB' )
 c1.Update()
 

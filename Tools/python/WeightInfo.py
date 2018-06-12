@@ -340,8 +340,7 @@ class WeightInfo:
         ''' return the matrix in a terminal visualization string (print)
         '''
 
-        if variables is None:
-            variables = self.variables
+        if variables is None: variables = self.variables
 
         res = [ ' '.join( map( "{:>9}".format, variables ) ) ]
         for i_line, line in enumerate(matrix.tolist()):
