@@ -16,13 +16,15 @@ class LikelihoodFit:
 
         self.regions = regions
 
-    def run( self):
+    def run(self):
    
-        signal_yield          = {}
-        background_yields     = {}
-        observation           = {}
-        jec_uncertainty       = {}
-        fakerate_uncertainty  = {}
+        signal_yield                 = {}
+        jec_uncertainty_signal       = {}
+        fakerate_uncertainty_signal  = {}
+        background_yields            = {}
+        observation                  = {}
+        jec_uncertainty              = {}
+        fakerate_uncertainty         = {}
  
         for i_region, region in enumerate(regions):
 
@@ -37,6 +39,9 @@ class LikelihoodFit:
                   weightString = "%f*ref_lumiweight1fb*(%s)"%(self.lumi, signal.weightInfo.get_weight_string(**params))
                 )['val']
 
+            jec_uncertainty_signal      [region] = 1.05 
+            fakerate_uncertainty_signal [region] = 1.0  # signal has no FR uncertainty
+
             # compute some  background yield
             background_yields[region] = [ background.relative_fraction*signal_yield[region] for background in self.backgrounds ]
 
@@ -44,18 +49,22 @@ class LikelihoodFit:
             observation[region] = int( sum( background_yields[region] ) + signal_yield[region] )
     
             # Guess the uncertainty
-            fakerate_uncertainty[region] = 1 + 0.1*i_region
-            jec_uncertainty[region] = 1.3 - 0.05*i_region
+            fakerate_uncertainty[region] = [ 1   + 0.03*i_region*(i_background+1) for i_background in range(len(self.backgrounds)) ]
+            jec_uncertainty[region]      = [ 1.2 - 0.02*i_region*(i_background+1) for i_background in range(len(self.backgrounds)) ]
 
         # Wolfgang, here comes your data!
         logger.info("Now I perform the fit! My data is:")
-        for region in regions:
-            logger.info( "Obs: %5i Signal: %5.2f Bkg yields: %s jec: %5.2f fake: %5.2f", 
+        for i_region, region in enumerate(regions):
+            logger.info( "Region %3i Obs: %5i Signal: %5.2f Sig.Unc: jec: %3.2f fake: %3.2f Bkg yields (N-bkg=%i): %s Bkg.Unc.: jec: %s fake: %s", 
+                i_region,
                 observation[region], 
                 signal_yield[region],
-                ",".join( map("{:7.2f}".format,  background_yields[region] ) ),
-                jec_uncertainty[region],
-                fakerate_uncertainty[region]
+                jec_uncertainty_signal[region],
+                fakerate_uncertainty_signal[region],
+                len( self.backgrounds ),
+                ",".join( map("{:7.2f}".format, background_yields[region] ) ),
+                ",".join( map("{:3.2f}".format, jec_uncertainty[region] ) ),
+                ",".join( map("{:3.2f}".format, fakerate_uncertainty[region] ) )
             )
 
 class FakeBackground:
