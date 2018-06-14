@@ -14,8 +14,8 @@ def getCoeffListFromDraw( sample, order, selectionString, weightString = None ):
     '''
 
     # Polynomial parametrization
-    w = WeightInfo(sample.reweight_pkl)
-    w.set_order(int(order))
+    w = WeightInfo( sample.reweight_pkl )
+    w.set_order( int(order) )
 
     # Draw 
     histo = sample.get1DHistoFromDraw(
@@ -32,25 +32,25 @@ def getCoeffPlotFromDraw( sample, order, variableString, binning, selectionStrin
     '''
 
     # Polynomial parametrization
-    w = WeightInfo(sample.reweight_pkl)
-    w.set_order(int(order))
+    w = WeightInfo( sample.reweight_pkl )
+    w.set_order( int(order) )
 
-    # 2D Plot, Iteration$ is on x
     histo = sample.get2DHistoFromDraw(
-        "Iteration$:%s"%variableString,
+        "%s:Iteration$"%variableString,
         [ len(w.combinations), 0, len(w.combinations) ] + binning,
         selectionString = selectionString,
-        weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+        weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
 
-    return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
+    return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) ]
 
 
-def getCoeffListFromEvents( sample, selectionString=None, luminosity=None ):
+def getCoeffListFromEvents( sample, selectionString = None, weightFunction = None ):
     ''' Create list of weights for each event
     '''
+
     sample.setSelectionString( selectionString ) 
 
-    variables = map( TreeVariable.fromString, ["np/I", "lumiweight1fb/F"] )
+    variables = map( TreeVariable.fromString, [ "np/I", "ref_lumiweight1fb/F", "lumiweight1fb/F" ] )
     variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=1000) )
 
     reader = sample.treeReader( variables = variables )
@@ -58,6 +58,42 @@ def getCoeffListFromEvents( sample, selectionString=None, luminosity=None ):
 
     coeffs = []
     while reader.run():
-        coeffs.append( [ reader.event.p_C[i]*reader.event.lumiweight1fb*float(luminosity) if luminosity is not None else reader.event.p_C[i] for i in range(reader.event.np) ] )
+        coeffs.append( [ reader.event.p_C[i] * weightFunction( reader.event, sample ) if weightFunction is not None else reader.event.p_C[i] for i in range(reader.event.np) ] )
 
     return coeffs
+
+
+def replace_selectionstrings( selectionList ):
+    ''' replace selection string elements with string shown in plots
+    '''
+
+    replaced_selectionstrings = []
+
+    for item in selectionList:
+
+        # lepton selection
+        if 'lepSel' in item:
+            replaced_selectionstrings.append(item[-1] + ' lep' if item[-1]=='1' else item[-1] + ' leps')
+
+        # number of jets/bjets/leps selection
+        elif item[0] == 'n':
+            num = ''.join(c for c in item if c.isdigit())
+            particle = item.split('n')[1].split(num)[0]
+            replaced_selectionstrings.append( ' '.join([num, particle] if num=='1' else [num, particle + 's']) )
+
+        # pt selection
+        elif 'pt' in item:
+            particle = item.split('pt')[0]
+            val = item.split('pt')[1]
+
+            if 'to' in val:
+                replaced_selectionstrings.append( pre + ' #leq p_{T}(' + particle + ') < ' + post + ' GeV')
+            else:
+               	replaced_selectionstrings.append( 'p_{T}(' + particle + ') > ' + val + ' GeV')
+
+        # anything
+        else:
+            replaced_selectionstrings.append( item )
+
+    return replaced_selectionstrings
+
