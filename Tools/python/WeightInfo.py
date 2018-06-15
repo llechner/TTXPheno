@@ -247,11 +247,13 @@ class WeightInfo:
     def get_weight_yield( self, coeffList, **kwargs ):
         '''compute yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
         '''
+        # check if coeffList is filled with 0
+        if all([ v == 0 for v in coeffList ]): return 0.
 
         # add the arguments from the ref-point 
         self.set_default_args( kwargs )
 
-        result = 0 
+        result = 0. 
         for i_comb, comb in enumerate(self.combinations):
             if False in [ v in kwargs for v in comb ]: continue
             if coeffList[i_comb]==0: continue
@@ -269,10 +271,13 @@ class WeightInfo:
         if var not in self.variables:
             raise ValueError( "Variable %s not in gridpack: %r" % ( var, self.variables ) ) 
 
+        # check if coeffList is filled with 0
+        if all([ v == 0 for v in coeffList ]): return 0.
+
         # add the arguments from the ref-point 
         self.set_default_args( kwargs )
 
-        result = 0 
+        result = 0. 
         for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
             prefac, diff_comb = WeightInfo.differentiate( comb, var)
@@ -307,6 +312,9 @@ class WeightInfo:
         ''' return the fisher information matrix for a single event (coefflist)
         '''
 
+        # check if coeffList is filled with 0
+        if all([ v == 0 for v in coeffList ]): return variables, np.zeros( ( len(variables), len(variables) ) )
+
         # If no argument given, provide all
         if variables is None: variables = self.variables
 
@@ -331,7 +339,7 @@ class WeightInfo:
         ''' return the full fisher information matrix, sum the FI matrices over all coefflists
         '''
 
-        fi_matrix = np.sum( [ self.get_fisherInformation_matrix( coeffList, variables, **kwargs )[1] for coeffList in coeffLists ], 0 )
+        fi_matrix = np.sum( [ self.get_fisherInformation_matrix( coeffList, variables, **kwargs )[1] for coeffList in coeffLists if not all([ v == 0 for v in coeffList ]) ], 0 )
 
         return variables, fi_matrix
 

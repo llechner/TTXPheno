@@ -25,6 +25,9 @@ from TTXPheno.samples.benchmarks         import *
 # Import helpers
 from plot_helpers                        import *
 
+# Import process variables
+import process_variables
+
 # Import additional
 from array                               import array
 
@@ -33,6 +36,7 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--plot_directory',     action='store',      default='gen')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order2_15weights_ref')
+argParser.add_argument('--process',            action='store',      default='ttZ')
 argParser.add_argument('--order',              action='store',      default=2)
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--selection',          action='store',      default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
@@ -92,31 +96,17 @@ selectionElements = args.selection.split('-')
 for i, item in enumerate(selectionElements[:-1]):
     selections.append( {'plotstring':' + '.join(replace_selectionstrings(selectionElements[:i+1])) + ' selection', 'selection':'-'.join(selectionElements[:i+1])} )
 
-selections.append( {'plotstring':'full pre-selection', 'selection':args.selection} )
+selections.append( {'plotstring':'full pre-selection (fps)', 'selection':args.selection} )
     
-
-# Additional plot variables
-plotVariables =   [
-                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 100000, 0, 1000 ] },
-                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 20000, 0, 1000 ] },
-                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 2000, 0, 1000 ] },
-                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 200, 0, 1000 ] },
-                     { 'plotstring':'p_{T}(Z)',            'var':'Z_pt',           'binning':[ 20, 0, 1000 ] },
-                     { 'plotstring':'cos(#theta*)',        'var':'Z_cosThetaStar', 'binning':[ 20, -1.2, 1.2 ] },
-                     { 'plotstring':'m_{ll}',              'var':'Z_mass',         'binning':[ 20, 70, 110 ] },
-                     { 'plotstring':'#phi(Z)',             'var':'Z_phi',          'binning':[ 20, -np.pi, np.pi ] },
-                     { 'plotstring':'#eta(Z)',             'var':'Z_eta',          'binning':[ 20, -3, 3 ] },
-                     { 'plotstring':'p_{T}(E_{T}^{miss})', 'var':'GenMet_pt',      'binning':[ 20, 0, 1000 ] },
-                     { 'plotstring':'#phi(E_{T}^{miss})',  'var':'GenMet_phi',     'binning':[ 20, -np.pi, np.pi ] },
-]
-
+# Additional plot variables from process_variables.py (defined for ttZ, ttW and ttgamma)
+plotVariables = getattr( process_variables, args.process )
 
 # Calculate coefficients for binned distribution
 # Calculate determinant using the 'variables' submatrix of FI
 for var in plotVariables:
     var['coeff']       = getCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
     # add bin information to plot labels
-    var['plotstring'] += ' (' + str(var['binning'][0]) + ' bins)'
+    var['plotstring'] = 'fps + ' + var['plotstring'] + ' (' + str(var['binning'][0]) + ' bins)'
     var['color']       = 30
 
 # Calculate coefficients unbinned (event loop)
@@ -213,6 +203,7 @@ def drawPlot( log = False ):
         fisher_directory, 
         args.selection,
         WC_string,
+        '_'.join(args.variables),
         'log' if log else 'lin')
     
     if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
