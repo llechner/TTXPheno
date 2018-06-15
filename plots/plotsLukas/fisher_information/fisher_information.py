@@ -99,15 +99,22 @@ for i, item in enumerate(selectionElements[:-1]):
 selections.append( {'plotstring':'full pre-selection (fps)', 'selection':args.selection} )
     
 # Additional plot variables from process_variables.py (defined for ttZ, ttW and ttgamma)
-plotVariables = getattr( process_variables, args.process )
+plotVariables2D = getattr( process_variables, args.process )['2D']
+plotVariables3D = getattr( process_variables, args.process )['3D']
 
 # Calculate coefficients for binned distribution
 # Calculate determinant using the 'variables' submatrix of FI
-for var in plotVariables:
-    var['coeff']       = getCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
+for var in plotVariables2D:
+    var['coeff']       = get2DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
     # add bin information to plot labels
-    var['plotstring'] = 'fps + ' + var['plotstring'] + ' (' + str(var['binning'][0]) + ' bins)'
+    var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s bins)' %str(var['binning'][0])
     var['color']       = 30
+
+for var in plotVariables3D:
+    var['coeff']       = get3DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
+    # add bin information to plot labels
+    var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]))
+    var['color']       = 41
 
 # Calculate coefficients unbinned (event loop)
 # Calculate determinant using the 'variables' submatrix of FI
@@ -121,7 +128,7 @@ full['coeff']     = getCoeffListFromEvents( sample, selectionString = None, weig
 full['color']     = 15
 
 expo = 1. / len(args.variables)
-data = [full] + selections + plotVariables
+data = [full] + selections + plotVariables2D + plotVariables3D
 n_data = len(data)
 
 # Fill dictionaries with normalized fisher information and plotting data
@@ -131,6 +138,7 @@ for i,item in enumerate(data):
     item['x_graph']   = array( 'd', range( 1, n_data+1 ) )
     item['y_graph']   = array( 'd', [0]*i + [item['norm_detI']] + [0]*(n_data-i) )
 
+print( [ item['norm_detI'] for item in data ] )
 
 # Plots
 def drawPlot( log = False ): 
@@ -204,6 +212,7 @@ def drawPlot( log = False ):
         args.selection,
         WC_string,
         '_'.join(args.variables),
+        'eigenvalue_plots', 
         'log' if log else 'lin')
     
     if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
