@@ -4,7 +4,11 @@
 # General
 import pickle
 import scipy.special
+import scipy.linalg
 import itertools
+
+# TTXPheno
+import TTXPheno.Tools.helpers as helpers
 
 from operator import mul
 
@@ -111,23 +115,35 @@ class WeightInfo:
         return "+".join( substrings )
 
     @staticmethod
+    @helpers.memoized
     def differentiate( comb, var ):
         ''' Differentiate a polynomial wrt to a variable represented by a combination of terms.
             Returns prefactor new combination.
             d\dv_i (v_i^n * X) -> n v_i^(n-1) * X 
         '''
 
-        prefac = comb.count( var ) 
+        if type(var)==type(""):
 
-        if prefac==0:
-            diff_comb = tuple()
-        else:
-            diff_comb = list( comb )
-            diff_comb.remove( var )
+            prefac = comb.count( var ) 
 
-        return prefac, tuple( diff_comb )
+            if prefac==0:
+                diff_comb = tuple()
+            else:
+                diff_comb = list( comb )
+                diff_comb.remove( var )
 
+            return prefac, tuple( diff_comb )
 
+        elif type(var)==type(()) or type(var)==type([]):
+            if len(var)==0: 
+                return 1, comb
+            elif len(var)==1:
+                return WeightInfo.differentiate( comb, var[0] )
+            else:
+                prefac0, comb_diff  = WeightInfo.differentiate( comb, var[0] )
+                prefac1, comb_diff2 = WeightInfo.differentiate( comb_diff, var[1:] ) 
+            return prefac0*prefac1, comb_diff2
+            
     # String methods
     def diff_weight_string_WC(self, var):
         ''' return string of the full weight string, differentiated wrt to var as a function of all WC
@@ -264,12 +280,15 @@ class WeightInfo:
 
         return result
 
-    def get_diff_weight_yield( self, var, coeffList, **kwargs ):
+    def get_diff_weight_yield( self, vars, coeffList, **kwargs ):
         '''compute diff yield from a list of coefficients (in the usual order of p_C) using the kwargs as WC
         '''
 
-        if var not in self.variables:
-            raise ValueError( "Variable %s not in gridpack: %r" % ( var, self.variables ) ) 
+        if type(vars)==type(""): vars = (vars,)
+
+        for var in vars:
+            if var not in self.variables:
+                raise ValueError( "Variable %s not in gridpack: %r" % ( var, self.variables ) ) 
 
         # check if coeffList is filled with 0
         if all([ v == 0 for v in coeffList ]): return 0.
@@ -280,7 +299,7 @@ class WeightInfo:
         result = 0. 
         for i_comb, comb in enumerate(self.combinations):
             if False in [v in kwargs for v in comb]: continue
-            prefac, diff_comb = WeightInfo.differentiate( comb, var)
+            prefac, diff_comb = WeightInfo.differentiate( comb, vars)
             # skip entries which are zero
             if prefac == 0: continue
             if coeffList[i_comb] == 0: continue
@@ -293,20 +312,6 @@ class WeightInfo:
             result += coeffList[i_comb]*fac
 
         return result
-
-
-#    def get_fisherInformation_matrix_entry( self, var1, var2, coeffLists, **kwargs ):
-#        ''' return the value of the fisher information matrix entry ij
-#        '''
-
-#        if var1 not in self.variables or var2 not in self.variables:
-#            raise ValueError( "Either variable %s or %s not in gridpack: %r" % ( var1, var2, self.variables ) ) 
-
-#        if var1 == var2:
-#            return sum( [ self.get_diff_weight_yield( var1, coeffList, **kwargs )**2 / self.get_weight_yield( coeffList, **kwargs ) for coeffList in coeffLists ] )
-#        else:
-#            return sum( [ self.get_diff_weight_yield( var1, coeffList, **kwargs ) * self.get_diff_weight_yield( var2, coeffList, **kwargs ) / self.get_weight_yield( coeffList, **kwargs ) for coeffList in coeffLists ] )
-
 
     def get_fisherInformation_matrix( self, coeffList, variables = None, **kwargs ):
         ''' return the fisher information matrix for a single event (coefflist)
@@ -355,6 +360,80 @@ class WeightInfo:
             res.append( ' '.join( map('{:+.2E}'.format, line) + [variables[i_line]] ) )
 
         return '\n'.join( res ) 
+
+#    def get_diff_fisherInformation_matrix( self, coeffList, variable, variables = None, **kwargs ):
+#        ''' return the differentiated fisher information matrix wrt 'variable' for a single event (coefflist)
+#        '''
+#
+#        # If no argument given, provide all
+#        if variables is None: variables = self.variables
+#
+#        ## calculate derivatives for all variables
+#        #diff_weight_yield = { var:self.get_diff_weight_yield( var, coeffList, **kwargs ) for var in variables }
+#
+#        ## initialize FI matrix with 1/weight (same for all entries)
+#        #weight_yield = self.get_weight_yield( coeffList, **kwargs ) 
+#        #fi_matrix = np.full( ( len(variables), len(variables) ), 1. / weight_yield if weight_yield != 0 else 0)
+#
+#        #for i, var_i in enumerate(variables):
+#        #    for j, var_j in enumerate(variables):
+#        #        if fi_matrix[i,j] == 0: continue
+#        #        if i<=j: 
+#        #            fi_matrix[i,j] *= diff_weight_yield[var_i] * diff_weight_yield[var_j]
+#        #        else:
+#        #            fi_matrix[i,j] = fi_matrix[j,i]
+#
+#        #return variables, fi_matrix
+#
+#
+#    def get_total_diff_fisherInformation_matrix( self, coeffLists, variable, variables = None, **kwargs ):
+#        ''' return the full differentiated fisher information matrix wrt to 'variable', sum the FI matrices over all coefflists
+#        '''
+#
+#        fi_matrix = np.sum( [ self.get_diff_fisherInformation_matrix( coeffList, variable, variables, **kwargs )[1] for coeffList in coeffLists ], 0 )
+#
+#        return variables, fi_matrix
+
+
+    def get_christoffels( self, coeffLists, variables = None, **kwargs ):    
+        ''' Compute christoffel symbols Gamma^i_jk for coefflist in 
+            subspace spanned by variables at the point specified by kwargs
+
+            Gamma^i_jk = 0.5*g^il Sum(1/lambda (dl lambda)(dj lambda)(dk lambda) + 2./lambda^2 (dl lambda)(dj dk  lambda ) )
+        '''
+
+        # Restrict to subspace
+        _variables = self.variables if variables is None else variables
+
+        # Metric and Metric-inverse in subspace
+        metric         = self.get_total_fisherInformation_matrix( coeffLists, variables = _variables, **kwargs ) [1]
+        metric_inverse = scipy.linalg.inv( metric ) 
+
+        # 3D zeros
+        christoffel = np.zeros( (len(_variables), len(_variables), len(_variables) ) )
+
+        for i in xrange(len(_variables)):
+            #print "i",i
+            for coeffList in coeffLists:
+                weight_yield       = self.get_weight_yield( coeffList, **kwargs )
+                if weight_yield == 0.: continue
+                #print "weight_yield", weight_yield
+                diff_weight_yield  =  { i_var:self.get_diff_weight_yield( var, coeffList, **kwargs ) for i_var, var in enumerate(_variables) }
+                diff2_weight_yield = { (i_var_1, i_var_2):self.get_diff_weight_yield( (var_1, var_2), coeffList, **kwargs ) for i_var_1, var_1 in enumerate(_variables) for i_var_2, var_2 in enumerate(_variables) }
+                for l in xrange(len(_variables)):
+                    gil = metric_inverse[i][l]
+                    #print "i,l,gil",i,l,gil
+                    if gil==0.: continue
+                    #print index, gil, dg[index] 
+                    for j in range(len(_variables)):
+                        for k in range(len(_variables)):
+                            d_christoffel_ijk = gil*( 0.5/weight_yield*diff_weight_yield[l]*diff_weight_yield[j]*diff_weight_yield[k] + 1./weight_yield**2*diff_weight_yield[l]*diff2_weight_yield[(j,k)] )
+                            if j==k:
+                                christoffel[i][j][k] += d_christoffel_ijk 
+                           elif j>k:
+                                christoffel[i][j][k] += d_christoffel_ijk 
+                                christoffel[i][k][j] += d_christoffel_ijk
+        return christoffel 
 
 # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
 def histo_to_list( histo ):
