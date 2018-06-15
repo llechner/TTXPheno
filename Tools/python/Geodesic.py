@@ -122,7 +122,6 @@ if __name__ == '__main__':
 
         return result
 
-
     # Initialize Geodesic
     #geodesic = Geodesic( initial_point, initial_derivative, christoffel_symbols )
 
