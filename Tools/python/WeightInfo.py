@@ -430,7 +430,7 @@ class WeightInfo:
                             d_christoffel_ijk = gil*( 0.5/weight_yield*diff_weight_yield[l]*diff_weight_yield[j]*diff_weight_yield[k] + 1./weight_yield**2*diff_weight_yield[l]*diff2_weight_yield[(j,k)] )
                             if j==k:
                                 christoffel[i][j][k] += d_christoffel_ijk 
-                           elif j>k:
+                            elif j>k:
                                 christoffel[i][j][k] += d_christoffel_ijk 
                                 christoffel[i][k][j] += d_christoffel_ijk
         return christoffel 
