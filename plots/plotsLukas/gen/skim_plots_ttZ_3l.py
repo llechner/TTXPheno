@@ -336,8 +336,6 @@ sequence.append( makeObservables )
 # Use some defaults
 Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
   
-print(weight)
-
 if args.scaleLumi: y_label = 'norm. diff. xsec'
 else: y_label = 'diff. x-sec'
 
@@ -346,7 +344,7 @@ plots = []
 plots.append(Plot( name = "Z_pt",
   texX = 'p_{T}(Z) [GeV]', texY = y_label,
   attribute = lambda event, sample: event.Z_pt if event.passing_3lep else float('nan'),
-  binning=[10,0,500],
+  binning=[5,0,500],
 ))
 
 plots.append(Plot( name = "Z_mass",
@@ -534,7 +532,6 @@ plots.append(Plot( name = 'mT_t',
   attribute = lambda event, sample: event.t_MT if event.passing_3lep else float('nan'),
   binning=[20,0,300],
 ))
-
 
 plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_events = -1 if args.small else -1)
 
