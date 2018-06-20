@@ -367,8 +367,8 @@ def filler( event ):
         recoJets.sort( key = lambda p:-p['pt'] )
 
         # make reco b jets
-        recoBJets    = filter( lambda j:j['BTag']==1, recoJets )
-        recoNonBJets = filter( lambda j:not (j['BTag']==1), recoJets )
+        recoBJets    = filter( lambda j:j['bTag']==1, recoJets )
+        recoNonBJets = filter( lambda j:not (j['bTag']==1), recoJets )
         recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [nanJet(), nanJet()] )[:2] 
         fill_vector( event, "recoBj0", recoJet_write_varnames, recoBj0) 
         fill_vector( event, "recoBj1", recoJet_write_varnames, recoBj1) 
