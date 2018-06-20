@@ -14,7 +14,7 @@ from RootTools.core.standard             import *
 
 # TTXPheno
 from TTXPheno.Tools.user                 import plot_directory
-from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
+from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR, nanJet, nanLepton 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 from TTXPheno.Tools.objectSelection      import isGoodGenJet, isGoodGenLepton
@@ -35,7 +35,7 @@ argParser.add_argument('--order',               action='store',      default=2)
 argParser.add_argument('--selection',           action='store',      default='gammapt40-nlep2p-njet2p-nbjet1p', help="Specify cut.")
 argParser.add_argument('--small',               action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',           action='store_true', help='Scale lumi only??')
-argParser.add_argument('--reweightPtGammaToSM', action='store_true', help='Reweight Pt(gamma) to the SM for all the signals?', )
+argParser.add_argument('--reweightPtPhotonToSM', action='store_true', help='Reweight Pt(gamma) to the SM for all the signals?', )
 argParser.add_argument('--parameters',          action='store',      default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',          action='store',      default=150)
 
@@ -52,7 +52,7 @@ subDirectory = []
 if args.scaleLumi:  subDirectory.append("shape")
 else:               subDirectory.append("lumi")
 
-if args.reweightPtGammaToSM: subDirectory.append("reweightPtGammaToSM")
+if args.reweightPtPhotonToSM: subDirectory.append("reweightPtPhotonToSM")
 
 if args.small:      subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
@@ -93,8 +93,8 @@ def get_weight_function( param ):
     return reweight
 
 
-# reweighting of pTGamma 
-if args.reweightPtGammaToSM:
+# reweighting of pTPhoton 
+if args.reweightPtPhotonToSM:
     for param in params[::-1]:
         param['ptgamma_histo'] = sample.get1DHistoFromDraw("gamma_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
         if param['ptgamma_histo'].Integral()>0: param['ptgamma_histo'].Scale(1./param['ptgamma_histo'].Integral())
@@ -227,11 +227,11 @@ def makeJets( event, sample ):
     event.trueNonBjets = list( filter( lambda j: not j['matchBParton'], event.jets ) )
 
     # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
-    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [NanJet(), NanJet()] )[:2] 
+    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [nanJet(), nanJet()] )[:2] 
     
 sequence.append( makeJets )
 
-def makeGamma( event, sample ):
+def makePhoton( event, sample ):
     ''' Make a gamma vector to facilitate further calculations
     '''
     event.gamma_unitVec2D = UnitVectorT2( event.gamma_phi )
@@ -239,7 +239,7 @@ def makeGamma( event, sample ):
     event.gamma_vec4D.SetPtEtaPhiM( event.gamma_pt, event.gamma_eta, event.gamma_phi, event.gamma_mass )
     event.gamma_unitVec3D = event.gamma_vec4D.Vect().Unit()
 
-sequence.append( makeGamma )
+sequence.append( makePhoton )
 
 def makeLeps( event, sample ):
     ''' Add a list of filtered leptons to the event
@@ -262,7 +262,7 @@ def makeLeps( event, sample ):
         addTLorentzVector( p )
 
     # 2l 
-    event.l0, event.l1 = ( event.leps + [NanLepton(), NanLepton()] )[:2] 
+    event.l0, event.l1 = ( event.leps + [nanLepton(), nanLepton()] )[:2] 
     
     # We may loose some events by cross-cleaning or by thresholds.
     event.passing_2lep = len(event.leps)>=2 and event.l0['pdgId']*event.l1['pdgId'] > 0.

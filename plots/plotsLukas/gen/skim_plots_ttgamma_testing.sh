@@ -31,8 +31,8 @@ declare -a samplesizes=('--small')
 #declare -a samplesizes=('')
 
 # declare reweighting
-#declare -a reweightings=('' '--reweightPtGammaToSM')
-#declare -a reweightings=('--reweightPtGammaToSM')
+#declare -a reweightings=('' '--reweightPtPhotonToSM')
+#declare -a reweightings=('--reweightPtPhotonToSM')
 declare -a reweightings=('')
 
 # declare scale

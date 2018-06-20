@@ -17,11 +17,12 @@ from RootTools.core.standard             import *
 #TTXPheno
 from TTXPheno.Tools.user                   import skim_output_directory
 from TTXPheno.Tools.GenSearch              import GenSearch
-from TTXPheno.Tools.helpers                import deltaR2, cosThetaStar
+from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cosThetaStar, closestOSDLMassToMZ, nanJet, nanLepton
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
 from TTXPheno.Tools.DelphesReader          import DelphesReader
+from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoJet, isGoodRecoPhoton, genJetId
 
 #
 # Arguments
@@ -32,7 +33,7 @@ argParser.add_argument('--logLevel',           action='store',      default='INF
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')#, default = True)
 argParser.add_argument('--delphes',            action='store_true', help='Run Delphes?')
 argParser.add_argument('--overwrite',          action='store_true', help='Overwrite?')#, default = True)
-argParser.add_argument('--targetDir',          action='store',      default='v3')
+argParser.add_argument('--targetDir',          action='store',      default='v5')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_scan', help="Name of the sample loaded from fwlite_benchmarks. Only if no inputFiles are specified")
 argParser.add_argument('--inputFiles',         action='store',      nargs = '*', default=[])
 argParser.add_argument('--targetSampleName',   action='store',      default=None, help="Name of the sample in case inputFile are specified. Otherwise ignored")
@@ -123,34 +124,60 @@ def varnames( vec_vars ):
 variables  = ["run/I", "lumi/I", "evt/l"]
 
 # MET
-variables += ["GenMet_pt/F", "GenMet_phi/F"]
+variables += ["genMet_pt/F", "genMet_phi/F"]
 
 # jet vector
-jet_read_vars       =  "pt/F,eta/F,phi/F"
+jet_read_vars       =  "pt/F,eta/F,phi/F,isMuon/I,isElectron/I,isPhoton/I"
 jet_read_varnames   =  varnames( jet_read_vars )
 jet_write_vars      = jet_read_vars+',matchBParton/I' 
 jet_write_varnames  =  varnames( jet_write_vars )
-variables     += ["GenJet[%s]"%jet_write_vars]
+variables += ["genJet[%s]"%jet_write_vars]
+variables += ["bj0_%s"%var for var in jet_write_vars.split(',')]
+variables += ["bj1_%s"%var for var in jet_write_vars.split(',')]
 # lepton vector 
 lep_vars       =  "pt/F,eta/F,phi/F,pdgId/I"
 lep_extra_vars =  "motherPdgId/I"
 lep_varnames   =  varnames( lep_vars ) 
 lep_all_varnames = lep_varnames + varnames(lep_extra_vars)
-variables     += ["GenLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
+variables     += ["genLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
 # top vector
 top_vars       =  "pt/F,eta/F,phi/F"
 top_varnames   =  varnames( top_vars ) 
-variables     += ["top[%s]"%top_vars]
+variables     += ["genTop[%s]"%top_vars]
 
 # to be stored for each boson
 boson_read_varnames= [ 'pt', 'phi', 'eta', 'mass']
 # Z vector
-variables     += ["Z_pt/F", "Z_phi/F", "Z_eta/F", "Z_mass/F", "Z_cosThetaStar/F", "Z_daughterPdg/I"]
+variables     += ["genZ_pt/F", "genZ_phi/F", "genZ_eta/F", "genZ_mass/F", "genZ_cosThetaStar/F", "genZ_daughterPdg/I"]
 # W vector
-variables     += ["W_pt/F", "W_phi/F", "W_eta/F", "W_mass/F", "W_daughterPdg/I"]
+variables     += ["genW_pt/F", "genW_phi/F", "genW_eta/F", "genW_mass/F", "genW_daughterPdg/I"]
 # gamma vector
-variables     += ["gamma_pt/F", "gamma_phi/F", "gamma_eta/F", "gamma_mass/F"]
+variables     += ["genPhoton_pt/F", "genPhoton_phi/F", "genPhoton_eta/F", "genPhoton_mass/F"]
 
+if args.delphes:
+    # reconstructed bosons
+    variables     += ["recoZ_l1_index/I", "recoZ_l2_index/I", "recoNonZ_l1_index/I", "recoNonZ_l2_index/I",  "recoZ_pt/F", "recoZ_eta/F", "recoZ_phi/F", "recoZ_mass/F", "recoZ_lldPhi/F", "recoZ_lldR/F", "recoZ_cosThetaStar/F"]
+
+    # reconstructed leptons
+    recoLep_vars       = "pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F"
+    variables         += ["recoLep[%s]"%recoLep_vars]
+    recoLep_varnames  = varnames( recoLep_vars )
+        
+    # reconstructed jets
+    recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F,bTagPhys/F' 
+    variables      += ["recoJet[%s]"%recoJet_vars]
+    recoJet_write_varnames = varnames( recoJet_vars )
+    variables += ["recoBj0_%s"%var for var in recoJet_vars.split(',')]
+    variables += ["recoBj1_%s"%var for var in recoJet_vars.split(',')]
+    recoJet_varnames= varnames( recoJet_vars )
+
+    # reconstructed photons
+    recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F'
+    variables      += ["recoPhoton[%s]"%recoPhoton_vars]
+    recoPhoton_varnames = varnames( recoPhoton_vars )
+
+    variables      += ["recoMet_pt/F", "recoMet_phi/F"]
+ 
 # Lumi weight 1fb
 variables += ["lumiweight1fb/F"]
 if args.addReweights:
@@ -159,11 +186,14 @@ if args.addReweights:
     variables.append("ref_lumiweight1fb/F")
 
 
-def fill_vector( event, collection_name, collection_varnames, objects):
+def fill_vector_collection( event, collection_name, collection_varnames, objects):
     setattr( event, "n"+collection_name, len(objects) )
     for i_obj, obj in enumerate(objects):
         for var in collection_varnames:
             getattr(event, collection_name+"_"+var)[i_obj] = obj[var]
+def fill_vector( event, collection_name, collection_varnames, obj):
+    for var in collection_varnames:
+        setattr(event, collection_name+"_"+var, obj[var] )
 
 reader = sample.fwliteReader( products = products )
 
@@ -202,7 +232,7 @@ def filler( event ):
         event.np = hyperPoly.ndof
         event.chi2_ndof = hyperPoly.chi2_ndof(coeff, weights)
         #logger.debug( "chi2_ndof %f coeff %r", event.chi2_ndof, coeff )
-        logger.debug( "chi2_ndof %f", event.chi2_ndof )
+        if event.chi2_ndof>10**-6: logger.warning( "chi2_ndof is large: %f", event.chi2_ndof )
         for n in xrange(hyperPoly.ndof):
             event.p_C[n] = coeff[n]
 
@@ -218,100 +248,192 @@ def filler( event ):
     search  = GenSearch( gp )
 
     # find heavy objects before they decay
-    tops = map( lambda t:{var: getattr(t, var)() for var in top_varnames}, filter( lambda p:abs(p.pdgId())==6 and search.isLast(p),  gp) )
+    genTops = map( lambda t:{var: getattr(t, var)() for var in top_varnames}, filter( lambda p:abs(p.pdgId())==6 and search.isLast(p),  gp) )
 
-    tops.sort( key = lambda p:-p['pt'] )
-    fill_vector( event, "top", top_varnames, tops ) 
+    genTops.sort( key = lambda p:-p['pt'] )
+    fill_vector_collection( event, "genTop", top_varnames, genTops ) 
 
     # generated Z's
-    gen_Zs = filter( lambda p:abs(p.pdgId())==23 and search.isLast(p), gp)
-    gen_Zs.sort( key = lambda p: -p.pt() )
-    if len(gen_Zs)>0: 
-        gen_Z = gen_Zs[0]
+    genZs = filter( lambda p:abs(p.pdgId())==23 and search.isLast(p), gp)
+    genZs.sort( key = lambda p: -p.pt() )
+    if len(genZs)>0: 
+        genZ = genZs[0]
         for var in boson_read_varnames:
-           setattr( event, "Z_"+var,  getattr(gen_Z, var)() )
+           setattr( event, "genZ_"+var,  getattr(genZ, var)() )
     else:
-        gen_Z = None
+        genZ = None
     
-    if gen_Z is not None:
+    if genZ is not None:
 
-        d1, d2 = gen_Z.daughter(0), gen_Z.daughter(1)
+        d1, d2 = genZ.daughter(0), genZ.daughter(1)
         if d1.pdgId()>0: 
             lm, lp = d1, d2
         else:
             lm, lp = d2, d1
-        event.Z_daughterPdg = lm.pdgId()
-        event.Z_cosThetaStar = cosThetaStar(gen_Z.mass(), gen_Z.pt(), gen_Z.eta(), gen_Z.phi(), lm.pt(), lm.eta(), lm.phi())
+        event.genZ_daughterPdg = lm.pdgId()
+        event.genZ_cosThetaStar = cosThetaStar(genZ.mass(), genZ.pt(), genZ.eta(), genZ.phi(), lm.pt(), lm.eta(), lm.phi())
 
     # generated W's
-    gen_Ws = filter( lambda p:abs(p.pdgId())==24 and search.isLast(p), gp)
-    gen_Ws.sort( key = lambda p: -p.pt() )
+    genWs = filter( lambda p:abs(p.pdgId())==24 and search.isLast(p), gp)
+    genWs.sort( key = lambda p: -p.pt() )
     # W can't have a top-mother - We're looking for the extra boson (there is always an extra boson)
-    gen_Ws = filter( lambda p: abs(search.ascend(p).mother(0).pdgId())!=6, gen_Ws )
-    if len(gen_Ws)>0: 
-        gen_W = gen_Ws[0]
+    genWs = filter( lambda p: abs(search.ascend(p).mother(0).pdgId())!=6, genWs )
+    if len(genWs)>0: 
+        genW = genWs[0]
         for var in boson_read_varnames:
-           setattr( event, "W_"+var,  getattr(gen_W, var)() )
+           setattr( event, "genW_"+var,  getattr(genW, var)() )
     else:
-        gen_W = None
+        genW = None
     
-    if gen_W is not None:
-
-        d1, d2 = gen_W.daughter(0), gen_W.daughter(1)
+    if genW is not None:
+        d1, d2 = genW.daughter(0), genW.daughter(1)
         if abs(d1.pdgId()) in [11, 13, 15]: 
             lep, neu = d1, d2
         else:
             lep, neu = d2, d1
 
-        event.W_daughterPdg = lep.pdgId()
-
-    gen_Gammas = filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp)
-    gen_Gammas.sort( key = lambda p: -p.pt() )
-    if len(gen_Gammas)>0: 
-        gen_Gamma = gen_Gammas[0]
-        for var in boson_read_varnames:
-           setattr( event, "gamma_"+var,  getattr(gen_Gamma, var)() )
-    else:
-        gen_Gamma = None
-    
-    # find all leptons 
-    leptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0,  gp) ]
-    leps    = []
-    for first, last in leptons:
-        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
-        leps.append( {var: getattr(last, var)() for var in lep_varnames} )
-        leps[-1]['motherPdgId'] = mother_pdgId
-
-    leps.sort( key = lambda p:-p['pt'] )
-    fill_vector( event, "GenLep", lep_all_varnames, leps)
+        event.genW_daughterPdg = lep.pdgId()
 
     # MET
-    event.GenMet_pt = reader.products['genMET'][0].pt()
-    event.GenMet_phi = reader.products['genMET'][0].phi()
+    event.genMet_pt = reader.products['genMET'][0].pt()
+    event.genMet_phi = reader.products['genMET'][0].phi()
 
     # jets
-    jets = map( lambda t:{var: getattr(t, var)() for var in jet_read_varnames}, filter( lambda j:j.pt()>30, reader.products['genJets']) )
-
-    # jet/lepton disambiguation
-    jets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in leps if l['pt']>10]) > 0.3**2 ), jets )
+    fwlite_genJets = filter( genJetId, reader.products['genJets'] )
+    genJets = map( lambda t:{var: getattr(t, var)() for var in jet_read_varnames}, filter( lambda j:j.pt()>30, fwlite_genJets) )
+    # filter genJets
+    genJets = list( filter( lambda j:isGoodGenJet( j ), genJets ) )
 
     # find b's from tops:
     b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
 
-    for jet in jets:
-        jet['matchBParton'] = ( min([999]+[deltaR2(jet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
+    # store if gen-jet is DR matched to a B parton
+    for genJet in genJets:
+        genJet['matchBParton'] = ( min([999]+[deltaR2(genJet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
 
-    jets.sort( key = lambda p:-p['pt'] )
-    fill_vector( event, "GenJet", jet_write_varnames, jets)
+    # gen b jets
+    trueBjets = list( filter( lambda j: j['matchBParton'], genJets ) )
+    trueNonBjets = list( filter( lambda j: not j['matchBParton'], genJets ) )
+
+    # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
+    bj0, bj1 = ( trueBjets + trueNonBjets + [nanJet(), nanJet()] )[:2]
+    fill_vector( event, "bj0", jet_write_varnames, bj0) 
+    fill_vector( event, "bj1", jet_write_varnames, bj1) 
+
+    genPhotons = filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp)
+    genPhotons.sort( key = lambda p: -p.pt() )
+    if len(genPhotons)>0: 
+        genPhoton = genPhotons[0]
+        for var in boson_read_varnames:
+           setattr( event, "genPhoton_"+var,  getattr(genPhoton, var)() )
+    else:
+        genPhoton = None
+    
+    # find all genLeptons 
+    genLeptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0,  gp) ]
+    genLeps    = []
+    for first, last in genLeptons:
+        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
+        genLeps.append( {var: getattr(last, var)() for var in lep_varnames} )
+        genLeps[-1]['motherPdgId'] = mother_pdgId
+
+    # filter gen leptons
+    genLeps =  list( filter( lambda l:isGoodGenLepton( l ), genLeps ) )
+
+    genLeps.sort( key = lambda p:-p['pt'] )
+
+    genJets.sort( key = lambda p:-p['pt'] )
+
+    #for jet in genJets:
+    #    print jet['isMuon'], jet['isElectron'], jet['isPhoton'], min([999]+[deltaR2(jet, l) for l in genLeps if l['pt']>10]), jet
+
+    # jet/lepton disambiguation -> remove jets, because gen-jets cluster all leptons
+    #if args.logLevel == 'DEBUG':
+    #    for jet in filter( lambda j: not (min([999]+[deltaR2(j, l) for l in genLeps if l['pt']>10]) > 0.3**2 ), genJets ):
+    #        logger.debug( "Filtered gen %f jet %r lep %r", sqrt((min([999]+[deltaR2(jet, l) for l in genLeps if l['pt']>10]))), jet, [ (l['eta'], jet['pt']/l['pt']) for l in genLeps] )
+    #        assert False, ""
+
+    genJets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in genLeps if l['pt']>10]) > 0.3**2 ), genJets )
+
+    fill_vector_collection( event, "genLep", lep_all_varnames, genLeps)
+    fill_vector_collection( event, "genJet", jet_write_varnames, genJets)
 
     # Reco quantities
-    #if args.delphes:
-    #    delphesReader.getEntry(reader.position-1 )
-    #    print delphesReader.muons()
-    #    print delphesReader.electrons()
-    #    print delphesReader.photons()
-    #    print delphesReader.met()
+    if args.delphes:
+        delphesReader.getEntry(reader.position-1 )
 
+        # read jets
+        recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
+        recoJets.sort( key = lambda p:-p['pt'] )
+
+        # make reco b jets
+        recoBJets    = filter( lambda j:j['bTag']==1, recoJets )
+        recoNonBJets = filter( lambda j:not (j['bTag']==1), recoJets )
+        recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [nanJet(), nanJet()] )[:2] 
+        fill_vector( event, "recoBj0", recoJet_write_varnames, recoBj0) 
+        fill_vector( event, "recoBj1", recoJet_write_varnames, recoBj1) 
+
+        # read leptons
+        recoLeps =  filter( isGoodRecoMuon, delphesReader.muons()) + filter( isGoodRecoElectron, delphesReader.electrons() )
+        recoLeps.sort( key = lambda p:-p['pt'] )
+
+        for i_lep, lep in enumerate(recoLeps):
+            min_DR=999
+            min_jet=None
+            for jet in recoJets:
+                if deltaR2(jet, lep)<min_DR:
+                    min_DR_jet = jet
+                    min_DR     = deltaR2(jet, lep)
+            if min_DR<0.4**2: 
+                print "Filtering lepton", lep, "because DR", sqrt(min_DR), "of jet", jet
+                break
+
+        # cross-cleaning of reco-objects
+        recoLeps = filter( lambda l: (min([999]+[deltaR2(l, j) for j in recoJets if j['pt']>30]) > 0.3**2 ), recoLeps )
+        # give index to leptons
+        for i_lep, lep in enumerate(recoLeps):
+            lep['index'] = i_lep
+
+        # Photons
+        recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
+
+        # MET
+        recoMet = delphesReader.met()[0]
+
+        # Store
+        fill_vector_collection( event, "recoLep",    recoLep_varnames, recoLeps )
+        fill_vector_collection( event, "recoJet",    recoJet_varnames, recoJets )
+        fill_vector_collection( event, "recoPhoton", recoPhoton_varnames, recoPhotons )
+
+        event.recoMet_pt  = recoMet['pt']
+        event.recoMet_phi = recoMet['phi']
+
+        # search for reco Z in reco leptons
+        (event.recoZ_mass, recoZ_l1_index, recoZ_l2_index) = closestOSDLMassToMZ(recoLeps)
+        recoNonZ_indices = [ i for i in range(len(recoLeps)) if i not in [recoZ_l1_index, recoZ_l2_index] ]
+        event.recoZ_l1_index    = recoLeps[recoZ_l1_index]['index'] if recoZ_l1_index>=0 else -1
+        event.recoZ_l2_index    = recoLeps[recoZ_l2_index]['index'] if recoZ_l2_index>=0 else -1
+        event.recoNonZ_l1_index = recoLeps[recoNonZ_indices[0]]['index'] if len(recoNonZ_indices)>0 else -1
+        event.recoNonZ_l2_index = recoLeps[recoNonZ_indices[1]]['index'] if len(recoNonZ_indices)>1 else -1
+
+        # Store Z information 
+        if event.recoZ_mass>=0:
+            if recoLeps[event.recoZ_l1_index]['pdgId']*recoLeps[event.recoZ_l2_index]['pdgId']>0 or abs(recoLeps[event.recoZ_l1_index]['pdgId'])!=abs(recoLeps[event.recoZ_l2_index]['pdgId']): 
+                raise RuntimeError( "not a Z! Should not happen" )
+            Z_l1 = ROOT.TLorentzVector()
+            Z_l1.SetPtEtaPhiM(recoLeps[event.recoZ_l1_index]['pt'], recoLeps[event.recoZ_l1_index]['eta'], recoLeps[event.recoZ_l1_index]['phi'], 0 )
+            Z_l2 = ROOT.TLorentzVector()
+            Z_l2.SetPtEtaPhiM(recoLeps[event.recoZ_l2_index]['pt'], recoLeps[event.recoZ_l2_index]['eta'], recoLeps[event.recoZ_l2_index]['phi'], 0 )
+            Z = Z_l1 + Z_l2
+            event.recoZ_pt   = Z.Pt()
+            event.recoZ_eta  = Z.Eta()
+            event.recoZ_phi  = Z.Phi()
+            event.recoZ_lldPhi = deltaPhi(recoLeps[event.recoZ_l1_index]['phi'], recoLeps[event.recoZ_l2_index]['phi'])
+            event.recoZ_lldR   = deltaR(recoLeps[event.recoZ_l1_index], recoLeps[event.recoZ_l2_index])
+            lm_index = event.recoZ_l1_index if recoLeps[event.recoZ_l1_index]['pdgId'] > 0 else event.recoZ_l2_index
+            event.recoZ_cosThetaStar = cosThetaStar(event.recoZ_mass, event.recoZ_pt, event.recoZ_eta, event.recoZ_phi, recoLeps[lm_index]['pt'], recoLeps[lm_index]['eta'], recoLeps[lm_index]['phi'] )
+
+         
 tmp_dir     = ROOT.gDirectory
 #post_fix = '_%i'%args.job if args.nJobs > 1 else ''
 output_filename =  os.path.join(output_directory, sample.name + '.root')

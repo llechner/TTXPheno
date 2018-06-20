@@ -14,7 +14,7 @@ from RootTools.core.standard             import *
 
 # TTXPheno
 from TTXPheno.Tools.user                 import plot_directory
-from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
+from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR, nanJet, nanLepton 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 from TTXPheno.Tools.objectSelection      import isGoodGenJet, isGoodGenLepton
@@ -35,7 +35,7 @@ argParser.add_argument('--order',               action='store',      default=2)
 argParser.add_argument('--selection',           action='store',      default='gammapt40-nlep2p-njet2p-nbjet1p', help="Specify cut.")
 argParser.add_argument('--small',               action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--scaleLumi',           action='store_true', help='Scale lumi only??')
-argParser.add_argument('--reweightPtGammaToSM', action='store_true', help='Reweight Pt(gamma) to the SM for all the signals?', )
+argParser.add_argument('--reweightPtPhotonToSM', action='store_true', help='Reweight Pt(gamma) to the SM for all the signals?', )
 argParser.add_argument('--parameters',          action='store',      default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',          action='store',      default=150)
 
@@ -52,7 +52,7 @@ subDirectory = []
 if args.scaleLumi:  subDirectory.append("shape")
 else:               subDirectory.append("lumi")
 
-if args.reweightPtGammaToSM: subDirectory.append("reweightPtGammaToSM")
+if args.reweightPtPhotonToSM: subDirectory.append("reweightPtPhotonToSM")
 
 if args.small:      subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
@@ -89,10 +89,10 @@ params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
 # Make stack and weight
 stack  = Stack(*[ [ sample ] for param in params ] )
 
-# reweighting of pTGamma 
-if args.reweightPtGammaToSM:
+# reweighting of pTPhoton 
+if args.reweightPtPhotonToSM:
     for param in params[::-1]:
-        param['ptgamma_histo'] = sample.get1DHistoFromDraw("gamma_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
+        param['ptgamma_histo'] = sample.get1DHistoFromDraw("genPhoton_pt", [20,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
         if param['ptgamma_histo'].Integral()>0: param['ptgamma_histo'].Scale(1./param['ptgamma_histo'].Integral())
         param['ptgamma_reweight_histo'] = params[-1]['ptgamma_histo'].Clone()
         param['ptgamma_reweight_histo'].Divide(param['ptgamma_histo'])
@@ -100,7 +100,7 @@ if args.reweightPtGammaToSM:
 
     def get_reweight( param ):
         histo = param['ptgamma_reweight_histo']
-        var = 'gamma_pt'
+        var = 'genPhoton_pt'
         bsm_rw = w.get_weight_func( **param['WC'] )
         def reweight(event, sample):
             i_bin = histo.FindBin(getattr( event, var ) )
@@ -195,7 +195,7 @@ read_variables = [
     "nGenJet/I", "GenJet[pt/F,eta/F,phi/F,matchBParton/I]", 
     "nGenLep/I", "GenLep[pt/F,eta/F,phi/F,pdgId/I,motherPdgId/I]", 
     "ntop/I", "top[pt/F,eta/F,phi/F]", 
-    "gamma_pt/F", "gamma_eta/F", "gamma_phi/F", "gamma_mass/F",
+    "genPhoton_pt/F", "genPhoton_eta/F", "genPhoton_phi/F", "genPhoton_mass/F",
 ]
 read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
@@ -228,19 +228,19 @@ def makeJets( event, sample ):
     event.trueNonBjets = list( filter( lambda j: not j['matchBParton'], event.jets ) )
 
     # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
-    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [NanJet(), NanJet()] )[:2] 
+    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [nanJet(), nanJet()] )[:2] 
     
 sequence.append( makeJets )
 
-def makeGamma( event, sample ):
-    ''' Make a gamma vector to facilitate further calculations
+def makePhoton( event, sample ):
+    ''' Make a genPhoton vector to facilitate further calculations
     '''
-    event.gamma_unitVec2D = UnitVectorT2( event.gamma_phi )
-    event.gamma_vec4D     = ROOT.TLorentzVector()
-    event.gamma_vec4D.SetPtEtaPhiM( event.gamma_pt, event.gamma_eta, event.gamma_phi, event.gamma_mass )
-    event.gamma_unitVec3D = event.gamma_vec4D.Vect().Unit()
+    event.genPhoton_unitVec2D = UnitVectorT2( event.genPhoton_phi )
+    event.genPhoton_vec4D     = ROOT.TLorentzVector()
+    event.genPhoton_vec4D.SetPtEtaPhiM( event.genPhoton_pt, event.genPhoton_eta, event.genPhoton_phi, event.genPhoton_mass )
+    event.genPhoton_unitVec3D = event.genPhoton_vec4D.Vect().Unit()
 
-sequence.append( makeGamma )
+sequence.append( makePhoton )
 
 def makeLeps( event, sample ):
     ''' Add a list of filtered leptons to the event
@@ -263,7 +263,7 @@ def makeLeps( event, sample ):
         addTLorentzVector( p )
 
     # 2l 
-    event.l0, event.l1 = ( event.leps + [NanLepton(), NanLepton()] )[:2] 
+    event.l0, event.l1 = ( event.leps + [nanLepton(), nanLepton()] )[:2] 
     
     # We may loose some events by cross-cleaning or by thresholds.
     event.passing_2lep = len(event.leps)>=2 and event.l0['pdgId']*event.l1['pdgId'] > 0.
@@ -295,15 +295,15 @@ else: y_label = 'diff. x-sec'
 
 plots = []
 
-plots.append(Plot( name = "gamma_pt",
+plots.append(Plot( name = "genPhoton_pt",
   texX = 'p_{T}(#gamma) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.gamma_pt if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.genPhoton_pt if event.passing_2lep else float('nan'),
   binning=[20,0,400],
 ))
 
-plots.append(Plot( name = "gamma_mass",
+plots.append(Plot( name = "genPhoton_mass",
   texX = 'm(#gamma) [GeV]', texY = y_label,
-  attribute = lambda event, sample: event.gamma_mass if event.passing_2lep else float('nan'),
+  attribute = lambda event, sample: event.genPhoton_mass if event.passing_2lep else float('nan'),
   binning=[20,-5,5],
 ))
 
