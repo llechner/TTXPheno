@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+2#!/usr/bin/env python
 ''' Make flat ntuple from GEN data tier 
 '''
 #
@@ -120,6 +120,13 @@ products = {
 def varnames( vec_vars ):
     return [v.split('/')[0] for v in vec_vars.split(',')]
 
+def vecSumPt(*args):
+    return sqrt( sum([o['pt']*cos(o['phi']) for o in args],0.)**2 + sum([o['pt']*sin(o['phi']) for o in args],0.)**2 )
+
+def addIndex( collection ):
+    for i  in range(len(collection)):
+        collection[i]['index'] = i
+
 # standard variables
 variables  = ["run/I", "lumi/I", "evt/l"]
 
@@ -132,14 +139,17 @@ jet_read_varnames   =  varnames( jet_read_vars )
 jet_write_vars      = jet_read_vars+',matchBParton/I' 
 jet_write_varnames  =  varnames( jet_write_vars )
 variables += ["genJet[%s]"%jet_write_vars]
-variables += ["bj0_%s"%var for var in jet_write_vars.split(',')]
-variables += ["bj1_%s"%var for var in jet_write_vars.split(',')]
+variables += ["genBj0_%s"%var for var in jet_write_vars.split(',')]
+variables += ["genBj1_%s"%var for var in jet_write_vars.split(',')]
 # lepton vector 
 lep_vars       =  "pt/F,eta/F,phi/F,pdgId/I"
 lep_extra_vars =  "motherPdgId/I"
 lep_varnames   =  varnames( lep_vars ) 
 lep_all_varnames = lep_varnames + varnames(lep_extra_vars)
 variables     += ["genLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
+# associated jet indices
+variables += [ "genBjLeadlep_index/I", "genBjLeadhad_index/I" ]
+variables += [ "genBjNonZlep_index/I", "genBjNonZhad_index/I" ]
 # top vector
 top_vars       =  "pt/F,eta/F,phi/F"
 top_varnames   =  varnames( top_vars ) 
@@ -147,8 +157,11 @@ variables     += ["genTop[%s]"%top_vars]
 
 # to be stored for each boson
 boson_read_varnames= [ 'pt', 'phi', 'eta', 'mass']
-# Z vector
+# Z vector from gen collection
 variables     += ["genZ_pt/F", "genZ_phi/F", "genZ_eta/F", "genZ_mass/F", "genZ_cosThetaStar/F", "genZ_daughterPdg/I"]
+# Z vector from genleps
+variables     += ["genLepZ_pt/F", "genLepZ_phi/F", "genLepZ_eta/F", "genLepZ_mass/F", "genLepZ_lldPhi/F", "genLepZ_lldR/F","genLepZ_cosThetaStar/F", "genLepZ_daughterPdg/I", "genLepNonZ_l1_index/I"]
+variables     += ["genLepZ_l1_index/I", "genLepZ_l2_index/I", "genLepNonZ_l1_index/I", "genLepNonZ_l2_index/I"]
 # W vector
 variables     += ["genW_pt/F", "genW_phi/F", "genW_eta/F", "genW_mass/F", "genW_daughterPdg/I"]
 # gamma vector
@@ -170,7 +183,10 @@ if args.delphes:
     variables += ["recoBj0_%s"%var for var in recoJet_vars.split(',')]
     variables += ["recoBj1_%s"%var for var in recoJet_vars.split(',')]
     recoJet_varnames= varnames( recoJet_vars )
-
+    
+    # associated jet indices
+    variables += [ "recoBjNonZlep_index/I", "recoBjNonZhad_index/I" ]
+    variables += [ "recoBjLeadlep_index/I", "recoBjLeadlephad_index/I" ]
     # reconstructed photons
     recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F'
     variables      += ["recoPhoton[%s]"%recoPhoton_vars]
@@ -254,7 +270,7 @@ def filler( event ):
     fill_vector_collection( event, "genTop", top_varnames, genTops ) 
 
     # generated Z's
-    genZs = filter( lambda p:abs(p.pdgId())==23 and search.isLast(p), gp)
+    genZs = filter( lambda p:abs(p.pdgId())==23 and search.isLast(p) and abs(p.daughter(0).pdgId()) in [11, 13], gp)
     genZs.sort( key = lambda p: -p.pt() )
     if len(genZs)>0: 
         genZ = genZs[0]
@@ -295,30 +311,9 @@ def filler( event ):
         event.genW_daughterPdg = lep.pdgId()
 
     # MET
-    event.genMet_pt = reader.products['genMET'][0].pt()
-    event.genMet_phi = reader.products['genMET'][0].phi()
-
-    # jets
-    fwlite_genJets = filter( genJetId, reader.products['genJets'] )
-    genJets = map( lambda t:{var: getattr(t, var)() for var in jet_read_varnames}, filter( lambda j:j.pt()>30, fwlite_genJets) )
-    # filter genJets
-    genJets = list( filter( lambda j:isGoodGenJet( j ), genJets ) )
-
-    # find b's from tops:
-    b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
-
-    # store if gen-jet is DR matched to a B parton
-    for genJet in genJets:
-        genJet['matchBParton'] = ( min([999]+[deltaR2(genJet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
-
-    # gen b jets
-    trueBjets = list( filter( lambda j: j['matchBParton'], genJets ) )
-    trueNonBjets = list( filter( lambda j: not j['matchBParton'], genJets ) )
-
-    # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
-    bj0, bj1 = ( trueBjets + trueNonBjets + [nanJet(), nanJet()] )[:2]
-    fill_vector( event, "bj0", jet_write_varnames, bj0) 
-    fill_vector( event, "bj1", jet_write_varnames, bj1) 
+    genMet = {'pt':reader.products['genMET'][0].pt(), 'phi':reader.products['genMET'][0].phi()}
+    event.genMet_pt  = genMet['pt']
+    event.genMet_phi = genMet['phi'] 
 
     genPhotons = filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp)
     genPhotons.sort( key = lambda p: -p.pt() )
@@ -339,10 +334,70 @@ def filler( event ):
 
     # filter gen leptons
     genLeps =  list( filter( lambda l:isGoodGenLepton( l ), genLeps ) )
-
     genLeps.sort( key = lambda p:-p['pt'] )
+    addIndex( genLeps )
 
+    # jets
+    fwlite_genJets = filter( genJetId, reader.products['genJets'] )
+    genJets = map( lambda t:{var: getattr(t, var)() for var in jet_read_varnames}, filter( lambda j:j.pt()>30, fwlite_genJets) )
+    # filter genJets
+    genJets = list( filter( lambda j:isGoodGenJet( j ), genJets ) )
+
+    # find b's from tops:
+    b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
+
+    # store if gen-jet is DR matched to a B parton
+    for genJet in genJets:
+        genJet['matchBParton'] = ( min([999]+[deltaR2(genJet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
+
+    genJets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in genLeps if l['pt']>10]) > 0.3**2 ), genJets )
     genJets.sort( key = lambda p:-p['pt'] )
+    addIndex( genJets )
+
+    # gen b jets
+    trueBjets = list( filter( lambda j: j['matchBParton'], genJets ) )
+    trueNonBjets = list( filter( lambda j: not j['matchBParton'], genJets ) )
+
+    # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
+    genBj0, genBj1 = ( trueBjets + trueNonBjets + [nanJet(), nanJet()] )[:2]
+    fill_vector( event, "genBj0", jet_write_varnames, genBj0) 
+    fill_vector( event, "genBj1", jet_write_varnames, genBj1) 
+
+    # reco-bjet/leading lepton association
+    if len(genLeps)>0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
+        if vecSumPt( genBj0, genLeps[0], genMet ) > vecSumPt( genBj1, genLeps[0], genMet ):
+            event.genBjLeadlep_index, event.genBjLeadlephad_index = genBj0['index'], genBj1['index']
+        else:
+            event.genBjLeadlep_index, event.genBjLeadlephad_index = genBj1['index'], genBj0['index']
+
+    # find Z in genLep
+    (event.genLepZ_mass, genLepZ_l1_index, genLepZ_l2_index) = closestOSDLMassToMZ(genLeps)
+    genLepNonZ_indices = [ i for i in range(len(genLeps)) if i not in [genLepZ_l1_index, genLepZ_l2_index] ]
+    event.genLepZ_l1_index    = genLeps[genLepZ_l1_index]['index'] if genLepZ_l1_index>=0 else -1
+    event.genLepZ_l2_index    = genLeps[genLepZ_l2_index]['index'] if genLepZ_l2_index>=0 else -1
+    event.genLepNonZ_l1_index = genLeps[genLepNonZ_indices[0]]['index'] if len(genLepNonZ_indices)>0 else -1
+    event.genLepNonZ_l2_index = genLeps[genLepNonZ_indices[1]]['index'] if len(genLepNonZ_indices)>1 else -1
+    # store genLepZ stuff
+    if event.genLepZ_mass>0:
+        genLepZ_l1 = ROOT.TLorentzVector()
+        genLepZ_l1.SetPtEtaPhiM(genLeps[event.genLepZ_l1_index]['pt'], genLeps[event.genLepZ_l1_index]['eta'], genLeps[event.genLepZ_l1_index]['phi'], 0 )
+        genLepZ_l2 = ROOT.TLorentzVector()
+        genLepZ_l2.SetPtEtaPhiM(genLeps[event.genLepZ_l2_index]['pt'], genLeps[event.genLepZ_l2_index]['eta'], genLeps[event.genLepZ_l2_index]['phi'], 0 )
+        genLepZ = genLepZ_l1 + genLepZ_l2
+        event.genLepZ_pt   = genLepZ.Pt()
+        event.genLepZ_eta  = genLepZ.Eta()
+        event.genLepZ_phi  = genLepZ.Phi()
+        event.genLepZ_lldPhi = deltaPhi(genLeps[event.genLepZ_l1_index]['phi'], genLeps[event.genLepZ_l2_index]['phi'])
+        event.genLepZ_lldR   = deltaR(genLeps[event.genLepZ_l1_index], genLeps[event.genLepZ_l2_index])
+        genLepMinus_index = event.genLepZ_l1_index if genLeps[event.genLepZ_l1_index]['pdgId'] > 0 else event.genLepZ_l2_index
+        event.genLepZ_cosThetaStar = cosThetaStar(event.genLepZ_mass, event.genLepZ_pt, event.genLepZ_eta, event.genLepZ_phi, genLeps[genLepMinus_index]['pt'], genLeps[genLepMinus_index]['eta'], genLeps[genLepMinus_index]['phi'] )
+
+    # reco-bjet/nonZ lepton association
+    if event.genLepNonZ_l1_index>0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
+        if vecSumPt( genBj0, genLeps[event.genLepNonZ_l1_index], genMet ) > vecSumPt( genBj1, genLeps[event.genLepNonZ_l1_index], genMet ):
+            event.genBjNonZlep_index, event.genBjNonZhad_index = genBj0['index'], genBj1['index']
+        else:
+            event.genBjNonZlep_index, event.genBjNonZhad_index = genBj1['index'], genBj0['index']
 
     #for jet in genJets:
     #    print jet['isMuon'], jet['isElectron'], jet['isPhoton'], min([999]+[deltaR2(jet, l) for l in genLeps if l['pt']>10]), jet
@@ -353,7 +408,6 @@ def filler( event ):
     #        logger.debug( "Filtered gen %f jet %r lep %r", sqrt((min([999]+[deltaR2(jet, l) for l in genLeps if l['pt']>10]))), jet, [ (l['eta'], jet['pt']/l['pt']) for l in genLeps] )
     #        assert False, ""
 
-    genJets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in genLeps if l['pt']>10]) > 0.3**2 ), genJets )
 
     fill_vector_collection( event, "genLep", lep_all_varnames, genLeps)
     fill_vector_collection( event, "genJet", jet_write_varnames, genJets)
@@ -365,6 +419,7 @@ def filler( event ):
         # read jets
         recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
         recoJets.sort( key = lambda p:-p['pt'] )
+        addIndex( recoJets )
 
         # make reco b jets
         recoBJets    = filter( lambda j:j['bTag']==1, recoJets )
@@ -391,14 +446,20 @@ def filler( event ):
         # cross-cleaning of reco-objects
         recoLeps = filter( lambda l: (min([999]+[deltaR2(l, j) for j in recoJets if j['pt']>30]) > 0.3**2 ), recoLeps )
         # give index to leptons
-        for i_lep, lep in enumerate(recoLeps):
-            lep['index'] = i_lep
-
-        # Photons
-        recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
+        addIndex( recoLeps )
 
         # MET
         recoMet = delphesReader.met()[0]
+
+        # reco-bjet/leading lepton association
+        if len(recoLeps)>0 and recoBj0['pt']<float('inf') and recoBj1['pt']<float('inf'):
+            if vecSumPt( recoBj0, recoLeps[0], recoMet ) > vecSumPt( recoBj1, recoLeps[0], recoMet ):
+                event.recoBjLeadlep_index, event.recoBjLeadlephad_index = recoBj0['index'], recoBj1['index']
+            else:
+                event.recoBjLeadlep_index, event.recoBjLeadlephad_index = recoBj1['index'], recoBj0['index']
+
+        # Photons
+        recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
 
         # Store
         fill_vector_collection( event, "recoLep",    recoLep_varnames, recoLeps )
@@ -432,6 +493,13 @@ def filler( event ):
             event.recoZ_lldR   = deltaR(recoLeps[event.recoZ_l1_index], recoLeps[event.recoZ_l2_index])
             lm_index = event.recoZ_l1_index if recoLeps[event.recoZ_l1_index]['pdgId'] > 0 else event.recoZ_l2_index
             event.recoZ_cosThetaStar = cosThetaStar(event.recoZ_mass, event.recoZ_pt, event.recoZ_eta, event.recoZ_phi, recoLeps[lm_index]['pt'], recoLeps[lm_index]['eta'], recoLeps[lm_index]['phi'] )
+
+            # reco-bjet/lepton association
+            if event.recoNonZ_l1_index>=0 and recoBj0['pt']<float('inf') and recoBj1['pt']<float('inf'):
+                if vecSumPt( recoBj0, recoLeps[event.recoNonZ_l1_index], recoMet ) > vecSumPt( recoBj1, recoLeps[event.recoNonZ_l1_index], recoMet ):
+                    event.recoBjNonZlep_index, event.recoBjNonZhad_index = recoBj0['index'], recoBj1['index']
+                else:
+                    event.recoBjNonZlep_index, event.recoBjNonZhad_index = recoBj1['index'], recoBj0['index']
 
          
 tmp_dir     = ROOT.gDirectory
