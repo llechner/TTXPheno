@@ -395,7 +395,7 @@ class WeightInfo:
 #        return variables, fi_matrix
 
 
-    def get_christoffels( self, coeffLists, variables = None, **kwargs ):    
+    def get_christoffels( self, coeffLists, variables = None): 
         ''' Compute christoffel symbols Gamma^i_jk for coefflist in 
             subspace spanned by variables at the point specified by kwargs
 
@@ -405,35 +405,40 @@ class WeightInfo:
         # Restrict to subspace
         _variables = self.variables if variables is None else variables
 
-        # Metric and Metric-inverse in subspace
-        metric         = self.get_total_fisherInformation_matrix( coeffLists, variables = _variables, **kwargs ) [1]
-        metric_inverse = scipy.linalg.inv( metric ) 
+        # Define a function that accepts an index and a position
+        def christoffel_symbols( index, position ):
+            ''' Compute christoffel i at position in parameter space'''
+            # Metric and Metric-inverse in subspace
+            ## Make kwargs dict from position
+            kwargs_        = {_variables[i_p]:p for i_p,p in enumerate(position)} 
+            metric         = self.get_total_fisherInformation_matrix( coeffLists, variables = _variables, **kwargs_ ) [1]
+            metric_inverse = scipy.linalg.inv( metric ) 
 
-        # 3D zeros
-        christoffel = np.zeros( (len(_variables), len(_variables), len(_variables) ) )
+            # 3D zeros
+            christoffel = np.zeros( (len(_variables), len(_variables) ) )
 
-        for i in xrange(len(_variables)):
-            #print "i",i
             for coeffList in coeffLists:
-                weight_yield       = self.get_weight_yield( coeffList, **kwargs )
+                weight_yield       = self.get_weight_yield( coeffList, **kwargs_ )
                 if weight_yield == 0.: continue
                 #print "weight_yield", weight_yield
-                diff_weight_yield  =  { i_var:self.get_diff_weight_yield( var, coeffList, **kwargs ) for i_var, var in enumerate(_variables) }
-                diff2_weight_yield = { (i_var_1, i_var_2):self.get_diff_weight_yield( (var_1, var_2), coeffList, **kwargs ) for i_var_1, var_1 in enumerate(_variables) for i_var_2, var_2 in enumerate(_variables) }
+                diff_weight_yield  =  { i_var:self.get_diff_weight_yield( var, coeffList, **kwargs_ ) for i_var, var in enumerate(_variables) }
+                diff2_weight_yield = { (i_var_1, i_var_2):self.get_diff_weight_yield( (var_1, var_2), coeffList, **kwargs_ ) for i_var_1, var_1 in enumerate(_variables) for i_var_2, var_2 in enumerate(_variables) }
                 for l in xrange(len(_variables)):
-                    gil = metric_inverse[i][l]
+                    gil = metric_inverse[index][l]
                     #print "i,l,gil",i,l,gil
                     if gil==0.: continue
                     #print index, gil, dg[index] 
                     for j in range(len(_variables)):
                         for k in range(len(_variables)):
-                            d_christoffel_ijk = gil*( 0.5/weight_yield*diff_weight_yield[l]*diff_weight_yield[j]*diff_weight_yield[k] + 1./weight_yield**2*diff_weight_yield[l]*diff2_weight_yield[(j,k)] )
+                            d_christoffel_jk = gil*( 0.5/weight_yield*diff_weight_yield[l]*diff_weight_yield[j]*diff_weight_yield[k] + 1./weight_yield**2*diff_weight_yield[l]*diff2_weight_yield[(j,k)] )
                             if j==k:
-                                christoffel[i][j][k] += d_christoffel_ijk 
-                           elif j>k:
-                                christoffel[i][j][k] += d_christoffel_ijk 
-                                christoffel[i][k][j] += d_christoffel_ijk
-        return christoffel 
+                                christoffel[j][k] += d_christoffel_jk 
+                            elif j>k:
+                                christoffel[j][k] += d_christoffel_jk 
+                                christoffel[k][j] += d_christoffel_jk
+
+            return christoffel
+        return christoffel_symbols 
 
 # Make a list from the bin contents from a histogram that resulted from a 'Draw' of p_C 
 def histo_to_list( histo ):
@@ -491,16 +496,41 @@ if __name__ == "__main__":
 
 #    w.get_weight_yield(coeff_Z_pt, ctG=10)
 
-    variables = ['cpQM', 'cpt']
 
-    print(len(coeff_Z_pt))
-    print w.matrix_to_string(*w.get_total_fisherInformation_matrix(coeff_Z_pt, variables))
-    print np.linalg.eigvals(w.get_total_fisherInformation_matrix(coeff_Z_pt, variables)[1])
+    #print(len(coeff_Z_pt))
+    #print w.matrix_to_string(*w.get_total_fisherInformation_matrix(coeff_Z_pt, variables))
+    #print np.linalg.eigvals(w.get_total_fisherInformation_matrix(coeff_Z_pt, variables)[1])
 
+    from TTXPheno.Tools.Geodesic import Geodesic
 
-#    print w.matrix_to_string(*w.get_fisherInformation_matrix(coeff_Z_pt))
-#    print w.variables
-#    print w.get_weight_string(ctZ=5)
-#    print w.weight_string_WC()
-#    print w.diff_weight_string('cpt', cpt=2, cpQM=5, ctZ=5, ctZI=10)
-#    print w.diff_weight_string('ctZ', cpt=2, cpQM=5, ctZ=5, ctZI=10)
+    variables = ('cpQM', 'cpt')
+
+    def phase_space_dict(  point ):
+        return { var:val for var,val in zip( sum( [ [v, v+'_dot'] for v in variables ], [] ), point ) }
+
+    christoffel_symbols = w.get_christoffels(  coeff_Z_pt,  variables = variables) 
+
+    initial_point      = (0, 0.)
+    initial_derivative = (.002, .002 )
+
+    # How far we want to go in the parameter q
+    q_max = 15.
+    nq    = 500
+
+    # Initialize Geodesic
+    geodesic = Geodesic( initial_point, initial_derivative, christoffel_symbols )
+
+    # Define q values & solve
+    q_values = np.linspace(0, q_max, nq+1)
+    solution = map( phase_space_dict, geodesic.solve(q_values) )
+    # Add the parameter value
+    for i_q_value, q_value in enumerate( q_values ):
+        solution[i_q_value]['q'] = q_value
+
+    import ROOT
+    import array
+
+    gr = ROOT.TGraph(nq, array.array('d', [ y[variables[0]] for y in solution ]),  array.array('d', [ y[variables[1]] for y in solution ]) )
+    c1 = ROOT.TCanvas()
+    gr.Draw("AC*")
+    c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/info_geodesic.png")

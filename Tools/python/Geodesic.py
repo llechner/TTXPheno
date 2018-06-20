@@ -13,7 +13,7 @@ class Geodesic:
 
     def __init__( self,  initial_point, initial_derivative, christoffel_symbols):
 
-        if len(variables)!=len(initial_point):
+        if len(initial_derivative)!=len(initial_point):
             raise RuntimeError( "Inconsistent dimensions: initial_point %i initial_derivative %i" \
                     %(len(initial_point), len(initial_derivative)) 
                 ) 
@@ -46,8 +46,8 @@ class Geodesic:
                 result[2*i]   = phase_space_point[2*i + 1] 
                 # d/dq p^i = - Christoffel^i_(jk) p^j p^k -> the odd places are for the derivatives of the coordinates )
                 christoffel_i = self.christoffel_symbols(i, phase_space_point[::2])
-                result[2*i+1] = - sum( phase_space_point[2*j + 1]*phase_space_point[2*k + 1]*christoffel_i[j][k] for j in range(self.dim) for k in range(self.dim )) 
 
+                result[2*i+1] = - sum( phase_space_point[2*j + 1]*phase_space_point[2*k + 1]*christoffel_i[j][k] for j in range(self.dim) for k in range(self.dim )) 
             return result
 
         self.rhs = rhs
