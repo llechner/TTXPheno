@@ -66,7 +66,8 @@ sample = getattr( samples, args.sample )
 event_factor = 1.
 if args.small:
     sample.reduceFiles( to = 1 )
-    event_factor = sample.nEvents / 5000.
+    event_factor = sample.nEvents / float(sample.chain.GetEntries())
+
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
@@ -142,13 +143,14 @@ def drawPlots(plots):
 
   for log in [False, True]:
     # Directory structure
+    WC_directory = '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p') if len(args.parameters)>1 else 'SM'    
     plot_directory_ = os.path.join(\
         plot_directory,
-        args.plot_directory, 
-        sample.name, 
+        args.plot_directory,
+        sample.name,
         subDirectory, 
-        args.selection, 
-        '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p'),
+        args.selection,
+       	WC_directory,
         "log" if log else "lin")
 
     # plot the legend
@@ -281,7 +283,7 @@ def makeLeps( event, sample ):
 sequence.append( makeLeps )
 
 
-def makeObservables( event, sample):
+def makeObservables( event, sample ):
     ''' Compute all relevant observables
     '''
     # double b kinematic
@@ -293,7 +295,6 @@ def makeObservables( event, sample):
     event.getlep1chargept = event.l1['pt'] if event.l1['pdgId']>0 else -event.l1['pt']
 
 sequence.append( makeObservables )
-
 
 # Use some defaults
 Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)

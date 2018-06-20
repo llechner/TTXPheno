@@ -65,8 +65,11 @@ sample = getattr( samples, args.sample )
 # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
 event_factor = 1.
 if args.small:
-    sample.reduceFiles( to = 1 )
-    event_factor = sample.nEvents / 5000.
+    sample.reduceFiles( to = 20 )
+    event_factor = sample.nEvents / float(sample.chain.GetEntries())
+
+#print(sample.chain.GetEntries())
+#exit()
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
@@ -84,6 +87,8 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
         'WC'        : { coeff:val },
         'color'     : colors[i_param], 
         })
+
+#params.append( {'legendText':'ctZ 1 ctZI 1', 'WC':{'ctZ':1, 'ctZI':1}, 'color':ROOT.kRed} )
 params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
 
 
@@ -137,13 +142,14 @@ def drawPlots(plots):
 
   for log in [False, True]:
     # Directory structure
+    WC_directory = '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p') if len(args.parameters)>1 else 'SM'
     plot_directory_ = os.path.join(\
         plot_directory,
         args.plot_directory, 
         sample.name, 
         subDirectory, 
-        args.selection, 
-        '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p'),
+        args.selection if args.selection is not None else 'no_selection', 
+        WC_directory,
         "log" if log else "lin")
 
     # plot the legend
@@ -330,6 +336,8 @@ sequence.append( makeObservables )
 # Use some defaults
 Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
   
+print(weight)
+
 if args.scaleLumi: y_label = 'norm. diff. xsec'
 else: y_label = 'diff. x-sec'
 
@@ -337,9 +345,8 @@ plots = []
 
 plots.append(Plot( name = "Z_pt",
   texX = 'p_{T}(Z) [GeV]', texY = y_label,
-  #attribute = lambda event, sample: event.Z_pt if event.passing_3lep else float('nan'),
-  attribute = lambda event, sample: event.Z_pt,
-  binning=[20,0,500],
+  attribute = lambda event, sample: event.Z_pt if event.passing_3lep else float('nan'),
+  binning=[10,0,500],
 ))
 
 plots.append(Plot( name = "Z_mass",
@@ -429,7 +436,7 @@ plots.append(Plot( name = 'Z_deltaR_ll',
 plots.append(Plot( name = 'Met_pt',
   texX = 'E_{T}^{miss} [GeV]', texY = y_label,
   attribute = lambda event, sample: event.GenMet_pt if event.passing_3lep else float('nan'),
-  binning=[20,0,400],
+  binning=[20,0,200],
 ))
 
 plots.append(Plot( name	= 'Met_phi',
@@ -528,8 +535,10 @@ plots.append(Plot( name = 'mT_t',
   binning=[20,0,300],
 ))
 
+
 plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_events = -1 if args.small else -1)
 
 drawPlots(plots)
 
 #logger.info( "Done with prefix %s and selectionString %s", args.selection, cutInterpreter.cutString(args.selection) )
+

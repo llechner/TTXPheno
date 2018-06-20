@@ -70,6 +70,8 @@ class cutInterpreter:
     def cutString( cut, select = [""], ignore = [], photonEstimated=False):
         ''' Cutstring syntax: cut1-cut2-cut3
         '''
+        if cut is None: return '1.'
+
         cuts = cut.split('-')
         # require selected
         cuts = filter( lambda c: any( sel in c for sel in select ), cuts )
@@ -88,6 +90,8 @@ class cutInterpreter:
     def cutList ( cut, select = [""], ignore = []):
         ''' Cutstring syntax: cut1-cut2-cut3
         '''
+        if cut is None: return ['1.']
+
         cuts = cut.split('-')
         # require selected
         cuts = filter( lambda c: any( sel in c for sel in select ), cuts )
@@ -99,8 +103,9 @@ class cutInterpreter:
 if __name__ == "__main__":
 #    print cutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
 #    print cutInterpreter.cutList("lepSel-njet3p-nbjet1p-ZptTo100")
-    print cutInterpreter.cutString("lepSel-onZ-njet3p-nbjet1p")
-    print ''
-    print cutInterpreter.cutString('gammapt40')
-    print ''
-    print cutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
+#    print cutInterpreter.cutString("lepSel-onZ-njet3p-nbjet1p")
+#    print ''
+#    print cutInterpreter.cutString('gammapt40')
+#    print ''
+#    print cutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
+    print cutInterpreter.cutString(None)
