@@ -13,8 +13,8 @@ ctG=$7
 ctGI=$8
 
 # declare samples to analyze
-#declare -a samples2=('fwlite_ttgamma_LO_order2_15weights' 'fwlite_ttgamma_LO_order2_15weights_ref')
-declare -a samples2=('fwlite_ttgamma_LO_order2_15weights_ref')
+declare -a samples2=('fwlite_ttgamma_LO_order2_15weights' 'fwlite_ttgamma_LO_order2_15weights_ref')
+#declare -a samples2=('fwlite_ttgamma_LO_order2_15weights_ref')
 #declare -a samples2=('fwlite_ttgamma_LO_order2_15weights')
 #declare -a samples2=('')
 
