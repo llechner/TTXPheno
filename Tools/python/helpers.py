@@ -17,6 +17,16 @@ ROOT.setTDRStyle()
 #mZ=91.1876
 mZ = 91.2
 
+def nanJet():
+    ''' return a dict in Jet format filled with Nan
+    '''
+    return {'index':float('nan'), 'pt':float('nan'), 'phi':float('nan'), 'eta':float('nan'), 'matchBParton':float('nan'), 'vec2D':ROOT.TVector2( float('nan'), float('nan') ), 'vec4D':ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )}
+
+def nanLepton():
+    ''' return a dict in Lepton format filled with Nan
+    '''
+    return {'index':float('nan'), 'pt':float('nan'), 'phi':float('nan'), 'pdgId':float('nan'), 'eta':float('nan'), 'motherPdgId':float('nan'), 'vec2D':ROOT.TVector2( float('nan'), float('nan') ), 'vec4D':ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )}
+
 def natural_sort(list, key=lambda s:s):
     """
     Sort the list into natural alphanumeric order.

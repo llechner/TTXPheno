@@ -17,7 +17,7 @@ from RootTools.core.standard             import *
 #TTXPheno
 from TTXPheno.Tools.user                   import skim_output_directory
 from TTXPheno.Tools.GenSearch              import GenSearch
-from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cosThetaStar, closestOSDLMassToMZ
+from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cosThetaStar, closestOSDLMassToMZ, nanJet, nanLepton
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
@@ -131,7 +131,9 @@ jet_read_vars       =  "pt/F,eta/F,phi/F,isMuon/I,isElectron/I,isPhoton/I"
 jet_read_varnames   =  varnames( jet_read_vars )
 jet_write_vars      = jet_read_vars+',matchBParton/I' 
 jet_write_varnames  =  varnames( jet_write_vars )
-variables     += ["genJet[%s]"%jet_write_vars]
+variables += ["genJet[%s]"%jet_write_vars]
+variables += ["bj0_%s"%var for var in jet_write_vars.split(',')]
+variables += ["bj1_%s"%var for var in jet_write_vars.split(',')]
 # lepton vector 
 lep_vars       =  "pt/F,eta/F,phi/F,pdgId/I"
 lep_extra_vars =  "motherPdgId/I"
@@ -164,6 +166,9 @@ if args.delphes:
     # reconstructed jets
     recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F,bTagPhys/F' 
     variables      += ["recoJet[%s]"%recoJet_vars]
+    recoJet_write_varnames = varnames( recoJet_vars )
+    variables += ["recoBj0_%s"%var for var in recoJet_vars.split(',')]
+    variables += ["recoBj1_%s"%var for var in recoJet_vars.split(',')]
     recoJet_varnames= varnames( recoJet_vars )
 
     # reconstructed photons
@@ -181,11 +186,14 @@ if args.addReweights:
     variables.append("ref_lumiweight1fb/F")
 
 
-def fill_vector( event, collection_name, collection_varnames, objects):
+def fill_vector_collection( event, collection_name, collection_varnames, objects):
     setattr( event, "n"+collection_name, len(objects) )
     for i_obj, obj in enumerate(objects):
         for var in collection_varnames:
             getattr(event, collection_name+"_"+var)[i_obj] = obj[var]
+def fill_vector( event, collection_name, collection_varnames, obj):
+    for var in collection_varnames:
+        setattr(event, collection_name+"_"+var, obj[var] )
 
 reader = sample.fwliteReader( products = products )
 
@@ -243,7 +251,7 @@ def filler( event ):
     genTops = map( lambda t:{var: getattr(t, var)() for var in top_varnames}, filter( lambda p:abs(p.pdgId())==6 and search.isLast(p),  gp) )
 
     genTops.sort( key = lambda p:-p['pt'] )
-    fill_vector( event, "genTop", top_varnames, genTops ) 
+    fill_vector_collection( event, "genTop", top_varnames, genTops ) 
 
     # generated Z's
     genZs = filter( lambda p:abs(p.pdgId())==23 and search.isLast(p), gp)
@@ -296,6 +304,22 @@ def filler( event ):
     # filter genJets
     genJets = list( filter( lambda j:isGoodGenJet( j ), genJets ) )
 
+    # find b's from tops:
+    b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
+
+    # store if gen-jet is DR matched to a B parton
+    for genJet in genJets:
+        genJet['matchBParton'] = ( min([999]+[deltaR2(genJet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
+
+    # gen b jets
+    trueBjets = list( filter( lambda j: j['matchBParton'], genJets ) )
+    trueNonBjets = list( filter( lambda j: not j['matchBParton'], genJets ) )
+
+    # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
+    bj0, bj1 = ( trueBjets + trueNonBjets + [nanJet(), nanJet()] )[:2]
+    fill_vector( event, "bj0", jet_write_varnames, bj0) 
+    fill_vector( event, "bj1", jet_write_varnames, bj1) 
+
     genPhotons = filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp)
     genPhotons.sort( key = lambda p: -p.pt() )
     if len(genPhotons)>0: 
@@ -318,13 +342,6 @@ def filler( event ):
 
     genLeps.sort( key = lambda p:-p['pt'] )
 
-    # find b's from tops:
-    b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
-
-    # store if gen-jet is DR matched to a B parton
-    for genJet in genJets:
-        genJet['matchBParton'] = ( min([999]+[deltaR2(genJet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
-
     genJets.sort( key = lambda p:-p['pt'] )
 
     #for jet in genJets:
@@ -338,8 +355,8 @@ def filler( event ):
 
     genJets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in genLeps if l['pt']>10]) > 0.3**2 ), genJets )
 
-    fill_vector( event, "genLep", lep_all_varnames, genLeps)
-    fill_vector( event, "genJet", jet_write_varnames, genJets)
+    fill_vector_collection( event, "genLep", lep_all_varnames, genLeps)
+    fill_vector_collection( event, "genJet", jet_write_varnames, genJets)
 
     # Reco quantities
     if args.delphes:
@@ -348,6 +365,13 @@ def filler( event ):
         # read jets
         recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
         recoJets.sort( key = lambda p:-p['pt'] )
+
+        # make reco b jets
+        recoBJets    = filter( lambda j:j['BTag']==1, recoJets )
+        recoNonBJets = filter( lambda j:not (j['BTag']==1), recoJets )
+        recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [nanJet(), nanJet()] )[:2] 
+        fill_vector( event, "recoBj0", recoJet_write_varnames, recoBj0) 
+        fill_vector( event, "recoBj1", recoJet_write_varnames, recoBj1) 
 
         # read leptons
         recoLeps =  filter( isGoodRecoMuon, delphesReader.muons()) + filter( isGoodRecoElectron, delphesReader.electrons() )
@@ -377,9 +401,9 @@ def filler( event ):
         recoMet = delphesReader.met()[0]
 
         # Store
-        fill_vector( event, "recoLep",    recoLep_varnames, recoLeps )
-        fill_vector( event, "recoJet",    recoJet_varnames, recoJets )
-        fill_vector( event, "recoPhoton", recoPhoton_varnames, recoPhotons )
+        fill_vector_collection( event, "recoLep",    recoLep_varnames, recoLeps )
+        fill_vector_collection( event, "recoJet",    recoJet_varnames, recoJets )
+        fill_vector_collection( event, "recoPhoton", recoPhoton_varnames, recoPhotons )
 
         event.recoMet_pt  = recoMet['pt']
         event.recoMet_phi = recoMet['phi']

@@ -14,7 +14,7 @@ from RootTools.core.standard             import *
 
 # TTXPheno
 from TTXPheno.Tools.user                 import plot_directory
-from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
+from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR, nanJet, nanLepton 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 from TTXPheno.Tools.objectSelection      import isGoodGenJet, isGoodGenLepton
@@ -230,7 +230,7 @@ def makeJets( event, sample ):
     event.trueNonBjets = list( filter( lambda j: not j['matchBParton'], event.jets ) )
 
     # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
-    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [NanJet(), NanJet()] )[:2] 
+    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [nanJet(), nanJet()] )[:2] 
     
 sequence.append( makeJets )
 
@@ -276,7 +276,7 @@ def makeLeps( event, sample ):
     event.passing_1lep = len(event.leps)>=1
 
     # 1l
-    event.l0 = ( event.leps + [NanLepton()] )[0] 
+    event.l0 = ( event.leps + [nanLepton()] )[0] 
    
 sequence.append( makeLeps )
 
@@ -288,7 +288,7 @@ def makeObservables( event, sample):
     event.deltaR_bb = deltaR( event.bj0, event.bj1 )
 
     # Resolve pairing ambiguity by maximizing resulting top-lep pt  
-    event.b_lep, event.b_had = NanJet(), NanJet()
+    event.b_lep, event.b_had = nanJet(), nanJet()
     if ( event.bj0['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2() > ( event.bj1['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2():
         event.b_lep = event.bj0
         event.b_had = event.bj1

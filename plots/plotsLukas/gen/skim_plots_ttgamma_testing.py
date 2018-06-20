@@ -14,7 +14,7 @@ from RootTools.core.standard             import *
 
 # TTXPheno
 from TTXPheno.Tools.user                 import plot_directory
-from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
+from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR, nanJet, nanLepton 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 from TTXPheno.Tools.objectSelection      import isGoodGenJet, isGoodGenLepton
@@ -226,7 +226,7 @@ def makeJets( event, sample ):
     event.trueNonBjets = list( filter( lambda j: not j['matchBParton'], event.jets ) )
 
     # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
-    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [NanJet(), NanJet()] )[:2] 
+    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [nanJet(), nanJet()] )[:2] 
     
 sequence.append( makeJets )
 
@@ -261,7 +261,7 @@ def makeLeps( event, sample ):
         addTLorentzVector( p )
 
     # 2l 
-    event.l0, event.l1 = ( event.leps + [NanLepton(), NanLepton()] )[:2] 
+    event.l0, event.l1 = ( event.leps + [nanLepton(), nanLepton()] )[:2] 
     
     # We may loose some events by cross-cleaning or by thresholds.
     event.passing_2lep = len(event.leps)>=2 and event.l0['pdgId']*event.l1['pdgId'] > 0.
