@@ -360,8 +360,8 @@ def filler( event ):
 
     # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
     genBj0, genBj1 = ( trueBjets + trueNonBjets + [nanJet(), nanJet()] )[:2]
-    fill_vector( event, "genBj0", jet_write_varnames, genBj0) 
-    fill_vector( event, "genBj1", jet_write_varnames, genBj1) 
+    if genBj0['pt']<float('inf'): fill_vector( event, "genBj0", jet_write_varnames, genBj0) 
+    if genBj1['pt']<float('inf'): fill_vector( event, "genBj1", jet_write_varnames, genBj1) 
 
     # reco-bjet/leading lepton association
     if len(genLeps)>0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
