@@ -57,7 +57,7 @@ sample = getattr( samples, args.sample )
 
 # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
 event_factor = 1.
-fisher_directory = 'fisher_information'
+fisher_directory = 'fisher_information',
 if args.small:
     sample.reduceFiles( to = 1 )
     event_factor = sample.nEvents / float(sample.chain.GetEntries())
@@ -265,14 +265,14 @@ def drawPlot( log = False ):
         args.plot_directory,
         sample.name,
         fisher_directory,
+        'eigenvector',
         args.selection,
         WC_string,
         '_'.join(args.variables) if len([i for i, j in zip(args.variables, w.variables) if i != j]) > 0 else 'all',
-        'FisherInfo_EVec_full',
         'log' if log else 'lin')
     
     if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
-    c1.Print(os.path.join(plot_directory_, 'FisherInfo_EVec_full.png'))
+    c1.Print(os.path.join(plot_directory_, 'eigenvector.png'))
     
     del c1
 

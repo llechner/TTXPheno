@@ -227,14 +227,15 @@ def drawPlot( log = False ):
         args.plot_directory,
         sample.name,
         fisher_directory,
+        'fisherinfo',
         args.selection,
         WC_string,
         '_'.join(args.variables) if len([i for i, j in zip(args.variables, w.variables) if i != j]) > 0 else 'all',
-        'FisherInfo_full',
+        'full',
         'log' if log else 'lin')
     
     if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
-    c1.Print(os.path.join(plot_directory_, 'FisherInfo_full.png'))
+    c1.Print(os.path.join(plot_directory_, 'fisherinfo.png'))
     
     del c1
 

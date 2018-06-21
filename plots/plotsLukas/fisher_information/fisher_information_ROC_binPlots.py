@@ -267,11 +267,11 @@ def drawPlot( variable, log = False, scaleFull = False ):
         args.plot_directory, 
         sample.name, 
         fisher_directory, 
+        'ROC', 
+        'binning',
         args.selection,
         WC_string,
         '_'.join(args.variables) if len([i for i, j in zip(args.variables, w.variables) if i != j]) > 0 else 'all',
-        'ROC', 
-        'binning',
         'full' if scaleFull else 'pre-selection', 
         'log' if log else 'lin')
 
