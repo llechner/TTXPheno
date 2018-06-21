@@ -186,7 +186,7 @@ if args.delphes:
     
     # associated jet indices
     variables += [ "recoBjNonZlep_index/I", "recoBjNonZhad_index/I" ]
-    variables += [ "recoBjLeadlep_index/I", "recoBjLeadlephad_index/I" ]
+    variables += [ "recoBjLeadlep_index/I", "recoBjLeadhad_index/I" ]
     # reconstructed photons
     recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F'
     variables      += ["recoPhoton[%s]"%recoPhoton_vars]
