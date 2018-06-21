@@ -9,10 +9,11 @@
 startIndex=1
 endIndex=10
 
-#small="--small"
-small=""
+small="--small"
+#small=""
 
-declare -a variables=("cpt cpQM ctZ ctZI ctW ctWI" "cpt cpQM" "ctZ ctZI")
+#declare -a variables=("cpt cpQM ctZ ctW" "cpt cpQM" "ctZ ctZI" "ctW ctWI")
+declare -a variables=("ctZ" "ctZI" "ctW" "ctWI")
 
 #################################################
 

@@ -65,6 +65,7 @@ if args.small:
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
 if len(args.variables) == 0: args.variables = w.variables
+else: args.variables = [ item for item in w.variables if item in args.variables ]
 
 # Format input parameters to dict
 WC_string = 'SM'

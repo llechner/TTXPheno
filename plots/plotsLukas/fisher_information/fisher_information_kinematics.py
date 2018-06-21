@@ -26,7 +26,7 @@ from TTXPheno.samples.benchmarks         import *
 from plot_helpers                        import *
 
 # Import process variables
-import process_variables_ROC
+import process_variables
 
 # Import additional
 from array                               import array
@@ -59,7 +59,7 @@ sample = getattr( samples, args.sample )
 event_factor = 1.
 fisher_directory = 'fisher_information'
 if args.small:
-    sample.reduceFiles( to = 1 )
+    sample.reduceFiles( to = 10 )
     event_factor = sample.nEvents / float(sample.chain.GetEntries())
     fisher_directory += '_small'
 
@@ -79,7 +79,6 @@ if args.parameters is not None:
     WC = { coeff:vals[i] for i, coeff in enumerate(coeffs) }
     WC_string = '_'.join( args.parameters )
 
-
 def get_reweight_function():
     ''' return a weight function
     '''
@@ -89,31 +88,22 @@ def get_reweight_function():
 
     return reweight
 
-
-# Make sure that weightString contains the same as weightFunction!!!
-weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity), str(event_factor) )
 weightFunction = get_reweight_function()
-
+weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity), str(event_factor) )
 selectionString = cutInterpreter.cutString( args.selection )
 
 # Additional plot variables from process_variables_ROC.py (defined for ttZ, ttW and ttgamma)
-plotVariablesCut = getattr( process_variables_ROC, args.process )['cut']
+plotVariables = getattr( process_variables, args.process )['2D']
 
 # reduce plotting variables
 if args.selectPlots is not None:
-    plotVariablesCut = [ item for item in plotVariablesCut if item['index'] in args.selectPlots ]
+    plotVariables = [ var for var in plotVariables if var['index'] in args.selectPlots ]
 
-if len(plotVariablesCut) == 0:
+if len(plotVariables) == 0:
     print( 'Variable indices not found. No plot variable selected! Exiting...' )
     exit()
 
-# fps info for normalization to full-pre-selection
-coeff_sel = getCoeffListFromEvents( sample, selectionString = selectionString, weightFunction = weightFunction )
-detI0_sel = np.linalg.det( w.get_total_fisherInformation_matrix( coeff_sel, args.variables, **WC )[1] )
-
-# full info for normalization to full-sample
-coeff_full = getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
-detI0_full = np.linalg.det( w.get_total_fisherInformation_matrix( coeff_full, args.variables, **WC )[1] )
+expo = 1. / len(args.variables)
 
 def appendPlotInformation( VariableList ):
     ''' append normalized detI and x value to dict in VariableList
@@ -121,106 +111,44 @@ def appendPlotInformation( VariableList ):
 
     for plotVariable in VariableList:
 
-        plotVariable['detI'] = []
-        plotVariable['x_graph'] = []
-        plotVariable['legendText'] = []
-    
         # check if selection string already contains cuts on this parameter
         selectionList = [ item for item in selectionString.split('&&') if plotVariable['var'].replace('abs(','').replace(')','') in item ]
         plotVariable['pre-selection'] = ','.join(selectionList).replace( plotVariable['var'], plotVariable['plotstring'] ) if len(selectionList) != 0 else ''
 
-        # x label
-        plotVariable['plotstring'] = 'Cut Value of %s' %plotVariable['plotstring']
+        #remove initial selection string
+        sample.setSelectionString('1')
 
-        # range of x
-        x_vals = list( np.linspace( start=plotVariable['plotrange'][1], stop=plotVariable['plotrange'][2], num=plotVariable['plotrange'][0] ) )
+        coeffList = get2DCoeffPlotFromDraw( sample, args.order, plotVariable['var'], plotVariable['binning'], selectionString, weightString=weightString )
 
-        # list of binnings on variable (each binning a TGraph)
-        bin_vals = plotVariable['binningPerGraph'] if len(plotVariable['binningPerGraph'])>0 else [plotVariable['binning'][0]]
-    
-        for k, val in enumerate(bin_vals):
+        detIList  = [ np.linalg.det( w.get_fisherInformation_matrix( coeffs, args.variables, **WC )[1] ) for coeffs in coeffList ]
+#        detI0     = sum( detIList )
+        detIList  = [ abs(detI)**expo for detI in detIList ]
 
-            detList = []
+        def binningToXList( binningList ):
+            bins, start, stop = tuple( binningList )
+            xList = list( np.linspace( start=start, stop=stop, num=bins+1 ) )
+            return [ 0.5*(x + xList[i+1]) for i,x in enumerate( xList[:-1] ) ]
 
-            for i, x in enumerate(x_vals):
-        
-                #remove initial selection string
-                sample.setSelectionString('1')
-
-                # add additional graphs for various cut values to the bin plot, do the usual for the cut plot
-                selectionString_ = selectionString + '&&%s>=%s' %( plotVariable['var'], str(x) )
-
-                # add additional graphs for various bin values to the cut plot, do the usual for the bin plot
-                binning_ = [int(val)] + plotVariable['binning'][1:]
-        
-                coeff = get2DCoeffPlotFromDraw( sample, args.order, plotVariable['var'], binning_, selectionString = selectionString_, weightString = weightString ) 
-        
-                # check if all entries are non-zero (otherwise FI matrix is 0-dim object -> Error)
-                if all( [ all( [ v==0. for v in item ] ) for item in coeff ] ): continue
-
-                detList.append( np.linalg.det( w.get_total_fisherInformation_matrix( coeff, args.variables, **WC )[1] ) )
-        
-            plotVariable['detI'].append( detList )
-            plotVariable['x_graph'].append( x_vals )
-            plotVariable['legendText'].append( '%i bins'%int(val) )
+        xRange = binningToXList( plotVariable['binning'] )
+        plotVariable['x_graph'] = array( 'd', xRange )
+        plotVariable['y_graph'] = array( 'd', detIList )
 
 
-# Additional plot variables from process_variables_ROC.py (defined for ttZ, ttW and ttgamma)
-appendPlotInformation( plotVariablesCut )
+# Additional plot variables from process_variables.py (defined for ttZ, ttW and ttgamma)
+appendPlotInformation( plotVariables )
 
 # Plots
-def drawPlot( variable, log = False, scaleFull = False ): 
+def drawPlot( variable, log = False ): 
     ''' Plotting function
     '''
 
-    expo = 1. / len(args.variables)
-    normalization_string = 'full' if scaleFull else 'fps'
-    #normalization
-    detI0 = detI0_full if scaleFull else detI0_sel
-    y = [ [ abs( val / detI0 )**expo for val in yList ] for yList in variable['detI'] ]
-
-
-    def getTGraph( n, x, y, color=40, legendText='' ):
-        ''' Create a TGraph object
-        '''
-
-        gr = ROOT.TGraph( n, x, y )
-        gr.SetLineColor( color )
-        gr.SetLineWidth( 2 )
-        
-        legend.AddEntry( gr, legendText, "l" )
-
-        return gr
-
-
     # Canvas
     c1 = ROOT.TCanvas()
-    mg = ROOT.TMultiGraph()
 
-    # Legend position and margins
-    leftMargin = c1.GetLeftMargin()
-    rightMargin = c1.GetRightMargin()
-    topMargin = c1.GetTopMargin()+0.2
-    bottomMargin = c1.GetBottomMargin()
-    legendWidth = 0.22
-    legendHeight = 0.05*len(y)
-
-    if log: legend = ROOT.TLegend(leftMargin, bottomMargin, leftMargin+legendWidth, bottomMargin+legendHeight) #bottom left
-    else: legend = ROOT.TLegend(1-rightMargin-legendWidth, 1-topMargin-legendHeight, 1-rightMargin, 1-topMargin) #top right
-
-    legend.SetBorderSize(1)
-    legend.SetFillColor(ROOT.kWhite)
-    legend.SetTextFont(1)
-    legend.SetTextSize(0.035)
-
-    # Add TGraphs to Canvas
-    for i, yData in enumerate(y):
-        if len(variable['color'])>i: color = variable['color'][i]
-        else: color = 30
-        mg.Add( getTGraph( len(yData), array('d', variable['x_graph'][i]), array('d', yData), color, variable['legendText'][i] ) )
-
-    mg.Draw('AL')
-    legend.Draw()
+    mg = ROOT.TGraph( len(variable['x_graph']), variable['x_graph'], variable['y_graph'] )
+    mg.SetFillColor( 30 )
+    ROOT.gStyle.SetBarWidth( 1.2 )
+    mg.Draw('AB')
 
     # Layout
     mg.GetXaxis().SetLabelSize(0.035)
@@ -229,23 +157,14 @@ def drawPlot( variable, log = False, scaleFull = False ):
     mg.GetXaxis().SetTitleOffset(1.3)
     mg.GetYaxis().SetTitleOffset(1.8)
 
-    mg.GetYaxis().SetTitle( '((det(I_{ij}) / det(I_{ij}^{%s}))^{(1/%s)}'%(normalization_string, str(len(args.variables))) if len(args.variables) > 1 else 'det(I_{ij}) / det(I_{ij}^{%s})'%normalization_string )
+    mg.GetYaxis().SetTitle( 'det(I_{ij})^{(1/%i)}'%len(args.variables) if len(args.variables) > 1 else 'det(I_{ij})' )
     mg.GetYaxis().SetLabelSize(0.035)
     mg.GetYaxis().SetTitleSize(0.035)
-
-    # Plot ranges
-    ymin = min( [ min( yList ) for yList in y ] )
-    if ymin < 1e-5: ymin = 1e-5
-    ymax = max( [ max( yList ) for yList in y ] ) * 1.2 #spare area for legend
-    xmin = variable['plotrange'][1]
-    xmax = variable['plotrange'][2]
+    mg.GetYaxis().SetRangeUser(0, max(variable['y_graph'])*1.4)
 
     if log:
-        ymax *= 7   #spare area for legend
         c1.SetLogy()
-
-    mg.GetYaxis().SetRangeUser(ymin, ymax)
-    mg.GetXaxis().SetRangeUser(xmin, xmax)
+        mg.GetYaxis().SetRangeUser(1e-5, max(variable['y_graph'])*10)
 
     # Info
     t1 = ROOT.TPaveText(0.55, .80, .95, .92, "blNDC")
@@ -261,7 +180,6 @@ def drawPlot( variable, log = False, scaleFull = False ):
 
     c1.Update()
 
-    # Directory
     plot_directory_ = os.path.join(\
         plot_directory,
         args.plot_directory, 
@@ -270,9 +188,7 @@ def drawPlot( variable, log = False, scaleFull = False ):
         args.selection,
         WC_string,
         '_'.join(args.variables) if len([i for i, j in zip(args.variables, w.variables) if i != j]) > 0 else 'all',
-        'ROC', 
-        'cut', 
-        'full' if scaleFull else 'pre-selection', 
+        'FisherInfo_kinematics', 
         'log' if log else 'lin')
 
     if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
@@ -281,7 +197,8 @@ def drawPlot( variable, log = False, scaleFull = False ):
     del c1
 
 # Plot lin and log plots for each variable with full and fps scaling (cut plots)
-for plotVariable in plotVariablesCut:
-    for full in [ True, False ]:
-        for log in [ True, False ]:
-            drawPlot( plotVariable, log, scaleFull = full )
+for plotVariable in plotVariables:
+    for log in [ True, False ]:
+        drawPlot( plotVariable, log )
+
+

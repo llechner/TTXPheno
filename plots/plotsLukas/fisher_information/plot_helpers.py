@@ -76,7 +76,7 @@ def getCoeffListFromEvents( sample, selectionString = None, weightFunction = Non
 
     coeffs = []
     while reader.run():
-        coeffs.append( [ reader.event.p_C[i] * weightFunction( reader.event, sample ) if weightFunction is not None else reader.event.p_C[i] for i in range(reader.event.np) ] )
+        coeffs.append( [ reader.event.p_C[i] * (weightFunction( reader.event, sample )) if weightFunction is not None else reader.event.p_C[i] for i in range(reader.event.np) ] )
 
     return coeffs
 
