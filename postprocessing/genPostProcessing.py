@@ -366,9 +366,9 @@ def filler( event ):
     # reco-bjet/leading lepton association
     if len(genLeps)>0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
         if vecSumPt( genBj0, genLeps[0], genMet ) > vecSumPt( genBj1, genLeps[0], genMet ):
-            event.genBjLeadlep_index, event.genBjLeadlephad_index = genBj0['index'], genBj1['index']
+            event.genBjLeadlep_index, event.genBjLeadhad_index = genBj0['index'], genBj1['index']
         else:
-            event.genBjLeadlep_index, event.genBjLeadlephad_index = genBj1['index'], genBj0['index']
+            event.genBjLeadlep_index, event.genBjLeadhad_index = genBj1['index'], genBj0['index']
 
     # find Z in genLep
     (event.genLepZ_mass, genLepZ_l1_index, genLepZ_l2_index) = closestOSDLMassToMZ(genLeps)
@@ -454,9 +454,9 @@ def filler( event ):
         # reco-bjet/leading lepton association
         if len(recoLeps)>0 and recoBj0['pt']<float('inf') and recoBj1['pt']<float('inf'):
             if vecSumPt( recoBj0, recoLeps[0], recoMet ) > vecSumPt( recoBj1, recoLeps[0], recoMet ):
-                event.recoBjLeadlep_index, event.recoBjLeadlephad_index = recoBj0['index'], recoBj1['index']
+                event.recoBjLeadlep_index, event.recoBjLeadhad_index = recoBj0['index'], recoBj1['index']
             else:
-                event.recoBjLeadlep_index, event.recoBjLeadlephad_index = recoBj1['index'], recoBj0['index']
+                event.recoBjLeadlep_index, event.recoBjLeadhad_index = recoBj1['index'], recoBj0['index']
 
         # Photons
         recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
