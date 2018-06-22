@@ -17,7 +17,6 @@ from RootTools.core.standard             import *
 from TTXPheno.Tools.user                 import plot_directory
 from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
-from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 
 # Import samples
 from TTXPheno.samples.benchmarks         import *
@@ -34,7 +33,8 @@ from array                               import array
 # Arguments
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
-argParser.add_argument('--plot_directory',     action='store',      default='gen')
+argParser.add_argument('--version',            action='store',      default='v7')
+argParser.add_argument('--level',              action='store',      default='gen',  nargs='?', choices=['reco', 'gen', 'genLep'], help='Which level of reconstruction? reco, gen, genLep')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--process',            action='store',      default='ttZ')
 argParser.add_argument('--order',              action='store',      default=2)
@@ -45,6 +45,12 @@ argParser.add_argument('--parameters',         action='store',      default = []
 argParser.add_argument('--luminosity',         action='store',      default=150)
 
 args = argParser.parse_args()
+
+plot_subdirectory = "%s_%s"%(args.level, args.version)
+# Import additional functions/classes specified for the level of reconstruction
+if args.level == 'reco':     from TTXPheno.Tools.cutInterpreterReco   import cutInterpreter
+elif args.level == 'genLep': from TTXPheno.Tools.cutInterpreterGenLep import cutInterpreter
+else:                        from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 
 if len(args.parameters) == 0: args.parameters = None
 
@@ -57,7 +63,7 @@ sample = getattr( samples, args.sample )
 
 # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
 event_factor = 1.
-fisher_directory = 'fisher_information',
+fisher_directory = 'fisher_information'
 if args.small:
     sample.reduceFiles( to = 1 )
     event_factor = sample.nEvents / float(sample.chain.GetEntries())
@@ -110,6 +116,13 @@ selections.append( {'plotstring':'full pre-selection (fps)', 'selection':args.se
 plotVariables2D = getattr( process_variables, args.process )['2D']
 plotVariables3D = getattr( process_variables, args.process )['3D']
 
+if args.level != 'gen':
+    if args.level == 'reco': search_string, replacement_string = ( 'gen', 'reco' )
+    # Take care if that is really everything you have to replace!!!
+    elif args.level == 'genLep': search_string, replacement_string = ( 'genZ', 'genLepZ' )
+    for item in plotVariables2D + plotVariables3D:
+        item['var'] = item['var'].replace(search_string, replacement_string)
+
 # Calculate coefficients for binned distribution
 # Calculate determinant using the 'variables' submatrix of FI
 for var in plotVariables2D:
@@ -120,6 +133,7 @@ for var in plotVariables2D:
 
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s bins)' %str(var['binning'][0])
+    var['color']       = 30
 
 for var in plotVariables3D:
     #remove initial selection string
@@ -128,15 +142,18 @@ for var in plotVariables3D:
     var['coeff']       = get3DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]))
+    var['color']       = 41
 
 # Calculate coefficients unbinned (event loop)
 # Calculate determinant using the 'variables' submatrix of FI
 for selection in selections:
     selection['coeff'] = getCoeffListFromEvents( sample, selectionString = cutInterpreter.cutString(selection['selection']), weightFunction = weightFunction )
+    selection['color']       = 46
 
 # Full Fisher information
 full              = { 'plotstring':'full'}
 full['coeff']     = getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
+full['color']     = 15
 
 expo = 1. / len(args.variables)
 data = [full] + selections + plotVariables2D + plotVariables3D
@@ -257,12 +274,13 @@ def drawPlot( log = False ):
 
     # Labeling
     for i, item in enumerate(data):
-        t.DrawLatex( i+1.25, ymin*1.4 if log else 0.05, item['plotstring'] )
+#        t.DrawLatex( i+1.25, ymin*1.4 if log else 0.05, #color[item['color']]{item['plotstring']} )
+        t.DrawLatex( i+1.25, ymin*1.4 if log else 0.05, "#color[%i]{%s}"%(item['color'],item['plotstring']) )
 
     # Directory
     plot_directory_ = os.path.join(\
         plot_directory,
-        args.plot_directory,
+        plot_subdirectory,
         sample.name,
         fisher_directory,
         'eigenvector',

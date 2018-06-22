@@ -17,7 +17,6 @@ from RootTools.core.standard             import *
 from TTXPheno.Tools.user                 import plot_directory
 from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
-from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 
 # Import samples
 from TTXPheno.samples.benchmarks         import *
@@ -34,7 +33,8 @@ from array                               import array
 # Arguments
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
-argParser.add_argument('--plot_directory',     action='store',      default = 'gen')
+argParser.add_argument('--version',            action='store',      default='v7')
+argParser.add_argument('--level',              action='store',      default='gen',  nargs='?', choices=['reco', 'gen', 'genLep'], help='Which level of reconstruction? reco, gen, genLep')
 argParser.add_argument('--sample',             action='store',      default = 'fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--process',            action='store',      default = 'ttZ')
 argParser.add_argument('--order',              action='store',      default = 2)
@@ -46,6 +46,12 @@ argParser.add_argument('--parameters',         action='store',      default = []
 argParser.add_argument('--luminosity',         action='store',      default=150)
 
 args = argParser.parse_args()
+
+plot_subdirectory = "%s_%s"%(args.level, args.version)
+# Import additional functions/classes specified for the level of reconstruction
+if args.level == 'reco': from TTXPheno.Tools.cutInterpreterReco   import cutInterpreter
+elif args.level == 'genLep': from TTXPheno.Tools.cutInterpreterGenLep import cutInterpreter
+else:                    from TTXPheno.Tools.cutInterpreter   import cutInterpreter
 
 if len(args.parameters) == 0: args.parameters = None
 if len(args.selectPlots) == 0: args.selectPlots = None
@@ -106,6 +112,13 @@ if args.selectPlots is not None:
 if len(plotVariablesCut) == 0:
     print( 'Variable indices not found. No plot variable selected! Exiting...' )
     exit()
+
+if args.level != 'gen':
+    if args.level == 'reco': search_string, replacement_string = ( 'gen', 'reco' )
+    # Take care if that is really everything you have to replace!!!
+    elif args.level == 'genLep': search_string, replacement_string = ( 'genZ', 'genLepZ' )
+    for item in plotVariablesCut:
+        item['var'] = item['var'].replace(search_string, replacement_string)
 
 # fps info for normalization to full-pre-selection
 coeff_sel = getCoeffListFromEvents( sample, selectionString = selectionString, weightFunction = weightFunction )
@@ -264,11 +277,10 @@ def drawPlot( variable, log = False, scaleFull = False ):
     # Directory
     plot_directory_ = os.path.join(\
         plot_directory,
-        args.plot_directory, 
+        plot_subdirectory, 
         sample.name, 
         fisher_directory, 
-        'ROC', 
-        'cut', 
+        'ROC_cut', 
         args.selection,
         WC_string,
         '_'.join(args.variables) if len([i for i, j in zip(args.variables, w.variables) if i != j]) > 0 else 'all',

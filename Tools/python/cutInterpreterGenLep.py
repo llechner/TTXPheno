@@ -11,7 +11,7 @@ special_cuts = {
     "offZ":               "abs(genZ_mass-91.2)>10",
   }
 
-continous_variables = [ ("mll", "genZ_mass"), ("met", "genMet_pt"), ("Zpt","genZ_pt"), ("gammapt","genPhoton_pt"), ("Wpt","genW_pt")]
+continous_variables = [ ("mll", "genLepZ_mass"), ("met", "genMet_pt"), ("Zpt","genLepZ_pt"), ("gammapt","genPhoton_pt"), ("Wpt","genW_pt")]
 discrete_variables  = [ ("nlep", "Sum$(genLep_pt>10&&(abs(genLep_pdgId)==11||abs(genLep_pdgId)==13)&&abs(genLep_eta)<2.5)"), ("njet", "Sum$(genJet_pt>30&&abs(genJet_eta)<2.4)"), ("nbjet", "Sum$(genJet_pt>30&&genJet_matchBParton>=1&&abs(genJet_eta)<2.4)") , ]
 
 class cutInterpreter:
