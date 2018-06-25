@@ -230,10 +230,6 @@ read_variables_genLep = [
 
 if args.level == 'reco':
     read_variables = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
-
-    # remove this line if root files are postprocessed with the newest version
-#    read_variables = [ "recoBjLeadlephad_index/I" if var == "recoBjLeadhad_index/I" else var for var in read_variables ]
-
     read_variables += [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
 else:
     read_variables = read_variables_gen + read_variables_genLep
@@ -250,41 +246,28 @@ sequence = []
 def makeJets( event, sample ):
     ''' Add a list of filtered jets to the event (full list is required for lepton cross cleaning)
     '''
-    # load jets
-    event.jets = getCollection( event, '%sJet'%preTag, ['pt', 'eta', 'phi'], 'n%sJet'%preTag )
-
     # Define leptonic b-jets
-    event.bj0lep = event.jets[ getattr( event, '%sBjLeadlep_index'%preTag ) ] if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else nanJet()
-
-    # remove these lines if root files are postprocessed with the newest version
-#    if args.level == 'reco': event.bj0had = event.jets[ getattr( event, '%sBjLeadlephad_index'%preTag ) ] if getattr( event, '%sBjLeadlephad_index'%preTag ) >= 0 else nanJet()
-#    else: event.bj0had = event.jets[ getattr( event, '%sBjLeadhad_index'%preTag ) ] if getattr( event, '%sBjLeadhad_index'%preTag ) >= 0 else nanJet()
-    event.bj0had = event.jets[ getattr( event, '%sBjLeadhad_index'%preTag ) ] if getattr( event, '%sBjLeadhad_index'%preTag ) >= 0 else nanJet()
+    event.bj0lep = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadlep_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else nanLepton()
+    event.bj0had = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadhad_index'%preTag ) ) if getattr( event, '%sBjLeadhad_index'%preTag ) >= 0 else nanLepton()
 
     # Define non-Z b-jets
-    event.bjNonZlep = event.jets[ getattr( event, '%sBjNonZlep_index'%preTag ) ] if getattr( event, '%sBjNonZlep_index'%preTag ) >= 0 else nanJet()
-    event.bjNonZhad = event.jets[ getattr( event, '%sBjNonZhad_index'%preTag ) ] if getattr( event, '%sBjNonZhad_index'%preTag ) >= 0 else nanJet()
-
-    # filter, pre-selection requires 3 leptons (no default leptons necessary)
-    event.jets = list( filter( lambda j:isGoodJet( j ), event.jets ) )
-
-    # sort
-    event.jets = sorted( event.jets, key=lambda k: -k['pt'] )
+    event.bjNonZlep = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjNonZlep_index'%preTag ) ) if getattr( event, '%sBjNonZlep_index'%preTag ) >= 0 else nanLepton()
+    event.bjNonZhad = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjNonZhad_index'%preTag ) ) if getattr( event, '%sBjNonZhad_index'%preTag ) >= 0 else nanLepton()
 
     # get (second) hardest bjets
     event.bj0 = {'pt':getattr( event, '%sBj0_pt'%preTag ), 'phi':getattr( event, '%sBj0_phi'%preTag ), 'eta':getattr( event, '%sBj0_eta'%preTag )}
     event.bj1 = {'pt':getattr( event, '%sBj1_pt'%preTag ), 'phi':getattr( event, '%sBj1_phi'%preTag ), 'eta':getattr( event, '%sBj1_eta'%preTag )}
 
     # Add extra vectors
-    for p in event.jets + [event.bj0, event.bj1, event.bj0lep, event.bj0had, event.bjNonZlep, event.bjNonZhad]:
+    for p in [event.bj0, event.bj1, event.bj0lep, event.bj0had, event.bjNonZlep, event.bjNonZhad]:
         addTransverseVector( p )
         addTLorentzVector( p )
 
     # selection checks
     event.foundBjNonZlep = getattr( event, '%sBjNonZlep_index'%preTag ) >= 0 and isGoodJet( event.bjNonZlep )
-    event.foundBjNonZhad = getattr( event, '%sBjNonZhad_index'%preTag ) >= 0 and isGoodJet( event.bjNonZhad )
-    event.foundBj0lep    = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
-    event.foundBj0had    = getattr( event, '%sBjLeadhad_index'%preTag ) >= 0 and isGoodJet( event.bj0had )
+#    event.foundBjNonZhad = getattr( event, '%sBjNonZhad_index'%preTag ) >= 0 and isGoodJet( event.bjNonZhad )
+#    event.foundBj0lep    = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
+#    event.foundBj0had    = getattr( event, '%sBjLeadhad_index'%preTag ) >= 0 and isGoodJet( event.bj0had )
 
     # choose your selection on b-jets
     event.passing_bjets = event.foundBjNonZlep
@@ -326,14 +309,11 @@ def makeLeps( event, sample ):
         addTransverseVector( p )
         addTLorentzVector( p )
 
-    def checkCrossCleanLepton( lepton ):
-        return min( [ deltaR( lepton, j ) for j in event.jets ] + [999] ) > 0.4
-
     # We may loose some events by cross-cleaning or by thresholds.
-    event.foundZl0     = getattr( event, '%sZ_l1_index'%tag ) >= 0 and checkCrossCleanLepton( event.Z_l0 ) and isGoodLepton( event.Z_l0 )
-    event.foundZl1     = getattr( event, '%sZ_l2_index'%tag ) >= 0 and checkCrossCleanLepton( event.Z_l1 ) and isGoodLepton( event.Z_l1 )
+    event.foundZl0     = getattr( event, '%sZ_l1_index'%tag ) >= 0 and isGoodLepton( event.Z_l0 )
+    event.foundZl1     = getattr( event, '%sZ_l2_index'%tag ) >= 0 and isGoodLepton( event.Z_l1 )
     event.foundZ       = event.Z_l0['pdgId'] * event.Z_l1['pdgId'] < 0 and abs(event.Z_l0['pdgId']) == abs(event.Z_l1['pdgId'])
-    event.found3lep    = getattr( event, '%sNonZ_l1_index'%tag ) >= 0 and checkCrossCleanLepton( event.NonZ_l0 ) and isGoodLepton( event.NonZ_l0 )
+    event.found3lep    = getattr( event, '%sNonZ_l1_index'%tag ) >= 0 and isGoodLepton( event.NonZ_l0 )
 
     # choose your selection on leptons
     event.passing_leptons = event.found3lep and event.foundZl0 and event.foundZl1 and event.foundZ
