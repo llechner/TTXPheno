@@ -1,12 +1,13 @@
 # Standard imports
 import ROOT
-
+from math import *
 # resources
 # http://people.na.infn.it/~lista/Statistics/slides/10%20-%20roostats.pdf
 # https://twiki.cern.ch/twiki/bin/view/RooStats/RooStatsTutorialsJune2013#Exercise_2_Profile_Likelihood_Ca
 # https://root.cern.ch/root/html/tutorials/roofit/rf605_profilell.C.html
 pWs = ROOT.RooWorkspace()
 ROOT.SetOwnership( pWs, False )
+
 # observable: number of events
 pWs.factory( "n[10]" )
 
@@ -16,11 +17,21 @@ pWs.factory( "n[10]" )
 # integrated luminosity
 #pWs.factory( "lumi[0]" )
 # integrated luminosity with systematics
+#pWs.factory( "lumi_nom[5000.0, 4000.0, 6000.0]" )
+#pWs.factory( "lumi_kappa[1.045]" )
+#pWs.factory( "cexpr::alpha_lumi('pow(lumi_kappa,beta_lumi)',lumi_kappa,beta_lumi[0,-5,5])" )
+#pWs.factory( "prod::lumi(lumi_nom,alpha_lumi)" )
+#pWs.factory( "Gaussian::constr_lumi(beta_lumi,glob_lumi[0,-5,5],1)" ) 
+
 pWs.factory( "lumi_nom[5000.0, 4000.0, 6000.0]" )
 pWs.factory( "lumi_kappa[1.045]" )
-pWs.factory( "cexpr::alpha_lumi('pow(lumi_kappa,beta_lumi)',lumi_kappa,beta_lumi[0,-5,5])" )
+#pWs.factory( "cexpr::alpha_lumi('pow(lumi_kappa,beta_lumi)',lumi_kappa,beta_lumi[0,-5,5])" )
+pWs.factory( "alpha_lumi[1,0.1,10]" )
+fac = 5*log(1.045)
+pWs.factory( "glob_lumi[1,%f,%f]"%(exp(-fac),exp(fac)) )
+pWs.factory( "RooLognormal::constr_lumi(alpha_lumi,glob_lumi, lumi_kappa)" ) 
 pWs.factory( "prod::lumi(lumi_nom,alpha_lumi)" )
-pWs.factory( "Gaussian::constr_lumi(beta_lumi,glob_lumi[0,-5,5],1)" ) 
+
 
 # cross section - parameter of interest
 pWs.factory( "xsec[0,0,0.1]" )
@@ -45,6 +56,7 @@ pWs.factory( "prod::nsig(lumi,xsec,efficiency)" )
 pWs.factory( "nbkg_nom[10.0, 5.0, 15.0]" )
 pWs.factory( "nbkg_kappa[1.10]" )
 pWs.factory( "cexpr::alpha_nbkg('pow (nbkg_kappa,beta_nbkg)',nbkg_kappa,beta_nbkg[0,-5,5])" )
+#pWs.factory( "prod::nbkg(nbkg_nom,alpha_lumi,alpha_nbkg)" )
 pWs.factory( "prod::nbkg(nbkg_nom,alpha_lumi,alpha_nbkg)" )
 pWs.factory( "Gaussian::constr_nbkg(beta_nbkg,glob_nbkg[0,-5,5],1)" )
 
@@ -64,6 +76,7 @@ pWs.factory( "PROD::model (model_core,constr_lumi,constr_efficiency,constr_nbkg)
 # print out the workspace contents
 pWs.Print()
 
+
 # create set of observables (will need it for datasets and ModelConfiglater)
 pObs = pWs.var("n") # get the pointer to the observable
 obs  = ROOT.RooArgSet("observables")
@@ -80,7 +93,7 @@ pWs.var("glob_lumi").setConstant(True)
 pWs.var("glob_efficiency").setConstant(True)
 pWs.var("glob_nbkg").setConstant(True)
 globalObs = ROOT.RooArgSet("global_obs")
-globalObs.add( pWs.var("glob_lumi") )
+#globalObs.add( pWs.var("glob_lumi") )
 globalObs.add( pWs.var("glob_efficiency") )
 globalObs.add( pWs.var("glob_nbkg") )
 # create set of parameters of interest (POI)
@@ -88,7 +101,7 @@ poi = ROOT.RooArgSet("poi")
 poi.add( pWs.var("xsec") )
 # create set of nuisance parameters
 nuis = ROOT.RooArgSet("nuis")
-nuis.add( pWs.var("beta_lumi") )
+nuis.add( pWs.var("alpha_lumi") )
 nuis.add( pWs.var("beta_efficiency") )
 nuis.add( pWs.var("beta_nbkg") ) 
 
@@ -127,3 +140,12 @@ plot = ROOT.RooStats.LikelihoodIntervalPlot(interval)
 plot.Draw("")
 ROOT.c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/test.png")
 
+pl.IsA().Destructor( pl )
+
+## create plain likelihood
+#nll = pWs.pdf("model").createNLL(data)
+## minimize wrt to all parameters
+#ROOT.RooMinuit(nll).migrad()
+#
+## profile log likelihood for poi 
+#pll_frac = nll.createProfile(poi) 
