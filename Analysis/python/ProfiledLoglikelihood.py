@@ -44,7 +44,7 @@ class ProfiledLoglikelihoodFit:
                     args = line.split()[1:]
                     # one line starting with processes uses the enumeration (0 is signal )
                     if all( map( isInt, args ) ):
-                        self.process_number_per_bin = args
+                        self.process_number_per_bin = map( int, args )
                     # the other line starting with process uses the process names
                     else:
                         self.process_name_per_bin   = args
@@ -73,59 +73,65 @@ class ProfiledLoglikelihoodFit:
         logger.info( "Nuisances: %i (%s)", self.nNuisances, ",".join( self.nuisance_names ) )
 
     def make_workspace( self ):
-        ws = ROOT.RooWorkspace()
-        ROOT.SetOwnership( ws, False )
+        self.ws = ROOT.RooWorkspace()
+        ROOT.SetOwnership( self.ws, False )
 
         # set all observations
         self.observables = ROOT.RooArgSet("observables")
         for i_bin_name, bin_name in enumerate(self.bin_names):
             obs_name = "n_obs_%s"%bin_name
-            ws.factory( "%s[%i]" %( obs_name, self.observations[i_bin_name] ) )
-            self.observables.add( ws.var( obs_name ) )
+            self.ws.factory( "%s[%i]" %( obs_name, self.observations[i_bin_name] ) )
+            self.observables.add( self.ws.var( obs_name ) )
             logger.debug( "Set observation: n_obs_%s to %i", bin_name, self.observations[i_bin_name] )
 
         # nuisances
-        nuisances = ROOT.RooArgSet("nuisances")
-        fixed     = ROOT.RooArgSet("fixed")
-        poi       = ROOT.RooArgSet("poi")
+        self.nuisances = ROOT.RooArgSet("nuisances")
+        self.fixed     = ROOT.RooArgSet("fixed")
+        self.glob      = ROOT.RooArgSet("global")
+
+        # signal strength modifier
+        self.ws.factory( "r[1,0,10]" )
+        self.poi       = ROOT.RooArgSet("poi")
+        self.poi.add( self.ws.var("r") )
+
         for i_nuisance, nuisance in enumerate( self.nuisance_names ):
 
             # Global value
-            ws.factory( "global_%s[0,-5,5]" % nuisance )
-            ws.var("global_%s"%nuisance).setConstant(True)
-            fixed.add( ws.var("global_%s"%nuisance) )
+            self.ws.factory( "global_%s[0,-5,5]" % nuisance )
+            self.ws.var("global_%s"%nuisance).setConstant(True)
+            self.glob.add( self.ws.var("global_%s"%nuisance) )
 
             # Nuisance parameter
-            ws.factory( "beta_%s[0,-5,5]" % nuisance ) # Nuisance parameter
-            nuisances.add( ws.var( "beta_%s"%nuisance ) )
+            self.ws.factory( "beta_%s[0,-5,5]" % nuisance ) # Nuisance parameter
+            self.nuisances.add( self.ws.var( "beta_%s"%nuisance ) )
 
             # Gaussian constraint
-            ws.factory( "Gaussian::constr_{nuisance}(beta_{nuisance},global_{nuisance},1)".format( nuisance = nuisance ) )
+            self.ws.factory( "Gaussian::constr_{nuisance}(beta_{nuisance},global_{nuisance},1)".format( nuisance = nuisance ) )
 
         # nominal rates
         nom_rate_names = {} 
         for i_rate, rate in enumerate(self.process_rate_bin):
             nom_rate_name = "rate_nom_%s_%s"%( self.bin_name_per_process[i_rate], self.process_name_per_bin[i_rate] ) 
             nom_rate_names[i_rate] = nom_rate_name
-            ws.factory( "%s[%f, 0., 10**9]"%( nom_rate_name, rate ) )
-            fixed.add( ws.var(nom_rate_name) )
-            ws.var(nom_rate_name).setConstant(True)
+            self.ws.factory( "%s[%f, 0., 10**9]"%( nom_rate_name, rate ) )
+            self.fixed.add( self.ws.var(nom_rate_name) )
+            self.ws.var(nom_rate_name).setConstant(True)
             logger.debug( "Set %s[%f, 0., 10**9]"%( nom_rate_name, rate ) )
 
         # quantities for nuisances
         for i_rate, rate in enumerate(self.process_rate_bin):
             factors = []
             for i_nuisance, nuisance in enumerate( self.nuisance_names ):
-                # decalre constant uncertainty (e.g. lumi 1.045)
+                # decalare constant uncertainty (e.g. lumi 1.045)
                 unc_name  = "unc_%s_%s_%s"%( nuisance, self.bin_name_per_process[i_rate], self.process_name_per_bin[i_rate] )
                 unc_val   =  self.nuisance_uncertainty_values[nuisance][i_rate]
                 if unc_val!=1.:                
-                    ws.factory( "%s[%f, 0., 10**9]" % (unc_name, self.nuisance_uncertainty_values[nuisance][i_rate]) )
-                    ws.var(unc_name).setConstant(True)
+                    self.ws.factory( "%s[%f, 0., 10**9]" % (unc_name, self.nuisance_uncertainty_values[nuisance][i_rate]) )
+                    self.ws.var(unc_name).setConstant(True)
                     logger.debug( "Nuisance %s. Creating uncertainty %s position %i val %f", nuisance, unc_name, i_rate, self.nuisance_uncertainty_values[nuisance][i_rate]) 
-                    
+                    # make the alpha factors. We use alpha = unc**beta where unc is the uncertainty and beta is N(global_nuisance[0,-5,5],1)
                     alpha_factor_name = "alpha_%s_%s_%s"%( nuisance, self.bin_name_per_process[i_rate], self.process_name_per_bin[i_rate] )
-                    ws.factory( "cexpr::{alpha_factor_name}('pow({unc_name},{beta_name})',{unc_name},{beta_name})".format( 
+                    self.ws.factory( "cexpr::{alpha_factor_name}('pow({unc_name},{beta_name})',{unc_name},{beta_name})".format( 
                         alpha_factor_name = alpha_factor_name, 
                         unc_name = unc_name, 
                         beta_name = "beta_%s"%nuisance) )
@@ -133,9 +139,9 @@ class ProfiledLoglikelihoodFit:
                     factors.append( alpha_factor_name )
 
             # Define product of rate with systematic variations, for each yield per process per bin
-            ws.factory( "prod::{yield_name}({factors})".format(
+            self.ws.factory( "prod::{yield_name}({factors})".format(
                 yield_name = "yield_%s_%s"%(self.bin_name_per_process[i_rate], self.process_name_per_bin[i_rate]), 
-                factors = ",".join( [ nom_rate_names[i_rate]] + factors ) ) )
+                factors = ",".join( (["r"] if self.process_number_per_bin[i_rate]==0 else []) +  [ nom_rate_names[i_rate]] + factors ) ) )
 
         # Sum up yields for all processes in each bin
         for bin_name in self.bin_names:
@@ -143,22 +149,42 @@ class ProfiledLoglikelihoodFit:
             for i_rate, rate in enumerate(self.process_rate_bin):
                 if self.bin_name_per_process[i_rate] == bin_name:
                     summands.append( "yield_%s_%s"%(self.bin_name_per_process[i_rate], self.process_name_per_bin[i_rate]) )
-            ws.factory( "sum::{yield_bin}({summands})".format(
+            self.ws.factory( "sum::{yield_bin}({summands})".format(
                 yield_bin = "yield_%s" % bin_name,
                 summands  = ",".join(summands)) )
             
-            ws.factory( "Poisson::poisson_{bin_name}(n_obs_{bin_name},yield_{bin_name})".format(bin_name=bin_name) )
+            self.ws.factory( "Poisson::poisson_{bin_name}(n_obs_{bin_name},yield_{bin_name})".format(bin_name=bin_name) )
 
-        ws.factory( "PROD::model_core({factors})".format(factors = ",".join(["poisson_%s"%bin_name for bin_name in self.bin_names]+["constr_%s"%nuisance for nuisance in self.nuisance_names])) )
-        ws.Print()
+        self.ws.factory( "PROD::model({factors})".format(factors = ",".join(["poisson_%s"%bin_name for bin_name in self.bin_names]+["constr_%s"%nuisance for nuisance in self.nuisance_names])) )
+        self.ws.Print()
       
         # Import data 
-        data = ROOT.RooDataSet("data", "data", self.observables)
-        ROOT.SetOwnership( data, False )
-        data.add( self.observables )
+        self.data = ROOT.RooDataSet("data", "data", self.observables)
+        ROOT.SetOwnership( self.data, False )
+        self.data.add( self.observables )
         # import dataset into workspace
-        getattr(ws, 'import')(data)
+        getattr(self.ws, 'import')(self.data)
 
+    def make_profiled_interval( self ):
+
+        # create signal+background Model Config
+        self.sbHypo = ROOT.RooStats.ModelConfig("sbHypo")
+        self.sbHypo.SetWorkspace( self.ws )
+        self.sbHypo.SetPdf( self.ws.pdf("model") )
+        self.sbHypo.SetObservables( self.observables )
+        self.sbHypo.SetGlobalObservables( self.glob )
+        self.sbHypo.SetParametersOfInterest( self.poi )
+        self.sbHypo.SetNuisanceParameters( self.nuisances )
+
+        pl = ROOT.RooStats.ProfileLikelihoodCalculator( self.data, self.sbHypo )
+        ROOT.SetOwnership( pl, False )
+        pl.SetConfidenceLevel(0.683)
+        firstPOI = self.sbHypo.GetParametersOfInterest().first()
+        interval = pl.GetInterval()
+        print firstPOI.GetName(), interval.LowerLimit(firstPOI), interval.UpperLimit(firstPOI)
+        plot = ROOT.RooStats.LikelihoodIntervalPlot(interval)
+        plot.Draw("")
+        ROOT.c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/test.png")
 
 if __name__=="__main__":
     # Logger
@@ -167,8 +193,8 @@ if __name__=="__main__":
     
     import sys
     profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( sys.argv[1] )
-
     profiledLoglikelihoodFit.make_workspace() 
+    profiledLoglikelihoodFit.make_profiled_interval() 
 
 ## full event yield
 #pWs.factory( "sum::yield(nsig,nbkg)" )

@@ -1,0 +1,46 @@
+# TTZ.dat
+# rmin 0.237985
+# rmax 0.270744
+imax    2   number of channels
+jmax    8   number of backgrounds
+kmax    33  number of nuisance parameters
+
+bin     L4onZout    L4onZB1out
+observation     2   1   
+bin     L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out
+process     TTZ fakeElectron    fakeMuon    TTWW    WH_ZH_TTH_HToWW WWZ WZZ ZZ  ZZZ TTZ fakeElectron    fakeMuon    TTWW    WH_ZH_TTH_HToWW WWZ WZZ ZZ  ZZZ
+process     0   1   2   3   4   5   6   7   8   0   1   2   3   4   5   6   7   8
+rate        1.4355e+00  5.3105e-02  1.1123e-02  3.9054e-03  0.0000e+00  2.9697e-02  1.9286e-03  5.4935e-02  1.2050e-03  1.3066e+00  9.9647e-02  2.0872e-02  5.0566e-03  3.9041e-02  9.2428e-02  5.1844e-03  4.8995e-01  9.4406e-03
+lumi    lnN 1.0440e+00  -   -   1.0440e+00  1.0440e+00  1.0440e+00  1.0440e+00  1.0440e+00  1.0440e+00  1.0440e+00  -   -   1.0440e+00  1.0440e+00  1.0440e+00  1.0440e+00  1.0440e+00  1.0440e+00
+MASSSigSyst lnN 1.0250e+00  -   -   -   -   -   -   -   -   1.0250e+00  -   -   -   -   -   -   -   -
+MatchingSigSyst lnN 1.0120e+00  -   -   -   -   -   -   -   -   1.0120e+00  -   -   -   -   -   -   -   -
+Q2SigSyst   lnN 1.0170e+00  -   -   -   -   -   -   -   -   1.0170e+00  -   -   -   -   -   -   -   -
+L4onZoutSIG lnN 1.1173e+00  -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+L4onZB1outSIG   lnN -   -   -   -   -   -   -   -   -   1.1229e+00  -   -   -   -   -   -   -   -
+fakeElectronDD  lnN -   1.2973e+00  -   -   -   -   -   -   -   -   1.2973e+00  -   -   -   -   -   -   -
+fakeMuonDD  lnN -   -   1.2903e+00  -   -   -   -   -   -   -   -   1.2903e+00  -   -   -   -   -   -
+TTWWXSEC    lnN -   -   -   1.5000e+00  -   -   -   -   -   -   -   -   1.5000e+00  -   -   -   -   -
+WH_ZH_TTH_HToWWXSEC lnN -   -   -   -   1.5000e+00  -   -   -   -   -   -   -   -   1.5000e+00  -   -   -   -
+WWZXSEC lnN -   -   -   -   -   1.5000e+00  -   -   -   -   -   -   -   -   1.5000e+00  -   -   -
+WZZXSEC lnN -   -   -   -   -   -   1.5000e+00  -   -   -   -   -   -   -   -   1.5000e+00  -   -
+ZZXSEC  lnN -   -   -   -   -   -   -   1.1200e+00  -   -   -   -   -   -   -   -   1.1200e+00  -
+ZZZXSEC lnN -   -   -   -   -   -   -   -   1.5000e+00  -   -   -   -   -   -   -   -   1.5000e+00
+BJET    lnN 1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00  1.0310e+00
+JETSCALE    lnN 1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00  1.1500e+00
+LEPTON  lnN 1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00  1.0080e+00
+L4onZoutTTWWBKG lnN -   -   -   1.2177e+00  -   -   -   -   -   -   -   -   -   -   -   -   -   -
+L4onZoutWH_ZH_TTH_HToWWBKG  lnN -   -   -   -   1.0000e+00  -   -   -   -   -   -   -   -   -   -   -   -   -
+L4onZoutWWZBKG  lnN -   -   -   -   -   1.4374e+00  -   -   -   -   -   -   -   -   -   -   -   -
+L4onZoutWZZBKG  lnN -   -   -   -   -   -   1.9485e+00  -   -   -   -   -   -   -   -   -   -   -
+L4onZoutZZBKG   lnN -   -   -   -   -   -   -   1.1187e+00  -   -   -   -   -   -   -   -   -   -
+L4onZoutZZZBKG  lnN -   -   -   -   -   -   -   -   2.1853e+00  -   -   -   -   -   -   -   -   -
+L4onZoutfakeElectronBKG lnN -   2.3959e+00  -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+L4onZoutfakeMuonBKG lnN -   -   2.3959e+00  -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+L4onZB1outTTWWBKG   lnN -   -   -   -   -   -   -   -   -   -   -   -   1.1913e+00  -   -   -   -   -
+L4onZB1outWH_ZH_TTH_HToWWBKG    lnN -   -   -   -   -   -   -   -   -   -   -   -   -   1.8043e+00  -   -   -   -
+L4onZB1outWWZBKG    lnN -   -   -   -   -   -   -   -   -   -   -   -   -   -   1.2479e+00  -   -   -
+L4onZB1outWZZBKG    lnN -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   1.5785e+00  -   -
+L4onZB1outZZBKG lnN -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   1.0397e+00  -
+L4onZB1outZZZBKG    lnN -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   1.4235e+00
+L4onZB1outfakeElectronBKG   lnN -   -   -   -   -   -   -   -   -   -   2.0506e+00  -   -   -   -   -   -   -
+L4onZB1outfakeMuonBKG   lnN -   -   -   -   -   -   -   -   -   -   -   2.0506e+00  -   -   -   -   -   -
