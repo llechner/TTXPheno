@@ -17,7 +17,6 @@ from RootTools.core.standard             import *
 from TTXPheno.Tools.user                 import plot_directory
 from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
-from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 
 # Import samples
 from TTXPheno.samples.benchmarks         import *
@@ -34,7 +33,8 @@ from array                               import array
 # Arguments
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
-argParser.add_argument('--plot_directory',     action='store',      default='gen')
+argParser.add_argument('--version',            action='store',      default='v7')
+argParser.add_argument('--level',              action='store',      default='gen',  nargs='?', choices=['reco', 'gen', 'genLep'], help='Which level of reconstruction? reco, gen, genLep')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--process',            action='store',      default='ttZ')
 argParser.add_argument('--order',              action='store',      default=2)
@@ -45,6 +45,13 @@ argParser.add_argument('--parameters',         action='store',      default = []
 argParser.add_argument('--luminosity',         action='store',      default=150)
 
 args = argParser.parse_args()
+
+plot_subdirectory = "%s_%s"%(args.level, args.version)
+
+# Import additional functions/classes specified for the level of reconstruction
+if args.level == 'reco': from TTXPheno.Tools.cutInterpreterReco   import cutInterpreter
+elif args.level == 'genLep': from TTXPheno.Tools.cutInterpreterGenLep import cutInterpreter
+else:                    from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 
 if len(args.parameters) == 0: args.parameters = None
 
@@ -57,13 +64,14 @@ sample = getattr( samples, args.sample )
 event_factor = 1.
 fisher_directory = 'fisher_information'
 if args.small:
-    sample.reduceFiles( to = 1 )
+    sample.reduceFiles( to = 5 )
     event_factor = sample.nEvents / float(sample.chain.GetEntries())
     fisher_directory += '_small'
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
+
 if len(args.variables) == 0: args.variables = w.variables
 else: args.variables = [ item for item in w.variables if item in args.variables ]
 
@@ -106,6 +114,16 @@ selections.append( {'plotstring':'full pre-selection (fps)', 'selection':args.se
 plotVariables2D = getattr( process_variables, args.process )['2D']
 plotVariables3D = getattr( process_variables, args.process )['3D']
 
+if args.level != 'gen':
+    if args.level == 'reco': search_string, replacement_string = ( 'gen', 'reco' )
+    # Take care if that is really everything you have to replace!!!
+    elif args.level == 'genLep': search_string, replacement_string = ( 'genZ', 'genLepZ' )
+    for item in plotVariables2D + plotVariables3D:
+        print item['var']
+        item['var'] = item['var'].replace(search_string, replacement_string)
+        print item['var']
+        print ''
+
 # Calculate coefficients for binned distribution
 # Calculate determinant using the 'variables' submatrix of FI
 for var in plotVariables2D:
@@ -143,6 +161,8 @@ full['color']     = 15
 expo = 1. / len(args.variables)
 data = [full] + selections + plotVariables2D + plotVariables3D
 n_data = len(data)
+
+#print w.matrix_to_string(*w.get_total_fisherInformation_matrix( selections[-1]['coeff'], args.variables, **WC ) )
 
 # Fill dictionaries with normalized fisher information and plotting data
 for i,item in enumerate(data):
@@ -224,7 +244,7 @@ def drawPlot( log = False ):
     # Directory
     plot_directory_ = os.path.join(\
         plot_directory,
-        args.plot_directory,
+        plot_subdirectory,
         sample.name,
         fisher_directory,
         'fisherinfo',
