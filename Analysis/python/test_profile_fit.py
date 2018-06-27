@@ -19,6 +19,7 @@ pWs.factory( "n[10]" )
 pWs.factory( "lumi_nom[5000.0, 4000.0, 6000.0]" )
 pWs.factory( "lumi_kappa[1.045]" )
 pWs.factory( "cexpr::alpha_lumi('pow(lumi_kappa,beta_lumi)',lumi_kappa,beta_lumi[0,-5,5])" )
+#pWs.factory( "pow::alpha_lumi(lumi_kappa,beta_lumi[0,-5,5])")
 pWs.factory( "prod::lumi(lumi_nom,alpha_lumi)" )
 pWs.factory( "Gaussian::constr_lumi(beta_lumi,glob_lumi[0,-5,5],1)" ) 
 
