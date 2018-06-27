@@ -64,7 +64,6 @@ pWs.factory( "PROD::model (model_core,constr_lumi,constr_efficiency,constr_nbkg)
 # print out the workspace contents
 pWs.Print()
 
-
 # create set of observables (will need it for datasets and ModelConfiglater)
 pObs = pWs.var("n") # get the pointer to the observable
 obs  = ROOT.RooArgSet("observables")
@@ -125,6 +124,10 @@ print firstPOI.GetName(), interval.LowerLimit(firstPOI), interval.UpperLimit(fir
 plot = ROOT.RooStats.LikelihoodIntervalPlot(interval)
 plot.Draw("")
 ROOT.c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/test.png")
+
+pWs.IsA().Destructor( pWs )
+pl.IsA().Destructor( pl )
+
 ## create plain likelihood
 #nll = pWs.pdf("model").createNLL(data)
 ## minimize wrt to all parameters
