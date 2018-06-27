@@ -8,7 +8,8 @@ import numpy as np
 
 # scipy 
 from scipy.integrate import odeint
-
+#from scipy.integrate import ode
+#from scipy.integrate import solve_ivp
 class Geodesic:
 
     def __init__( self,  initial_point, initial_derivative, christoffel_symbols):
@@ -53,9 +54,11 @@ class Geodesic:
         self.rhs = rhs
 
 
-    def solve( self, q_values):
+    def solve( self, q_values, **kwargs):
 
-        return odeint(self.rhs, self.initial_conditions, q_values )
+        return odeint(self.rhs, self.initial_conditions, q_values, **kwargs)
+        #return solve_ivp(self.rhs, t_span = (min(q_values), max(q_values)), y0 = self.initial_conditions, t_eval = q_values )
+        #r = ode(self.rhs, jac).set_integrator('zvode', method='bdf')
         #.set_integrator('vode', method='bdf') 
         #integrator.set_initial_value(self.initial_conditions, q0).set_f_params(2.0).set_jac_params(2.0) 
 
