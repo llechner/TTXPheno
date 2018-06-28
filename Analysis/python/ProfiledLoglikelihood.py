@@ -1,3 +1,6 @@
+''' Profiled log-likelihood fit from card file
+'''
+
 # Standard imports
 import ROOT
 from math import *
@@ -6,6 +9,10 @@ from math import *
 # http://people.na.infn.it/~lista/Statistics/slides/10%20-%20roostats.pdf
 # https://twiki.cern.ch/twiki/bin/view/RooStats/RooStatsTutorialsJune2013#Exercise_2_Profile_Likelihood_Ca
 # https://root.cern.ch/root/html/tutorials/roofit/rf605_profilell.C.html
+
+# Logger
+import logging
+logger = logging.getLogger(__name__)
 
 def isInt(s):
     try: 
@@ -155,7 +162,13 @@ class ProfiledLoglikelihoodFit:
             
             self.ws.factory( "Poisson::poisson_{bin_name}(n_obs_{bin_name},yield_{bin_name})".format(bin_name=bin_name) )
 
-        self.ws.factory( "PROD::model({factors})".format(factors = ",".join(["poisson_%s"%bin_name for bin_name in self.bin_names]+["constr_%s"%nuisance for nuisance in self.nuisance_names])) )
+        self.ws.factory( "PROD::model({factors})".format(
+            factors = ",".join(
+                ["poisson_%s"%bin_name for bin_name in self.bin_names]      # measurements
+               +["constr_%s"%nuisance for nuisance in self.nuisance_names]) # nuisances
+            ))
+
+        # print the workspace
         self.ws.Print()
       
         # Import data 
@@ -168,23 +181,48 @@ class ProfiledLoglikelihoodFit:
     def make_profiled_interval( self ):
 
         # create signal+background Model Config
-        self.sbHypo = ROOT.RooStats.ModelConfig("sbHypo")
-        self.sbHypo.SetWorkspace( self.ws )
-        self.sbHypo.SetPdf( self.ws.pdf("model") )
-        self.sbHypo.SetObservables( self.observables )
-        self.sbHypo.SetGlobalObservables( self.glob )
-        self.sbHypo.SetParametersOfInterest( self.poi )
-        self.sbHypo.SetNuisanceParameters( self.nuisances )
+        sbModel = ROOT.RooStats.ModelConfig("S_plus_B_model")
+        sbModel.SetWorkspace( self.ws )
+        sbModel.SetPdf( self.ws.pdf("model") )
+        sbModel.SetObservables( self.observables )
+        sbModel.SetGlobalObservables( self.glob )
+        sbModel.SetParametersOfInterest( self.poi )
+        sbModel.SetNuisanceParameters( self.nuisances )
 
-        pl = ROOT.RooStats.ProfileLikelihoodCalculator( self.data, self.sbHypo )
+        pl = ROOT.RooStats.ProfileLikelihoodCalculator( self.data, sbModel )
         ROOT.SetOwnership( pl, False )
         pl.SetConfidenceLevel(0.683)
-        firstPOI = self.sbHypo.GetParametersOfInterest().first()
+        firstPOI = sbModel.GetParametersOfInterest().first()
         interval = pl.GetInterval()
         print firstPOI.GetName(), interval.LowerLimit(firstPOI), interval.UpperLimit(firstPOI)
         plot = ROOT.RooStats.LikelihoodIntervalPlot(interval)
         plot.Draw("")
-        ROOT.c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/test.png")
+        ROOT.c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/test2.png")
+
+    def make_hypothesis_test( self, r):
+
+        self.poi.first().setVal( r )
+        # create signal+background Model Config
+        sbModel = ROOT.RooStats.ModelConfig("sbModel")
+        sbModel.SetWorkspace( self.ws )
+        sbModel.SetPdf( self.ws.pdf("model") )
+        sbModel.SetObservables( self.observables )
+        sbModel.SetGlobalObservables( self.glob )
+        sbModel.SetParametersOfInterest( self.poi )
+        sbModel.SetNuisanceParameters( self.nuisances )
+
+        sbModel.SetSnapshot( self.poi )
+
+        bModel = sbModel.Clone()
+        bModel.SetName("bHypo")      
+        self.poi.first().setVal(0)
+        bModel.SetSnapshot( self.poi );
+
+        acl = ROOT.RooStats.AsymptoticCalculator( self.data, sbModel, bModel )
+        acl.SetOneSidedDiscovery(True)
+
+        asResult = acl.GetHypoTest()
+        asResult.Print()
 
 if __name__=="__main__":
     # Logger
@@ -194,84 +232,5 @@ if __name__=="__main__":
     import sys
     profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( sys.argv[1] )
     profiledLoglikelihoodFit.make_workspace() 
-    profiledLoglikelihoodFit.make_profiled_interval() 
-
-## full event yield
-#pWs.factory( "sum::yield(nsig,nbkg)" )
-## NOTE: lower-case "sum" create a function. Upper-case "SUM" would create a PDF
-## Core model: Poisson probability with mean signal+bkg
-## NOTE: "model_core" is a name of the PDF object
-#pWs.factory( "Poisson::model_core(n,yield)" )
-#
-#
-## model with systematics
-##pWs.factory( "PROD::model(model_core,constr_lumi)" )
-##pWs.factory( "PROD::model(model_core,constr_lumi,constr_efficiency)" )
-#pWs.factory( "PROD::model (model_core,constr_lumi,constr_efficiency,constr_nbkg)" );
-#
-## print out the workspace contents
-#pWs.Print()
-#
-#
-## create set of observables (will need it for datasets and ModelConfiglater)
-#pObs = pWs.var("n") # get the pointer to the observable
-#obs  = ROOT.RooArgSet("observables")
-#obs.add(pObs)
-## create the dataset
-#pObs.setVal(15) # this is your observed data: you counted eleven events
-#data = ROOT.RooDataSet("data", "data", obs)
-#ROOT.SetOwnership( data, False )
-#data.add( obs )
-## import dataset into workspace
-#getattr(pWs, 'import')(data)
-## create set of global observables (need to be defined as constants!)
-#pWs.var("glob_lumi").setConstant(True)
-#pWs.var("glob_efficiency").setConstant(True)
-#pWs.var("glob_nbkg").setConstant(True)
-#globalObs = ROOT.RooArgSet("global_obs")
-##globalObs.add( pWs.var("glob_lumi") )
-#globalObs.add( pWs.var("glob_efficiency") )
-#globalObs.add( pWs.var("glob_nbkg") )
-## create set of parameters of interest (POI)
-#poi = ROOT.RooArgSet("poi")
-#poi.add( pWs.var("xsec") )
-## create set of nuisance parameters
-#nuis = ROOT.RooArgSet("nuis")
-#nuis.add( pWs.var("alpha_lumi") )
-#nuis.add( pWs.var("beta_efficiency") )
-#nuis.add( pWs.var("beta_nbkg") ) 
-#
-## fix all other variables in model:
-## everything except observables, POI, and nuisance parameters
-## must be constant
-#pWs.var("lumi_nom").setConstant(True)
-#pWs.var("efficiency_nom").setConstant(True)
-#pWs.var("nbkg_nom").setConstant(True)
-#pWs.var("lumi_kappa").setConstant(True)
-#pWs.var("efficiency_kappa").setConstant(True)
-#pWs.var("nbkg_kappa").setConstant(True)
-#fixed = ROOT.RooArgSet("fixed")
-#fixed.add( pWs.var("lumi_nom") )
-#fixed.add( pWs.var("efficiency_nom") )
-#fixed.add( pWs.var("nbkg_nom") )
-#fixed.add( pWs.var("lumi_kappa") )
-#fixed.add( pWs.var("efficiency_kappa") )
-#fixed.add( pWs.var("nbkg_kappa") )
-## create signal+background Model Config
-#sbHypo = ROOT.RooStats.ModelConfig ("SbHypo")
-#sbHypo.SetWorkspace( pWs )
-#sbHypo.SetPdf( pWs.pdf("model") )
-#sbHypo.SetObservables( obs )
-#sbHypo.SetGlobalObservables( globalObs )
-#sbHypo.SetParametersOfInterest( poi )
-#sbHypo.SetNuisanceParameters( nuis )
-#
-#pl = ROOT.RooStats.ProfileLikelihoodCalculator( data, sbHypo )
-#ROOT.SetOwnership( pl, False )
-#pl.SetConfidenceLevel(0.683)
-#firstPOI = sbHypo.GetParametersOfInterest().first()
-#interval = pl.GetInterval()
-#print firstPOI.GetName(), interval.LowerLimit(firstPOI), interval.UpperLimit(firstPOI)
-#plot = ROOT.RooStats.LikelihoodIntervalPlot(interval)
-#plot.Draw("")
-#ROOT.c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/test.png")
+    #profiledLoglikelihoodFit.make_profiled_interval() 
+    profiledLoglikelihoodFit.make_hypothesis_test(r=6) 
