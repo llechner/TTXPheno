@@ -49,11 +49,11 @@ args = argParser.parse_args()
 
 plot_subdirectory = "%s_%s"%(args.level, args.version)
 # Import additional functions/classes specified for the level of reconstruction
-if args.level == 'reco': from TTXPheno.Tools.cutInterpreterReco   import cutInterpreter
+if args.level == 'reco':     from TTXPheno.Tools.cutInterpreterReco   import cutInterpreter
 elif args.level == 'genLep': from TTXPheno.Tools.cutInterpreterGenLep import cutInterpreter
-else:                    from TTXPheno.Tools.cutInterpreter   import cutInterpreter
+else:                        from TTXPheno.Tools.cutInterpreter       import cutInterpreter
 
-if len(args.parameters) == 0: args.parameters = None
+if len(args.parameters) == 0:  args.parameters  = None
 if len(args.selectPlots) == 0: args.selectPlots = None
 
 # Import samples
@@ -86,16 +86,6 @@ if args.parameters is not None:
     WC = { coeff:vals[i] for i, coeff in enumerate(coeffs) }
     WC_string = '_'.join( args.parameters )
 
-def get_reweight_function():
-    ''' return a weight function
-    '''
-
-    def reweight( event, sample ):
-        return event.ref_lumiweight1fb * args.luminosity * event_factor
-
-    return reweight
-
-weightFunction = get_reweight_function()
 weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity), str(event_factor) )
 selectionString = cutInterpreter.cutString( args.selection )
 
@@ -135,16 +125,8 @@ def appendPlotInformation( VariableList ):
         coeffList = get2DCoeffPlotFromDraw( sample, args.order, plotVariable['var'], plotVariable['binning'], selectionString, weightString=weightString )
 
         detIList  = [ np.linalg.det( w.get_fisherInformation_matrix( coeffs, args.variables, **WC )[1] ) for coeffs in coeffList ]
-#        detI0     = sum( detIList )
         detIList  = [ abs(detI)**expo for detI in detIList ]
 
-        def binningToXList( binningList ):
-            bins, start, stop = tuple( binningList )
-            xList = list( np.linspace( start=start, stop=stop, num=bins+1 ) )
-            return [ 0.5*(x + xList[i+1]) for i,x in enumerate( xList[:-1] ) ]
-
-        xRange = binningToXList( plotVariable['binning'] )
-        plotVariable['x_graph'] = array( 'd', xRange )
         plotVariable['y_graph'] = array( 'd', detIList )
 
 
@@ -158,27 +140,26 @@ def drawPlot( variable, log = False ):
 
     # Canvas
     c1 = ROOT.TCanvas()
-
-    mg = ROOT.TGraph( len(variable['x_graph']), variable['x_graph'], variable['y_graph'] )
-    mg.SetFillColor( 30 )
-    ROOT.gStyle.SetBarWidth( 1.2 )
-    mg.Draw('AB')
+    hist = ROOT.TH1F( 'histo', 'histo', variable['binning'][0], variable['binning'][1], variable['binning'][2] )
+    for i in range(variable['binning'][0]):
+        hist.SetBinContent(i+1, variable['y_graph'][i])
+    hist.Draw()
 
     # Layout
-    mg.GetXaxis().SetLabelSize(0.035)
-    mg.GetXaxis().SetTitleSize(0.035)
-    mg.GetXaxis().SetTitle( variable['plotstring'] )
-    mg.GetXaxis().SetTitleOffset(1.3)
-    mg.GetYaxis().SetTitleOffset(1.8)
+    hist.GetXaxis().SetLabelSize(0.035)
+    hist.GetXaxis().SetTitleSize(0.035)
+    hist.GetXaxis().SetTitle( variable['plotstring'] )
+    hist.GetXaxis().SetTitleOffset(1.3)
+    hist.GetYaxis().SetTitleOffset(1.8)
 
-    mg.GetYaxis().SetTitle( 'det(I_{ij})^{(1/%i)}'%len(args.variables) if len(args.variables) > 1 else 'det(I_{ij})' )
-    mg.GetYaxis().SetLabelSize(0.035)
-    mg.GetYaxis().SetTitleSize(0.035)
-    mg.GetYaxis().SetRangeUser(0, max(variable['y_graph'])*1.4)
+    hist.GetYaxis().SetTitle( 'det(I_{ij})^{(1/%i)}'%len(args.variables) if len(args.variables) > 1 else 'det(I_{ij})' )
+    hist.GetYaxis().SetLabelSize(0.035)
+    hist.GetYaxis().SetTitleSize(0.035)
+    hist.GetYaxis().SetRangeUser(0, max(variable['y_graph'])*1.4)
 
     if log:
         c1.SetLogy()
-        mg.GetYaxis().SetRangeUser(1e-5, max(variable['y_graph'])*10)
+        hist.GetYaxis().SetRangeUser(1e-5, max(variable['y_graph'])*10)
 
     # Info
     t1 = ROOT.TPaveText(0.55, .80, .95, .92, "blNDC")

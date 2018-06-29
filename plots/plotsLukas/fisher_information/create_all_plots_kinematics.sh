@@ -12,12 +12,12 @@ endIndex=10
 #small="--small"
 small=""
 
-declare -a variables=("ctZ" "ctW" "ctW ctWI" "cpt cpQM" "ctZ ctZI")
+declare -a variables=("ctZ" "ctW" "cpt" "cpQM" "ctZ ctW" "ctW ctWI" "cpt cpQM" "ctZ ctZI")
 #declare -a variables=("ctWI ctZI" "ctW ctZ")
 
-declare -a parameters=("ctZ 3 ctZI 3 ctW 3 ctWI 3")
+declare -a parameters=("ctZ 5 ctZI 5 ctW 5 ctWI 5")
 
-declare -a levels=("reco" "genLep" "gen")
+declare -a levels=("reco" "gen")
 
 version="v7"
 
@@ -37,11 +37,11 @@ do
             submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttZ_ll_LO_order2_15weights_ref  --process ttZ     --order 2 --selection lepSel3-onZ-njet3p-nbjet1p-Zpt0 --variables ${variable} --selectPlots ${i}"
             submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttZ_ll_LO_order2_15weights_ref  --process ttZ     --order 2 --selection lepSel3-onZ-njet3p-nbjet1p-Zpt0 --variables ${variable} --selectPlots ${i}"
 
-#            submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --selectPlots ${i}"
-#            submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --selectPlots ${i}"
+            submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --selectPlots ${i}"
+            submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --selectPlots ${i}"
 
-#            submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --selectPlots ${i}"
-#            submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --selectPlots ${i}"
+            submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --selectPlots ${i}"
+            submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --selectPlots ${i}"
 
             for parameter in "${parameters[@]}"
             do
@@ -49,11 +49,11 @@ do
                 submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttZ_ll_LO_order2_15weights_ref  --process ttZ     --order 2 --selection lepSel3-onZ-njet3p-nbjet1p-Zpt0 --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
                 submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttZ_ll_LO_order2_15weights_ref  --process ttZ     --order 2 --selection lepSel3-onZ-njet3p-nbjet1p-Zpt0 --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
 
-#                submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
-#                submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
+                submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
+                submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
 
-#                submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
-#                submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
+                submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
+                submitBatch.py --dpm "python fisher_information_kinematics.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --selectPlots ${i} --parameters ${parameter}"
 
             done
         done

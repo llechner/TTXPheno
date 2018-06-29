@@ -9,6 +9,7 @@ from math                                import sqrt, cos, sin, pi, isnan, sinh,
 import copy
 import imp
 import numpy as np
+import scipy as spi
 
 # RootTools
 from RootTools.core.standard             import *
@@ -73,10 +74,9 @@ if args.small:
 w = WeightInfo(sample.reweight_pkl)
 w.set_order(int(args.order))
 
-if len(args.variables) == 0: args.variables = w.variables
+if len(args.variables) == 0: inputvariables = w.variables
 # sort list in same order as w.variables (necessary for EV and EVec calculation)
-else: args.variables = [ item for item in w.variables if item in args.variables ]
-
+else: inputvariables = [ item for item in w.variables if item in args.variables ]
 # Format input parameters to dict
 WC_string = 'SM'
 WC = {}
@@ -93,7 +93,7 @@ def get_reweight_function():
     '''
 
     def reweight( event, sample ):
-        return event.ref_lumiweight1fb * args.luminosity * event_factor
+        return event.ref_lumiweight1fb * float(args.luminosity) * event_factor
 
     return reweight
 
@@ -101,9 +101,10 @@ def get_reweight_function():
 selection_string = cutInterpreter.cutString( args.selection )
 
 # Make sure that weightString contains the same as weightFunction!!!
-weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity), str(event_factor) )
+weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity) , str(event_factor) )
 weightFunction = get_reweight_function()
 
+print weightString
 # split selection string step by step
 selections = []
 selectionElements = args.selection.split('-')
@@ -155,18 +156,43 @@ full              = { 'plotstring':'full'}
 full['coeff']     = getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
 full['color']     = 15
 
-expo = 1. / len(args.variables)
+expo = 1. / len(inputvariables)
 data = [full] + selections + plotVariables2D + plotVariables3D
 n_data = len(data)
 
+plot_directory_ = os.path.join(\
+    plot_directory,
+    plot_subdirectory,
+    sample.name,
+    fisher_directory,
+    'eigenvector',
+    args.selection,
+    WC_string,
+    '_'.join(inputvariables) if len([k for k, j in zip(inputvariables, w.variables) if k != j]) > 0 else 'all',
+    )
+if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
+if os.path.isfile(os.path.join(plot_directory_,'ev_file.log')): os.remove(os.path.join(plot_directory_,'ev_file.log'))
+
 # Fill dictionaries with Eigenvalues and Eigenvectors
 for i,item in enumerate(data):
-#    print w.matrix_to_string(*w.get_total_fisherInformation_matrix( item['coeff'], args.variables, **WC ) )
-    evs, evecs = np.linalg.eigh( w.get_total_fisherInformation_matrix( item['coeff'], args.variables, **WC )[1] )
-    evecs_frac = [ [ abs(entry)/sum(abs(vec)) for entry in vec ] for vec in evecs ]
-    item['x_pos'] = i+1 #array( 'd', range( 1, n_data+1 ) )
-    item['evs'] = evs #[ array( 'd', [0]*i + [ev] + [0]*(n_data-i) ) for ev in evs ]
-    item['evecs_frac'] = evecs_frac #[ sortedListEntry[2] for sortedListEntry in sortedList ]
+
+    print_matrix = w.matrix_to_string( *w.get_total_fisherInformation_matrix( item['coeff'], inputvariables, **WC ) )
+
+    evs, evecs = np.linalg.eigh( w.get_total_fisherInformation_matrix( item['coeff'], inputvariables, **WC )[1] )
+    evecs_frac = [ [ abs(entry)/sum(abs(vec)) for entry in vec ] for vec in evecs.T ]
+    item['x_pos'] = i+1
+    item['evs'] = evs
+    item['evecs_frac'] = evecs_frac
+
+    with open(os.path.join(plot_directory_,'ev_file.log'),'a') as f:
+        f.write('bin %i\n'%i)
+        f.write('matrix\n')
+        f.write(print_matrix)
+        f.write('\neval\n')
+        f.write('(' + '\t'.join([str(item) for item in evs]) + ')')
+        f.write('\nevec\n')
+        f.write('\n'.join(['(' + '\t'.join([str(el) for el in item]) + ')' for item in evecs.T]))
+        f.write('\n\n\n')
 
 # Plots
 def drawPlot( log = False ): 
@@ -199,15 +225,6 @@ def drawPlot( log = False ):
             ystart = y * 0.9
             ystop  = y * 1.1
 
-#            sortedEVecEntries = sorted( [ (eVecEntry, variableColors[j] ) for j, eVecEntry in enumerate( item['evecs_frac'][i] ) ], key=lambda x: -x[0] )
-
-            # create box for each EVec for each EVal
-#            for j, eVecEntry in enumerate(sortedEVecEntries):
-#                color = eVecEntry[1]
-#                xstart += (sortedEVecEntries[j-1][0])*0.8 if j>0 else 0
-#                xstop = xstart + eVecEntry[0]*0.8 #scale to 0.8
-#                box.SetFillColor(color)
-#                box.DrawBox(xstart, ystart, xstop, ystop)
             for j, eVecEntry in enumerate(item['evecs_frac'][i]):
                 color = variableColors[j] #eVecEntry[1]
                 xstart += (item['evecs_frac'][i][j-1])*0.8 if j>0 else 0
@@ -234,7 +251,7 @@ def drawPlot( log = False ):
 
     c1.Update()
 
-    xstart = 0.95-(len(args.variables)+1)*0.05-.42
+    xstart = 0.95-(len(inputvariables)+1)*0.05-.42
 
     t1 = ROOT.TPaveText(xstart, .85, .95, .92, "blNDC")
     t1.SetTextAlign(13)
@@ -249,8 +266,8 @@ def drawPlot( log = False ):
     xstart += 0.42
     text = []
     # Info
-    for i, var in enumerate(args.variables):
-        if i != 0: xstart += (len(args.variables[i-1])+2)*0.016
+    for i, var in enumerate(inputvariables):
+        if i != 0: xstart += (len(inputvariables[i-1])+2)*0.016
         ti = ROOT.TPaveText(xstart, .85, 1, .92, "blNDC")
         ti.SetTextAlign(13)
         ti.SetTextSize(0.035)
@@ -274,7 +291,6 @@ def drawPlot( log = False ):
 
     # Labeling
     for i, item in enumerate(data):
-#        t.DrawLatex( i+1.25, ymin*1.4 if log else 0.05, #color[item['color']]{item['plotstring']} )
         t.DrawLatex( i+1.25, ymin*1.4 if log else 0.05, "#color[%i]{%s}"%(item['color'],item['plotstring']) )
 
     # Directory
@@ -286,7 +302,7 @@ def drawPlot( log = False ):
         'eigenvector',
         args.selection,
         WC_string,
-        '_'.join(args.variables) if len([i for i, j in zip(args.variables, w.variables) if i != j]) > 0 else 'all',
+        '_'.join(inputvariables) if len([i for i, j in zip(inputvariables, w.variables) if i != j]) > 0 else 'all',
         'log' if log else 'lin')
     
     if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
@@ -298,3 +314,4 @@ def drawPlot( log = False ):
 # Plot lin and log plots
 for log in [ True, False ]:
     drawPlot( log )
+
