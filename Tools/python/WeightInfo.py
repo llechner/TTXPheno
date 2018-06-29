@@ -6,6 +6,7 @@ import pickle
 import scipy.special
 import scipy.linalg
 import itertools
+from math import *
 
 # TTXPheno
 import TTXPheno.Tools.helpers as helpers
@@ -430,7 +431,7 @@ class WeightInfo:
                     #print index, gil, dg[index] 
                     for j in range(len(_variables)):
                         for k in range(len(_variables)):
-                            d_christoffel_jk = gil*( 0.5/weight_yield*diff_weight_yield[l]*diff_weight_yield[j]*diff_weight_yield[k] + 1./weight_yield**2*diff_weight_yield[l]*diff2_weight_yield[(j,k)] )
+                            d_christoffel_jk = gil*( -0.5/weight_yield**2*diff_weight_yield[l]*diff_weight_yield[j]*diff_weight_yield[k] + 1./weight_yield*diff_weight_yield[l]*diff2_weight_yield[(j,k)] )
                             if j==k:
                                 christoffel[j][k] += d_christoffel_jk 
                             elif j>k:
@@ -511,26 +512,38 @@ if __name__ == "__main__":
     christoffel_symbols = w.get_christoffels(  coeff_Z_pt,  variables = variables) 
 
     initial_point      = (0, 0.)
-    initial_derivative = (.002, .002 )
 
-    # How far we want to go in the parameter q
-    q_max = 15.
-    nq    = 500
+    Npoints = 24
+    phis = [2*pi*float(n)/Npoints for n in range(Npoints)]
+    initial_derivatives = [ (.04*cos(phi), .04*sin(phi) ) for phi in phis ]
 
     # Initialize Geodesic
-    geodesic = Geodesic( initial_point, initial_derivative, christoffel_symbols )
+    geodesics = [Geodesic( initial_point, initial_derivative, christoffel_symbols ) for initial_derivative in initial_derivatives ]
 
+    # How far we want to go in the parameter q
+    q_max = 500
+    nq    = 50
+
+    #
+    #solver_args = {'hmax':0.01}
+    solver_args = {}
     # Define q values & solve
     q_values = np.linspace(0, q_max, nq+1)
-    solution = map( phase_space_dict, geodesic.solve(q_values) )
+    solutions = [ map( phase_space_dict, geodesic.solve(q_values, **solver_args) ) for geodesic in geodesics]
     # Add the parameter value
-    for i_q_value, q_value in enumerate( q_values ):
-        solution[i_q_value]['q'] = q_value
-
+    for solution in solutions:
+        for i_q_value, q_value in enumerate( q_values ):
+            solution[i_q_value]['q'] = q_value
+    
     import ROOT
     import array
 
-    gr = ROOT.TGraph(nq, array.array('d', [ y[variables[0]] for y in solution ]),  array.array('d', [ y[variables[1]] for y in solution ]) )
+    tgraphs = [ ROOT.TGraph(nq, array.array('d', [ y[variables[0]] for y in solution ]),  array.array('d', [ y[variables[1]] for y in solution ]) ) for solution in solutions ]
+
+    multigraph = ROOT.TMultiGraph("gr","gr")
+    for graph in tgraphs:
+        multigraph.Add(graph)
+        
     c1 = ROOT.TCanvas()
-    gr.Draw("AC*")
-    c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/info_geodesic.png")
+    multigraph.Draw("AC")
+    c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/info_geodesic_4.png")
