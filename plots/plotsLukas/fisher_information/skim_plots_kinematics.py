@@ -20,6 +20,7 @@ from TTXPheno.Tools.WeightInfo           import WeightInfo
 # Import samples
 from TTXPheno.samples.benchmarks         import *
 
+
 # Import helpers
 from plot_helpers                        import *
 from plot_kinematics_helpers             import *
