@@ -13,8 +13,8 @@ ctG=$7
 ctGI=$8
 
 # declare samples to analyze
-declare -a samples2=('fwlite_ttgamma_LO_order2_15weights' 'fwlite_ttgamma_LO_order2_15weights_ref')
-#declare -a samples2=('fwlite_ttgamma_LO_order2_15weights_ref')
+#declare -a samples2=('fwlite_ttgamma_LO_order2_15weights' 'fwlite_ttgamma_LO_order2_15weights_ref')
+declare -a samples2=('fwlite_ttgamma_LO_order2_15weights_ref_old')
 #declare -a samples2=('fwlite_ttgamma_LO_order2_15weights')
 #declare -a samples2=('')
 
@@ -22,7 +22,8 @@ declare -a samples2=('fwlite_ttgamma_LO_order2_15weights' 'fwlite_ttgamma_LO_ord
 declare -a samples3=('')
 
 # declare selection strings to analyze
-declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-njet3p-nbjet1p' 'gammapt100to200-nlep1p-njet3p-nbjet1p' 'gammapt200to300-nlep1p-njet3p-nbjet1p' 'gammapt300-nlep1p-njet3p-nbjet1p')
+#declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-njet3p-nbjet1p' 'gammapt100to200-nlep1p-njet3p-nbjet1p' 'gammapt200to300-nlep1p-njet3p-nbjet1p' 'gammapt300-nlep1p-njet3p-nbjet1p')
+declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -30,8 +31,8 @@ declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-
 declare -a samplesizes=('')
 
 # declare reweighting
-declare -a reweightings=('' '--reweightPtPhotonToSM')
-#declare -a reweightings=('--reweightPtPhotonToSM')
+declare -a reweightings=('' '--reweightPtGammaToSM')
+#declare -a reweightings=('--reweightPtGammaToSM')
 #declare -a reweightings=('')
 
 # declare scale
