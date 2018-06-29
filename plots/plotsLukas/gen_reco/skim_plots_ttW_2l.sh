@@ -13,17 +13,17 @@ ctG=$7
 ctGI=$8
 
 # declare samples to analyze
-#declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights' 'fwlite_ttZ_ll_LO_order2_15weights_ref')
-declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights_ref')
-#declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights')
+#declare -a samples2=('fwlite_ttW_LO_order2_15weights' 'fwlite_ttW_LO_order2_15weights_ref')
+declare -a samples2=('fwlite_ttW_LO_order2_15weights_ref')
+#declare -a samples2=('fwlite_ttW_LO_order2_15weights')
 #declare -a samples2=('')
 
-#declare -a samples3=('fwlite_ttZ_ll_LO_order3_8weights')
+#declare -a samples3=('fwlite_ttW_LO_order3_8weights')
 declare -a samples3=('')
 
 # declare selection strings to analyze
-declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0to100' 'lepSel3-onZ-njet3p-nbjet1p-Zpt100to200' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200to300' 'lepSel3-onZ-njet3p-nbjet1p-Zpt300to400' 'lepSel3-onZ-njet3p-nbjet1p-Zpt400')
-#declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
+declare -a selections=('nlep2p-njet2p-nbjet1p-Wpt0' 'nlep2p-njet2p-nbjet1p-Wpt0to100' 'nlep2p-njet2p-nbjet1p-Wpt100to200' 'nlep2p-njet2p-nbjet1p-Wpt200to300' 'nlep2p-njet2p-nbjet1p-Wpt300to400' 'nlep2p-njet2p-nbjet1p-Wpt400')
+#declare -a selections=('nlep2p-njet2p-nbjet1p-Wpt0')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -40,15 +40,12 @@ declare -a scales=('' '--scaleLumi')
 #declare -a scales=('--scaleLumi')
 #declare -a scales=('')
 
-#declare -a levels=('genLep')
-#declare -a levels=('gen')
-#declare -a levels=('reco')
-#declare -a levels=('gen' 'genLep' 'reco')
 declare -a levels=('gen' 'reco')
+#declare -a levels=('gen')
 
 version='v7'
 luminosity='150'
-process='ttZ_3l'
+process='ttW_2l'
 
 # define program to run by python
 prog=skim_plots.py
