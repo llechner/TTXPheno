@@ -102,7 +102,7 @@ for s in samples:
 
 # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
 #event_factor = 200. if args.small else 1.# s.nEvents / float(s.chain.GetEntries()) )
-event_factor =  sample.nEvents / float(sample.chain.GetEntries()) )
+event_factor =  sample.nEvents / float(sample.chain.GetEntries())
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
