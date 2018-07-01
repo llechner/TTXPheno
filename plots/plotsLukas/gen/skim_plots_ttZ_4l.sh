@@ -13,8 +13,8 @@ ctG=$7
 ctGI=$8
 
 # declare samples to analyze
-declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights' 'fwlite_ttZ_ll_LO_order2_15weights_ref')
-#declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights_ref')
+#declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights' 'fwlite_ttZ_ll_LO_order2_15weights_ref')
+declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights_ref_old')
 #declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights')
 #declare -a samples2=('')
 
@@ -22,7 +22,8 @@ declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights' 'fwlite_ttZ_ll_LO_order
 declare -a samples3=('')
 
 # declare selection strings to analyze
-declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0' 'lepSel4-onZ-njet2p-nbjet1p-Zpt0to100' 'lepSel4-onZ-njet2p-nbjet1p-Zpt100to200' 'lepSel4-onZ-njet2p-nbjet1p-Zpt200to300' 'lepSel4-onZ-njet2p-nbjet1p-Zpt300to400' 'lepSel4-onZ-njet2p-nbjet1p-Zpt400')
+#declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0' 'lepSel4-onZ-njet2p-nbjet1p-Zpt0to100' 'lepSel4-onZ-njet2p-nbjet1p-Zpt100to200' 'lepSel4-onZ-njet2p-nbjet1p-Zpt200to300' 'lepSel4-onZ-njet2p-nbjet1p-Zpt300to400' 'lepSel4-onZ-njet2p-nbjet1p-Zpt400')
+declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')

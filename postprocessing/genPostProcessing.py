@@ -393,7 +393,7 @@ def filler( event ):
         event.genLepZ_cosThetaStar = cosThetaStar(event.genLepZ_mass, event.genLepZ_pt, event.genLepZ_eta, event.genLepZ_phi, genLeps[genLepMinus_index]['pt'], genLeps[genLepMinus_index]['eta'], genLeps[genLepMinus_index]['phi'] )
 
     # reco-bjet/nonZ lepton association
-    if event.genLepNonZ_l1_index>0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
+    if event.genLepNonZ_l1_index>=0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
         if vecSumPt( genBj0, genLeps[event.genLepNonZ_l1_index], genMet ) > vecSumPt( genBj1, genLeps[event.genLepNonZ_l1_index], genMet ):
             event.genBjNonZlep_index, event.genBjNonZhad_index = genBj0['index'], genBj1['index']
         else:

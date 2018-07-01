@@ -231,6 +231,7 @@ read_variables_genLep = [
 if args.level == 'reco':
     read_variables = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
     read_variables += [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
+    read_variables = list( set( read_variables ) )
 else:
     read_variables = read_variables_gen + read_variables_genLep
 
@@ -264,13 +265,13 @@ def makeJets( event, sample ):
         addTLorentzVector( p )
 
     # selection checks
-    event.foundBjNonZlep = getattr( event, '%sBjNonZlep_index'%preTag ) >= 0 and isGoodJet( event.bjNonZlep )
+#    event.foundBjNonZlep = getattr( event, '%sBjNonZlep_index'%preTag ) >= 0 and isGoodJet( event.bjNonZlep )
 #    event.foundBjNonZhad = getattr( event, '%sBjNonZhad_index'%preTag ) >= 0 and isGoodJet( event.bjNonZhad )
 #    event.foundBj0lep    = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
 #    event.foundBj0had    = getattr( event, '%sBjLeadhad_index'%preTag ) >= 0 and isGoodJet( event.bj0had )
 
     # choose your selection on b-jets
-    event.passing_bjets = event.foundBjNonZlep
+    event.passing_bjets = True #no selection #event.foundBjNonZlep
 
 sequence.append( makeJets )
 
@@ -361,7 +362,7 @@ plots = []
 plots.append(Plot( name = "Z_pt",
   texX = 'p_{T}(Z) [GeV]', texY = y_label,
   attribute = lambda event, sample: getattr( event, '%sZ_pt'%args.level ) if event.passing_checks else float('nan'),
-  binning=[20,0,500],
+  binning=[10,0,500],
 ))
 
 plots.append(Plot( name = "Z_mass",

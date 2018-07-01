@@ -5,14 +5,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 special_cuts = {
-    "lepSel3":            "Sum$(recoLep_pt>10&&(abs(recoLep_pdgId)==11||abs(recoLep_pdgId)==13)&&abs(recoLep_eta)<2.5)==3&&Sum$(recoLep_pt>20&&(abs(recoLep_pdgId)==11||abs(recoLep_pdgId)==13)&&abs(recoLep_eta)<2.5)>=2&&Sum$(recoLep_pt>40&&(abs(recoLep_pdgId)==11||abs(recoLep_pdgId)==13)&&abs(recoLep_eta)<2.5)>=1",
-    "lepSel4":            "Sum$(recoLep_pt>10&&(abs(recoLep_pdgId)==11||abs(recoLep_pdgId)==13)&&abs(recoLep_eta)<2.5)==4&&Sum$(recoLep_pt>40&&(abs(recoLep_pdgId)==11||abs(recoLep_pdgId)==13)&&abs(recoLep_eta)<2.5)>=1",
-    "onZ":                "abs(recoZ_mass-91.2)<=15",
-    "offZ":               "abs(recoZ_mass-91.2)>15",
+    "lepSel3":            "Sum$(GenLep_pt>10&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.5)==3&&Sum$(GenLep_pt>20&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.5)>=2&&Sum$(GenLep_pt>40&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.5)>=1",
+    "lepSel4":            "Sum$(GenLep_pt>10&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.5)==4&&Sum$(GenLep_pt>40&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.5)>=1",
+    "onZ":                "abs(Z_mass-91.2)<=15",
+    "offZ":               "abs(Z_mass-91.2)>15",
   }
 
-continous_variables = [ ("mll", "recoZ_mass"), ("met", "recoMet_pt"), ("Zpt","recoZ_pt"), ("lepZpt","recoLepZ_pt"), ("gammapt","recoPhoton_pt"), ("Wpt","recoW_pt")]
-discrete_variables  = [ ("nlep", "Sum$(recoLep_pt>10&&(abs(recoLep_pdgId)==11||abs(recoLep_pdgId)==13)&&abs(recoLep_eta)<2.5)"), ("njet", "Sum$(recoJet_pt>30&&abs(recoJet_eta)<2.4)"), ("nbjet", "Sum$(recoJet_pt>30&&recoJet_bTag>=1&&abs(recoJet_eta)<2.4)") , ]
+continous_variables = [ ("mll", "Z_mass"), ("met", "GenMet_pt"), ("Zpt","Z_pt"), ("gammapt","gamma_pt"), ("Wpt","W_pt")]
+discrete_variables  = [ ("nlep", "Sum$(GenLep_pt>10&&(abs(GenLep_pdgId)==11||abs(GenLep_pdgId)==13)&&abs(GenLep_eta)<2.5)"), ("njet", "Sum$(GenJet_pt>30&&abs(GenJet_eta)<2.4)"), ("nbjet", "Sum$(GenJet_pt>30&&GenJet_matchBParton>=1&&abs(GenJet_eta)<2.4)") , ]
 
 class cutInterpreter:
     ''' Translate var100to200-var2p etc.

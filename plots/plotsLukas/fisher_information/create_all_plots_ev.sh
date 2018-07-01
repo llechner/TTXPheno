@@ -9,10 +9,12 @@
 #small="--small"
 small=""
 
-declare -a variables=("cpt cpQM ctZ ctW" "cpt cpQM" "ctZ ctZI ctW ctWI" "cpt cpQM ctZ ctZI" "cpt cpQM ctW ctWI" "ctZ ctZI" "ctW ctWI")
+declare -a variables=("cpt" "cpQM" "ctZ" "ctW" "cpt cpQM" "ctZ ctZI ctW ctWI" "cpt cpQM ctZ ctZI" "cpt cpQM ctW ctWI" "ctZ ctW" "ctZ ctZI" "ctW ctWI" "cpt cpQM ctZ ctW")
 #declare -a variables=("cpt cpQM ctZ ctW")
 
-declare -a levels=("reco" "genLep" "gen")
+declare -a levels=("reco" "gen")
+#declare -a levels=("reco" "genLep" "gen")
+#declare -a levels=("gen")
 version="v7"
 
 #####################################################################################

@@ -14,9 +14,9 @@ from RootTools.core.standard             import *
 
 # TTXPheno
 from TTXPheno.Tools.user                 import plot_directory
-from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR, nanJet, nanLepton 
+from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR 
 from TTXPheno.Tools.WeightInfo           import WeightInfo
-from TTXPheno.Tools.cutInterpreter       import cutInterpreter
+from TTXPheno.Tools.cutInterpreterOld    import cutInterpreter
 from TTXPheno.Tools.objectSelection      import isGoodGenJet, isGoodGenLepton
 
 # Import samples
@@ -29,8 +29,8 @@ from plot_helpers                        import *
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
-argParser.add_argument('--plot_directory',     action='store',      default='gen')
-argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order2_15weights_ref')
+argParser.add_argument('--plot_directory',     action='store',      default='gen_old')
+argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_order2_15weights_ref_old')
 argParser.add_argument('--order',              action='store',      default=2)
 argParser.add_argument('--selection',          action='store',      default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
@@ -234,7 +234,7 @@ def makeJets( event, sample ):
     event.trueNonBjets = list( filter( lambda j: not j['matchBParton'], event.jets ) )
 
     # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
-    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [nanJet(), nanJet()] )[:2] 
+    event.bj0, event.bj1 = ( event.trueBjets + event.trueNonBjets + [NanJet(), NanJet()] )[:2] 
     
 sequence.append( makeJets )
 
@@ -289,7 +289,7 @@ def makeLeps( event, sample ):
     event.passing_3lep    = event.foundZ and len(event.lepsNotFromZ)>=1
 
     # Add default lepton if leptons got filtered
-    event.lepsNotFromZ += [nanLepton()]
+    event.lepsNotFromZ += [NanLepton()]
 
     # Define non-Z leptons
     event.l0 = event.lepsNotFromZ[0]
@@ -304,13 +304,13 @@ def makeObservables( event, sample):
     event.deltaR_bb = deltaR( event.bj0, event.bj1 )
 
     # Resolve pairing ambiguity by maximizing resulting top-lep pt  
-    event.b_lep, event.b_had = nanJet(), nanJet()
+    event.b_lep, event.b_had = NanJet(), NanJet()
     if ( event.bj0['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2() > ( event.bj1['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2():
         event.b_lep = event.bj0
         event.b_had = event.bj1
     # Cross check if not NaN in particles
     elif ( event.bj0['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2() < ( event.bj1['vec2D'] + event.l0['vec2D'] + event.MET['vec2D'] ).Mod2():
-	event.b_lep = event.bj1
+    	event.b_lep = event.bj1
         event.b_had = event.bj0
 
     # Make leptonic W, Nan if len(event.lepsNotFromZ == 0)
@@ -405,6 +405,24 @@ plots.append(Plot( name = "b1_phi",
   texX = '#phi(b_{1})', texY = y_label,
   attribute = lambda event, sample: event.bj1['phi'] if event.passing_3lep else float('nan'),
   binning=[20,pi,pi],
+))
+
+plots.append(Plot( name = "blep_pt",
+  texX = 'p_{T}(b_{0}) [GeV]', texY = y_label,
+  attribute = lambda event, sample: event.b_lep['pt'] if event.passing_3lep else float('nan'),
+  binning=[20,0,400],
+))
+
+plots.append(Plot( name = "b0_phi",
+  texX = '#phi(b_{0})', texY = y_label,
+  attribute = lambda event, sample: event.b_lep['phi'] if event.passing_3lep else float('nan'),
+  binning=[20,pi,pi],
+))
+
+plots.append(Plot( name = "blep_eta",
+  texX = '#eta(b_{0})', texY = y_label,
+  attribute = lambda event, sample: event.b_lep['eta'] if event.passing_3lep else float('nan'),
+  binning=[20,-3,3],
 ))
 
 plots.append(Plot( name = 'deltaPhi_bb',

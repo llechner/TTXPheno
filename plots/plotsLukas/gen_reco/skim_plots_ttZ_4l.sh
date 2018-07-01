@@ -22,8 +22,8 @@ declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights_ref')
 declare -a samples3=('')
 
 # declare selection strings to analyze
-declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0to100' 'lepSel3-onZ-njet3p-nbjet1p-Zpt100to200' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200to300' 'lepSel3-onZ-njet3p-nbjet1p-Zpt300to400' 'lepSel3-onZ-njet3p-nbjet1p-Zpt400')
-#declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
+declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0' 'lepSel4-onZ-njet2p-nbjet1p-Zpt0to100' 'lepSel4-onZ-njet2p-nbjet1p-Zpt100to200' 'lepSel4-onZ-njet2p-nbjet1p-Zpt200to300' 'lepSel4-onZ-njet2p-nbjet1p-Zpt300to400' 'lepSel4-onZ-njet2p-nbjet1p-Zpt400')
+#declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -48,7 +48,7 @@ declare -a levels=('gen' 'reco')
 
 version='v7'
 luminosity='150'
-process='ttZ_3l'
+process='ttZ_4l'
 
 # define program to run by python
 prog=skim_plots.py
