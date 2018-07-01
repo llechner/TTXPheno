@@ -17,4 +17,4 @@ def getRegions2D(varOne, varOneThresholds, varTwo, varTwoThresholds):
 #Put all sets of regions that are used in the analysis, closure, tables, etc.
 
 ## 3l signal regions
-regions = getRegions2D("Z_pt", [0,100,200,400], "Z_cosThetaStar", [-1,-0.6, 0.6, 1]) + [Region("Z_pt", (400, -1))]
+regions = getRegions2D("genZ_pt", [0,100,200,400], "genZ_cosThetaStar", [-1,-0.6, 0.6, 1]) + [Region("genZ_pt", (400, -1))]

@@ -13,11 +13,10 @@ class CutInterpreter:
         self.discrete_variables  = discrete_variables
         self.special_cuts        = special_cuts
 
-    @staticmethod
-    def translate_cut_to_string( string ):
+    def translate_cut_to_string( self, string ):
 
         # special cuts
-        if string in special_cuts.keys(): return special_cuts[string]
+        if string in self.special_cuts.keys(): return self.special_cuts[string]
 
         # continous Variables
         for var, tree_var in self.continous_variables:
@@ -61,8 +60,7 @@ class CutInterpreter:
                       return '('+'||'.join(vls)+')'
         raise ValueError( "Can't interpret string %s. All cuts %s" % (string,  ", ".join( [ c[0] for c in self.continous_variables + self.discrete_variables] +  self.special_cuts.keys() ) ) )
 
-    @staticmethod
-    def cutString( cut, select = [""], ignore = [], photonEstimated=False):
+    def cutString( self, cut, select = [""], ignore = [], photonEstimated=False):
         ''' Cutstring syntax: cut1-cut2-cut3
         '''
         if cut is None: return '1.'
@@ -73,7 +71,7 @@ class CutInterpreter:
         # ignore
         cuts = filter( lambda c: not any( ign in c for ign in ignore ), cuts )
 
-        cutString = "&&".join( map( cutInterpreter.translate_cut_to_string, cuts ) )
+        cutString = "&&".join( map( self.translate_cut_to_string, cuts ) )
 
         if photonEstimated:
           for var in ['met_pt','met_phi','metSig','dl_mt2ll','dl_mt2bb']:
@@ -81,7 +79,6 @@ class CutInterpreter:
 
         return cutString
     
-    @staticmethod
     def cutList ( cut, select = [""], ignore = []):
         ''' Cutstring syntax: cut1-cut2-cut3
         '''
@@ -92,15 +89,15 @@ class CutInterpreter:
         cuts = filter( lambda c: any( sel in c for sel in select ), cuts )
         # ignore
         cuts = filter( lambda c: not any( ign in c for ign in ignore ), cuts )
-        return [ cutInterpreter.translate_cut_to_string(cut) for cut in cuts ] 
-        #return  "&&".join( map( cutInterpreter.translate_cut_to_string, cuts ) )
+        return [ self.translate_cut_to_string(cut) for cut in cuts ] 
+        #return  "&&".join( map( CutInterpreter.translate_cut_to_string, cuts ) )
 
 if __name__ == "__main__":
-#    print cutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
-#    print cutInterpreter.cutList("lepSel-njet3p-nbjet1p-ZptTo100")
-#    print cutInterpreter.cutString("lepSel-onZ-njet3p-nbjet1p")
+#    print CutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
+#    print CutInterpreter.cutList("lepSel-njet3p-nbjet1p-ZptTo100")
+#    print CutInterpreter.cutString("lepSel-onZ-njet3p-nbjet1p")
 #    print ''
-#    print cutInterpreter.cutString('gammapt40')
+#    print CutInterpreter.cutString('gammapt40')
 #    print ''
-#    print cutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
-    print cutInterpreter.cutString(None)
+#    print CutInterpreter.cutString("lepSel-njet3p-nbjet1p-Zpt100")
+    print CutInterpreter.cutString(None)

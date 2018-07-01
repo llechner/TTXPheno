@@ -1,5 +1,5 @@
-allowedVars = [ "Z_pt", "gamma_pt", "Z_cosThetaStar"]
-texString  = { "Z_pt":"p_{T}(Z)", "gamma_pt":"p_{T}(#gamma)", "Z_cosThetaStar":"cos(#theta^{*})(Z)"}
+allowedVars = [ "genZ_pt", "genGamma_pt", "genZ_cosThetaStar"]
+texString  = { "genZ_pt":"p_{T}(Z,gen)", "genGamma_pt":"p_{T}(#gamma,gen)", "genZ_cosThetaStar":"cos(#theta^{*})(Z,gen)"}
 
 class Region:
 

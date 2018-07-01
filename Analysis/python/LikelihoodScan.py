@@ -89,7 +89,7 @@ if __name__ == '__main__':
     logger_rt = logger_rt.get_logger('INFO', logFile = None)
 
     # TTXPheno
-    from TTXPheno.Tools.cutInterpreter import cutInterpreter
+    from TTXPheno.Tools.cutInterpreterGen import cutInterpreter
     from TTXPheno.samples.benchmarks import * 
 
     # Sample
