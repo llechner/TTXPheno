@@ -1,22 +1,17 @@
-''' Class to interpret string based cuts
+''' Base class for cut interpreter 
 '''
 
 import logging
 logger = logging.getLogger(__name__)
 
-special_cuts = {
-    "lepSel3":            "Sum$(genLep_pt>10&&(abs(genLep_pdgId)==11||abs(genLep_pdgId)==13)&&abs(genLep_eta)<2.5)==3&&Sum$(genLep_pt>20&&(abs(genLep_pdgId)==11||abs(genLep_pdgId)==13)&&abs(genLep_eta)<2.5)>=2&&Sum$(genLep_pt>40&&(abs(genLep_pdgId)==11||abs(genLep_pdgId)==13)&&abs(genLep_eta)<2.5)>=1",
-    "lepSel4":            "Sum$(genLep_pt>10&&(abs(genLep_pdgId)==11||abs(genLep_pdgId)==13)&&abs(genLep_eta)<2.5)==4&&Sum$(genLep_pt>40&&(abs(genLep_pdgId)==11||abs(genLep_pdgId)==13)&&abs(genLep_eta)<2.5)>=1",
-    "onZ":                "abs(genZ_mass-91.2)<=15",
-    "offZ":               "abs(genZ_mass-91.2)>15",
-  }
-
-continous_variables = [ ("mll", "genZ_mass"), ("met", "genMet_pt"), ("Zpt","genZ_pt"), ("gammapt","genPhoton_pt"), ("Wpt","genW_pt")]
-discrete_variables  = [ ("nlep", "Sum$(genLep_pt>10&&(abs(genLep_pdgId)==11||abs(genLep_pdgId)==13)&&abs(genLep_eta)<2.5)"), ("njet", "Sum$(genJet_pt>30&&abs(genJet_eta)<2.4)"), ("nbjet", "Sum$(genJet_pt>30&&genJet_matchBParton>=1&&abs(genJet_eta)<2.4)") , ]
-
-class cutInterpreter:
+class CutInterpreter:
     ''' Translate var100to200-var2p etc.
     '''
+
+    def __init__( self, continous_variables, discrete_variables, special_cuts):
+        self.continous_variables = continous_variables
+        self.discrete_variables  = discrete_variables
+        self.special_cuts        = special_cuts
 
     @staticmethod
     def translate_cut_to_string( string ):
@@ -25,7 +20,7 @@ class cutInterpreter:
         if string in special_cuts.keys(): return special_cuts[string]
 
         # continous Variables
-        for var, tree_var in continous_variables:
+        for var, tree_var in self.continous_variables:
             if string.startswith( var ):
                 num_str = string[len( var ):].replace("to","To").split("To")
                 upper = None
@@ -42,7 +37,7 @@ class cutInterpreter:
                 return "&&".join( res_string )
 
         # discrete Variables
-        for var, tree_var in discrete_variables:
+        for var, tree_var in self.discrete_variables:
             logger.debug("Reading discrete cut %s as %s"%(var, tree_var))
             if string.startswith( var ):
                 # So far no njet2To5
@@ -64,7 +59,7 @@ class cutInterpreter:
                     else:
                       # logger.debug("Using cut string %s"%'('+'||'.join(vls)+')')
                       return '('+'||'.join(vls)+')'
-        raise ValueError( "Can't interpret string %s. All cuts %s" % (string,  ", ".join( [ c[0] for c in continous_variables + discrete_variables] +  special_cuts.keys() ) ) )
+        raise ValueError( "Can't interpret string %s. All cuts %s" % (string,  ", ".join( [ c[0] for c in self.continous_variables + self.discrete_variables] +  self.special_cuts.keys() ) ) )
 
     @staticmethod
     def cutString( cut, select = [""], ignore = [], photonEstimated=False):
