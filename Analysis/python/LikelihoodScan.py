@@ -105,7 +105,6 @@ if __name__ == '__main__':
     signal.weightInfo = WeightInfo(signal.reweight_pkl)
     signal.weightInfo.set_order( 2 )
 
-
     # Load the analysis regions
     from TTXPheno.Analysis.regions import regions
 

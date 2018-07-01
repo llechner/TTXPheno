@@ -6,7 +6,7 @@ jmax    8   number of backgrounds
 kmax    33  number of nuisance parameters
 
 bin     L4onZout    L4onZB1out
-observation     2   1   
+observation     2   2   
 bin     L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZout    L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out  L4onZB1out
 process     TTZ fakeElectron    fakeMuon    TTWW    WH_ZH_TTH_HToWW WWZ WZZ ZZ  ZZZ TTZ fakeElectron    fakeMuon    TTWW    WH_ZH_TTH_HToWW WWZ WZZ ZZ  ZZZ
 process     0   1   2   3   4   5   6   7   8   0   1   2   3   4   5   6   7   8

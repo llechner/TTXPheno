@@ -3,6 +3,7 @@
 
 # Standard imports
 import ROOT
+import os
 from math import *
 
 # resources
@@ -13,6 +14,9 @@ from math import *
 # Logger
 import logging
 logger = logging.getLogger(__name__)
+
+# TTXPheno
+from TTXPheno.Tools.user import plot_directory
 
 def isInt(s):
     try: 
@@ -31,6 +35,8 @@ class ProfiledLoglikelihoodFit:
 
     def __init__( self, filename):
 
+        self.filename                    = filename
+        self.modelname                   = os.path.splitext(os.path.basename(self.filename))[0]
         self.nuisance_names              = []
         self.nuisance_uncertainty_values = {}
 
@@ -52,6 +58,14 @@ class ProfiledLoglikelihoodFit:
                     # one line starting with processes uses the enumeration (0 is signal )
                     if all( map( isInt, args ) ):
                         self.process_number_per_bin = map( int, args )
+                        # find the rate positions for the signal for each bin
+                        self.signal_position_per_bin = {}
+                        for i_number, number in enumerate(self.process_number_per_bin):
+                            if number==0:
+                                self.signal_position_per_bin[self.bin_name_per_process[i_number]] = i_number
+                        if len(self.signal_position_per_bin)!=len(self.bin_names):
+                            bin_names_with_signal = [ self.bin_names[i] for i in self.signal_position_per_bin.values() ] 
+                            logger.warning( "Signal not present in every bin! No signal in: %s", ",".join( [ name for name in self.bin_names if name not in bin_names_with_signal ]) ) 
                     # the other line starting with process uses the process names
                     else:
                         self.process_name_per_bin   = args
@@ -72,7 +86,7 @@ class ProfiledLoglikelihoodFit:
         self.nBins = len(self.bin_names)
         logger.info( "Bins: %i (%s)", self.nBins, ",".join(self.bin_names) )
 
-        self.process_names  = list(set( self.bin_name_per_process ) )
+        self.process_names  = list(set( self.process_name_per_bin ) )
         self.nProcesses     = len( self.process_names )
         logger.info( "Processes: %i (%s)", self.nProcesses, ",".join( self.process_names ) )
 
@@ -80,7 +94,7 @@ class ProfiledLoglikelihoodFit:
         logger.info( "Nuisances: %i (%s)", self.nNuisances, ",".join( self.nuisance_names ) )
 
     def make_workspace( self ):
-        self.ws = ROOT.RooWorkspace()
+        self.ws = ROOT.RooWorkspace("workspace")
         ROOT.SetOwnership( self.ws, False )
 
         # set all observations
@@ -138,7 +152,7 @@ class ProfiledLoglikelihoodFit:
                     logger.debug( "Nuisance %s. Creating uncertainty %s position %i val %f", nuisance, unc_name, i_rate, self.nuisance_uncertainty_values[nuisance][i_rate]) 
                     # make the alpha factors. We use alpha = unc**beta where unc is the uncertainty and beta is N(global_nuisance[0,-5,5],1)
                     alpha_factor_name = "alpha_%s_%s_%s"%( nuisance, self.bin_name_per_process[i_rate], self.process_name_per_bin[i_rate] )
-                    self.ws.factory( "cexpr::{alpha_factor_name}('pow({unc_name},{beta_name})',{unc_name},{beta_name})".format( 
+                    self.ws.factory( "expr::{alpha_factor_name}('pow({unc_name},{beta_name})',{unc_name},{beta_name})".format( 
                         alpha_factor_name = alpha_factor_name, 
                         unc_name = unc_name, 
                         beta_name = "beta_%s"%nuisance) )
@@ -178,51 +192,112 @@ class ProfiledLoglikelihoodFit:
         # import dataset into workspace
         getattr(self.ws, 'import')(self.data)
 
-    def make_profiled_interval( self ):
-
         # create signal+background Model Config
-        sbModel = ROOT.RooStats.ModelConfig("S_plus_B_model")
-        sbModel.SetWorkspace( self.ws )
-        sbModel.SetPdf( self.ws.pdf("model") )
-        sbModel.SetObservables( self.observables )
-        sbModel.SetGlobalObservables( self.glob )
-        sbModel.SetParametersOfInterest( self.poi )
-        sbModel.SetNuisanceParameters( self.nuisances )
+        self.sbModel = ROOT.RooStats.ModelConfig("sbModel")
+        self.sbModel.SetWorkspace( self.ws )
+        self.sbModel.SetPdf( self.ws.pdf("model") )
+        self.sbModel.SetObservables( self.observables )
+        self.sbModel.SetGlobalObservables( self.glob )
+        self.sbModel.SetParametersOfInterest( self.poi )
+        self.sbModel.SetNuisanceParameters( self.nuisances )
+        self.sbModel.SetSnapshot( self.poi )
+        getattr(self.ws, 'import')(self.sbModel)
 
-        pl = ROOT.RooStats.ProfileLikelihoodCalculator( self.data, sbModel )
-        ROOT.SetOwnership( pl, False )
-        pl.SetConfidenceLevel(0.683)
-        firstPOI = sbModel.GetParametersOfInterest().first()
-        interval = pl.GetInterval()
-        print firstPOI.GetName(), interval.LowerLimit(firstPOI), interval.UpperLimit(firstPOI)
-        plot = ROOT.RooStats.LikelihoodIntervalPlot(interval)
-        plot.Draw("")
-        ROOT.c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/test2.png")
-
-    def make_hypothesis_test( self, r):
-
-        self.poi.first().setVal( r )
-        # create signal+background Model Config
-        sbModel = ROOT.RooStats.ModelConfig("sbModel")
-        sbModel.SetWorkspace( self.ws )
-        sbModel.SetPdf( self.ws.pdf("model") )
-        sbModel.SetObservables( self.observables )
-        sbModel.SetGlobalObservables( self.glob )
-        sbModel.SetParametersOfInterest( self.poi )
-        sbModel.SetNuisanceParameters( self.nuisances )
-
-        sbModel.SetSnapshot( self.poi )
-
-        bModel = sbModel.Clone()
-        bModel.SetName("bHypo")      
+        self.bModel = self.sbModel.Clone()
+        self.bModel.SetName("bModel")
         self.poi.first().setVal(0)
-        bModel.SetSnapshot( self.poi );
+        self.bModel.SetSnapshot( self.poi )
+        getattr(self.ws, 'import')(self.bModel)
 
-        acl = ROOT.RooStats.AsymptoticCalculator( self.data, sbModel, bModel )
-        acl.SetOneSidedDiscovery(True)
+        self.ws.writeToFile(self.modelname+'.root', True);
 
-        asResult = acl.GetHypoTest()
-        asResult.Print()
+    def calculate_limit( self, calculator = "asymptotic"):
+
+        # asymptotic calculator
+        asymptotic_calc = ROOT.RooStats.AsymptoticCalculator(self.data, self.bModel, self.sbModel)
+        asymptotic_calc.SetOneSided(True) # for one-side tests (limits)
+        ROOT.RooStats.AsymptoticCalculator.SetPrintLevel(-1)
+        # frequentist calculator
+        frequentist_calc = ROOT.RooStats.FrequentistCalculator(self.data, self.bModel, self.sbModel) #reverse, for exclusion
+        frequentist_calc.SetToys(10000,5000)
+
+        if calculator ==    'asymptotic':
+            calc = ROOT.RooStats.HypoTestInverter(asymptotic_calc) # for asymptotic 
+        elif calculator ==  'frequentist':
+            calc = ROOT.RooStats.HypoTestInverter(frequentist_calc) # for asymptotic 
+        else:
+            raise NotImplementedError( "Calculator %s not known" % calculator )
+
+        # Configure calculator
+        calc.SetConfidenceLevel(0.95)
+        useCLs = True
+        calc.UseCLs(useCLs)
+        calc.SetVerbose(False)
+
+        # ToyMCs
+        toymcs = calc.GetHypoTestCalculator().GetTestStatSampler()
+        profll = ROOT.RooStats.ProfileLikelihoodTestStat(self.sbModel.GetPdf())
+        if (useCLs):
+            profll.SetOneSided(True)
+        toymcs.SetTestStatistic(profll)
+        if (not self.sbModel.GetPdf().canBeExtended()):
+            toymcs.SetNEventsPerToy(1)
+
+        # Calculate Limit
+        npoints = 50  # number of points to scan
+        poimin = self.poi.first().getMin()
+        poimax = self.poi.first().getMax()
+        calc.SetFixedScan(npoints,poimin,poimax)
+        r = calc.GetInterval()
+        upperLimit = r.UpperLimit()
+
+        # make Brazilian flag plot
+        c1 = ROOT.TCanvas() 
+        plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","HypoTest Scan Result",r)
+        plot.Draw("goff") 
+        c1.SetLogy()
+        directory = os.path.join( plot_directory, "limits", self.modelname )
+        if not os.path.exists( directory ):
+            os.makedirs( directory )
+        c1.Print( os.path.join( directory, calculator+"_HTI_Result_Plot.png") )
+        
+        # Plots of test statistic 
+        n = r.ArraySize()
+        if (n> 0 and r.GetResult(0).GetNullDistribution() ):
+           if n > 1: 
+              ny = ROOT.TMath.CeilNint( sqrt(n) )
+              nx = ROOT.TMath.CeilNint(float(n)/ny) 
+           for i in range(n): 
+              #if (n > 1) c1.cd(i+1)
+              pl = plot.MakeTestStatPlot(i)
+              pl.SetLogYaxis(True)
+              pl.Draw("goff")
+              c1.Print(os.path.join( directory, calculator + "teststat_%i.png"%i) )
+
+        return {i:r.GetExpectedUpperLimit(i) for i in range(-2,3)}
+
+
+#    def make_profiled_interval( self ):
+#
+#        # create signal+background Model Config
+#        sbModel = ROOT.RooStats.ModelConfig("S_plus_B_model")
+#        sbModel.SetWorkspace( self.ws )
+#        sbModel.SetPdf( self.ws.pdf("model") )
+#        sbModel.SetObservables( self.observables )
+#        sbModel.SetGlobalObservables( self.glob )
+#        sbModel.SetParametersOfInterest( self.poi )
+#        sbModel.SetNuisanceParameters( self.nuisances )
+#
+#        pl = ROOT.RooStats.ProfileLikelihoodCalculator( self.data, sbModel )
+#        ROOT.SetOwnership( pl, False )
+#        pl.SetConfidenceLevel(0.683)
+#        firstPOI = sbModel.GetParametersOfInterest().first()
+#        interval = pl.GetInterval()
+#        print firstPOI.GetName(), interval.LowerLimit(firstPOI), interval.UpperLimit(firstPOI)
+#        plot = ROOT.RooStats.LikelihoodIntervalPlot(interval)
+#        plot.Draw("")
+#        filename = os.path.splitext(os.path.basename(self.filename))[0]
+#        ROOT.c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/%s.png"%filename)
 
 if __name__=="__main__":
     # Logger
@@ -232,5 +307,9 @@ if __name__=="__main__":
     import sys
     profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( sys.argv[1] )
     profiledLoglikelihoodFit.make_workspace() 
-    #profiledLoglikelihoodFit.make_profiled_interval() 
-    profiledLoglikelihoodFit.make_hypothesis_test(r=6) 
+
+    #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
+    expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
+
+    for i in range( -2, 3):
+        print "expected limit %+i sigma %f"%( i, expected_limit[i] )
