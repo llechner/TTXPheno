@@ -4,6 +4,7 @@
 
 # Standard imports and batch mode
 import ROOT, os, itertools
+#from more_itertools                      import peekable
 ROOT.gROOT.SetBatch(True)
 from math                                import sqrt, cos, sin, pi, isnan, sinh, cosh
 import copy
@@ -117,32 +118,19 @@ for s in [ signalSample, WZSample, ttSample ]:
 signal = [ signalSample for param in params ]
 bg     = []
 
-#for param in params:
-#    param['n']=len(bg)+1
-
-#if args.backgrounds: stackList = [ bg + [s] for s in signal ]
-#else: stackList = [ [s] for s in signal ]
-
 if args.backgrounds:
     bg += [ WZSample, ttSample ]
-#    params += [ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed, 'n':len(bg[i:])} for i, s in enumerate(bg) ]
-    params += [ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed} for s in bg ]
+    params = [ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed} for s in bg ] + params
 
 #append SM last
 signal += [ signalSample ]
 params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
-#params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack, 'n':len(bg)+1} )
-
-#if args.backgrounds: stackList += [ bg + [signalSample] ]
-#else: stackList += [ [signalSample] ]
 
 if args.backgrounds: stack = Stack( bg )
 else: stack = Stack()
 stack.extend( [ [s] for s in signal ] ) 
-#stack.extend( [ [signal[-1]] ] ) 
 
-#stack = Stack( *stackList )
-
+it = itertools.count()
 # reweighting of pTZ
 if args.reweightPtXToSM:
 
@@ -172,12 +160,14 @@ if args.reweightPtXToSM:
                 return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
             return reweight
 
-    weight = [ [ get_reweight( param, i!=0 if args.backgrounds else True ) for s in stackComponent ] for i, stackComponent in enumerate(stack) ]
+    weight = [ [ get_reweight( params[next(it)], i!=0 if args.backgrounds else True ) for s in stackComponent ] for i, stackComponent in enumerate(stack) ]
 #    weight = [ [ get_reweight( param, i==param['n']-1 ) for i in range(param['n']) ] for param in params ]
 #    weight = [ [ get_reweight( param ) ] for param in params ]
 
 else:
     def get_reweight( param , signal=True):
+
+        print(param)
 
         def reweight_signal(event, sample):
             return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
@@ -187,7 +177,7 @@ else:
 
         return reweight_signal if signal else reweight_bg
 
-    weight = [ [ get_reweight( param, i!=0 if args.backgrounds else True ) for s in stackComponent ] for i, stackComponent in enumerate(stack) ]
+    weight = [ [ get_reweight( params[next(it)], i!=0 if args.backgrounds else True ) for s in stackComponent ] for i, stackComponent in enumerate(stack) ]
 #    weight = [ [ get_reweight( param, i==param['n']-1 ) for i in range(param['n']) ] for param in params ]
 
 def drawObjects( hasData = False ):
