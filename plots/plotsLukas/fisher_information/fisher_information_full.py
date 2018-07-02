@@ -22,7 +22,7 @@ from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.samples.benchmarks         import *
 
 # Import helpers
-from plot_helpers                        import *
+from TTXPheno.Tools.plot_helpers                        import *
 
 # Import process variables
 import process_variables
@@ -131,7 +131,7 @@ for var in plotVariables2D:
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = get2DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
+    var['coeff']       = getCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
 
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s bins)' %str(var['binning'][0])
@@ -141,7 +141,7 @@ for var in plotVariables3D:
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = get3DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
+    var['coeff']       = get2DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
 
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]))

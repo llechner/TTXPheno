@@ -11,7 +11,7 @@ from RootTools.core.standard             import *
 from TTXPheno.Tools.WeightInfo           import WeightInfo
 
 # Import helpers
-from plot_helpers                        import *
+from TTXPheno.Tools.plot_helpers                        import *
 
 # Import additional
 from array                               import array
@@ -27,7 +27,7 @@ def getFisherKinematicsHisto(sample, order=2, var='genZ_pt', plotstring='p_{T}(Z
 
     #remove initial selection string
     sample.setSelectionString('1')
-    coeffList = get2DCoeffPlotFromDraw( sample, order, var, binning, selectionString, weightString=weightString )
+    coeffList = getCoeffPlotFromDraw( sample, order, var, binning, selectionString, weightString=weightString )
     detILists  = [ [ np.linalg.det( w.get_fisherInformation_matrix( coeffs, variables, **param['WC'] )[1] ) for coeffs in coeffList ] for param in parameterList ]
     expo = 1. / len(variables)
 

@@ -22,7 +22,7 @@ from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.samples.benchmarks         import *
 
 # Import helpers
-from plot_helpers                        import *
+from TTXPheno.Tools.plot_helpers                        import *
 
 # Import process variables
 import process_variables
@@ -122,7 +122,7 @@ def appendPlotInformation( VariableList ):
         #remove initial selection string
         sample.setSelectionString('1')
 
-        coeffList = get2DCoeffPlotFromDraw( sample, args.order, plotVariable['var'], plotVariable['binning'], selectionString, weightString=weightString )
+        coeffList = getCoeffPlotFromDraw( sample, args.order, plotVariable['var'], plotVariable['binning'], selectionString, weightString=weightString )
 
         detIList  = [ np.linalg.det( w.get_fisherInformation_matrix( coeffs, args.variables, **WC )[1] ) for coeffs in coeffList ]
         detIList  = [ abs(detI)**expo for detI in detIList ]

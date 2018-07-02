@@ -22,7 +22,7 @@ from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.samples.benchmarks         import *
 
 # Import helpers
-from plot_helpers                        import *
+from TTXPheno.Tools.plot_helpers                        import *
 
 # Import process variables
 import process_variables_ROC
@@ -166,7 +166,7 @@ def appendPlotInformation( VariableList ):
                 # add additional graphs for various bin values to the cut plot, do the usual for the bin plot
                 binning_ = [int(val)] + plotVariable['binning'][1:]
         
-                coeff = get2DCoeffPlotFromDraw( sample, args.order, plotVariable['var'], binning_, selectionString = selectionString_, weightString = weightString ) 
+                coeff = getCoeffPlotFromDraw( sample, args.order, plotVariable['var'], binning_, selectionString = selectionString_, weightString = weightString ) 
         
                 # check if all entries are non-zero (otherwise FI matrix is 0-dim object -> Error)
                 if all( [ all( [ v==0. for v in item ] ) for item in coeff ] ): continue

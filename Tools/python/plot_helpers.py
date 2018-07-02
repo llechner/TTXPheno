@@ -27,7 +27,7 @@ def getCoeffListFromDraw( sample, order, selectionString, weightString = None ):
     return histo_to_list( histo )
 
 # Make a coeff histo from a sample
-def get2DCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None ):
+def getCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None ):
     ''' Create list of weights using the Draw function
     '''
 
@@ -45,7 +45,7 @@ def get2DCoeffPlotFromDraw( sample, order, variableString, binning, selectionStr
 
 
 # Make a coeff histo from a sample
-def get3DCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None ):
+def get2DCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None ):
     ''' Create list of weights using the Draw function
     '''
 
