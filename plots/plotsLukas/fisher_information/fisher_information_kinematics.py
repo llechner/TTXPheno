@@ -51,7 +51,7 @@ plot_subdirectory = "%s_%s"%(args.level, args.version)
 # Import additional functions/classes specified for the level of reconstruction
 if args.level == 'reco':     from TTXPheno.Tools.cutInterpreterReco   import cutInterpreter
 elif args.level == 'genLep': from TTXPheno.Tools.cutInterpreterGenLep import cutInterpreter
-else:                        from TTXPheno.Tools.cutInterpreter       import cutInterpreter
+else:                        from TTXPheno.Tools.cutInterpreterGen       import cutInterpreter
 
 if len(args.parameters) == 0:  args.parameters  = None
 if len(args.selectPlots) == 0: args.selectPlots = None
