@@ -25,6 +25,7 @@ def getVariableList( level ):
     # List of variables where gen is replaced by reco for reco
     read_variables_gen = [
         "ref_lumiweight1fb/F",
+        "lumiweight1fb/F",
         "genMet_pt/F", "genMet_phi/F",
     
         "ngenJet/I", "genJet[pt/F,eta/F,phi/F]",

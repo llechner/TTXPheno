@@ -77,39 +77,8 @@ if args.reweightPtXToSM: subDirectory.append("reweightPtXToSM")
 if args.small:           subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
-# Import process specific variables
-process_file = os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'addons', '%s.py'%args.processFile )
-process      = imp.load_source( "process", os.path.expandvars( process_file ) )
-
-# Import samples
-sample_file   = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
-loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
-
-sample    = getattr( loadedSamples, args.sample )
-WZ_sample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-tt_sample = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights_ref' )
-
-#samples = [ sample ]
-samples = [ sample ]
-if args.backgrounds: samples += [ WZ_sample, tt_sample ]
-
-# Make stack 
-for s in samples:
-    s.setSelectionString( cutInterpreter.cutString(args.selection) )
-    s.style = styles.lineStyle(ROOT.kBlue)
-#    s.setSelectionString( "(1)" )
-    if args.small: s.reduceFiles( to = 1 )
-
-# Scale the plots with number of events used (implemented in ref_lumiweight1fb)
-#event_factor = 200. if args.small else 1.# s.nEvents / float(s.chain.GetEntries()) )
-event_factor =  sample.nEvents / float(sample.chain.GetEntries())
-
-# Polynomial parametrization
-w = WeightInfo(sample.reweight_pkl)
-w.set_order(int(args.order))
-
+# Format WC input parameters
 colors = [ ROOT.kOrange, ROOT.kOrange+10, ROOT.kBlue, ROOT.kBlue-2, ROOT.kCyan+1, ROOT.kGreen+1, ROOT.kRed, ROOT.kRed+2, ROOT.kViolet+2, ROOT.kYellow+2, ROOT.kRed-7, ROOT.kPink-7, ROOT.kPink-3, ROOT.kGreen+4, ROOT.kGray+2 ]
-
 coeffs = args.parameters[::2]
 str_vals = args.parameters[1::2]
 vals   = list( map( float, str_vals ) )
@@ -118,25 +87,63 @@ for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
     params.append( { 
         'legendText': ' '.join([coeff,str_val]),
         'WC'        : { coeff:val },
-        'color'     : colors[i_param], 
-        'nSamples'  : len(samples), 
+        'color'     : colors[i_param],
         })
 
-stackList = [ samples for param in params ]
-#stackList = [ samples for param in params ]
+# Import process specific variables
+process_file = os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'addons', '%s.py'%args.processFile )
+process      = imp.load_source( "process", os.path.expandvars( process_file ) )
+
+# Import samples
+sample_file   = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
+loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
+
+signalSample = getattr( loadedSamples, args.sample )
+WZSample     = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
+ttSample     = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights_ref' )
+
+# Polynomial parametrization
+w = WeightInfo(signalSample.reweight_pkl)
+w.set_order(int(args.order))
+
+# configure samples
+for s in [ signalSample, WZSample, ttSample ]:
+    s.setSelectionString( cutInterpreter.cutString(args.selection) )
+    s.style = styles.lineStyle(ROOT.kBlue)
+    if args.small: s.reduceFiles( to = 5 )
+    # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
+    s.event_factor = s.nEvents / float( s.chain.GetEntries() )
+
+signal = [ signalSample for param in params ]
+bg     = []
+
+#for param in params:
+#    param['n']=len(bg)+1
+
+#if args.backgrounds: stackList = [ bg + [s] for s in signal ]
+#else: stackList = [ [s] for s in signal ]
+
 if args.backgrounds:
-    stackList += [ samples[i+1:] for i in range(len(samples)-1) ]
-#    stackList += [ [s] for s in samples[1:] ]
-    params += [ {'legendText':'bg', 'WC':{}, 'color':ROOT.kRed, 'nSamples':len(samples[i+1:])} for i in range(len(samples)-1) ]
+    bg += [ WZSample, ttSample ]
+#    params += [ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed, 'n':len(bg[i:])} for i, s in enumerate(bg) ]
+    params += [ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed} for s in bg ]
 
 #append SM last
-params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack, 'nSamples':len(samples)} )
-stackList += [ samples ]
+signal += [ signalSample ]
+params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
+#params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack, 'n':len(bg)+1} )
 
-#stack = Stack( [s] for s in samples )
-stack = Stack( *stackList )
+#if args.backgrounds: stackList += [ bg + [signalSample] ]
+#else: stackList += [ [signalSample] ]
 
-# reweighting of pTZ 
+if args.backgrounds: stack = Stack( bg )
+else: stack = Stack()
+stack.extend( [ [s] for s in signal ] ) 
+#stack.extend( [ [signal[-1]] ] ) 
+
+#stack = Stack( *stackList )
+
+# reweighting of pTZ
 if args.reweightPtXToSM:
 
     if   'ttZ' in args.processFile:     varX = "%sZ_pt"%args.level
@@ -144,32 +151,47 @@ if args.reweightPtXToSM:
     elif 'ttgamma' in args.processFile: varX = "%sPhoton_pt"%args.level
 
     for param in params[::-1]:
-        param['ptX_histo'] = sample.get1DHistoFromDraw(varX, [10,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
+        param['ptX_histo'] = signalSample.get1DHistoFromDraw(varX, [10,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
         if param['ptX_histo'].Integral()>0: param['ptX_histo'].Scale(1./param['ptX_histo'].Integral())
         param['ptX_reweight_histo'] = params[-1]['ptX_histo'].Clone()
         param['ptX_reweight_histo'].Divide(param['ptX_histo'])
         logger.info( 'Made reweighting histogram for ptX and param-point %r with integral %f', param, param['ptX_reweight_histo'].Integral())
 
-    def get_reweight( param ):
-        histo = param['ptX_reweight_histo']
-        bsm_rw = w.get_weight_func( **param['WC'] )
-        def reweight(event, sample):
-            i_bin = histo.FindBin(getattr( event, varX ) )
-            return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(event_factor)
-        return reweight
+    def get_reweight( param, signal=True ):
 
-    weight = [ [ get_reweight( param ) for i in range(param['nSamples']) ] for param in params ]
+        if signal:
+            histo = param['ptX_reweight_histo']
+            bsm_rw = w.get_weight_func( **param['WC'] )
+            def reweight(event, sample):
+                i_bin = histo.FindBin(getattr( event, varX ) )
+                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+            return reweight
+
+        else:
+            def reweight(event, sample):
+                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+            return reweight
+
+    weight = [ [ get_reweight( param, i!=0 if args.backgrounds else True ) for s in stackComponent ] for i, stackComponent in enumerate(stack) ]
+#    weight = [ [ get_reweight( param, i==param['n']-1 ) for i in range(param['n']) ] for param in params ]
+#    weight = [ [ get_reweight( param ) ] for param in params ]
+
 else:
-    def get_reweight( param ):
+    def get_reweight( param , signal=True):
 
-        def reweight(event, sample):
-            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(event_factor)
+        def reweight_signal(event, sample):
+            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
 
-        return reweight
+        def reweight_bg(event, sample):
+            return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
 
-    weight = [ [ get_reweight( param ) for i in range(param['nSamples']) ] for param in params ]
+        return reweight_signal if signal else reweight_bg
+
+    weight = [ [ get_reweight( param, i!=0 if args.backgrounds else True ) for s in stackComponent ] for i, stackComponent in enumerate(stack) ]
+#    weight = [ [ get_reweight( param, i==param['n']-1 ) for i in range(param['n']) ] for param in params ]
 
 def drawObjects( hasData = False ):
+    print 'drawObjects check'
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
@@ -178,20 +200,26 @@ def drawObjects( hasData = False ):
       (0.15, 0.95, 'data' if hasData else "Simulation (%s)"%args.level),
       (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV) Scale %3.2f'% ( float(args.luminosity), dataMCScale ) ) if hasData else (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)' % float(args.luminosity))
     ]
+    print [tex.DrawLatex(*l) for l in lines] 
+    print 'drawObjects check done'
     return [tex.DrawLatex(*l) for l in lines] 
 
 def drawPlots(plots):
+  print 'drawPlots'
   for plot in plots:
+    print 'plot in plots'
     for i_h, h in enumerate(plot.histos):
+      print 'histo h'
       h[0].style = styles.lineStyle(params[i_h]['color'])
 
   for log in [False, True]:
+    print 'log ' + str(log)
     # Directory structure
     WC_directory = '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p') if len(args.parameters)>1 else 'SM'
     plot_directory_ = os.path.join(\
         plot_directory,
         '%s_%s'%(args.level, args.version),
-        sample.name, 
+        signalSample.name, 
         subDirectory, 
         args.selection if args.selection is not None else 'no_selection', 
         WC_directory,
@@ -221,6 +249,7 @@ def drawPlots(plots):
 
     # plot the plots
     for plot in plots:
+      print 'plot 2 in plots'
       for i_h, h in enumerate(plot.histos):
         h[0].legendText = params[i_h]['legendText']
       if not max(l[0].GetMaximum() for l in plot.histos): continue # Empty plot

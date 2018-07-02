@@ -25,6 +25,7 @@ def getVariableList( level ):
     # List of variables where gen is replaced by reco for reco
     read_variables_gen = [
         "ref_lumiweight1fb/F",
+        "lumiweight1fb/F",
         "genMet_pt/F", "genMet_phi/F",
     
         "ngenJet/I", "genJet[pt/F,eta/F,phi/F]",
@@ -233,9 +234,11 @@ def getPlotList( scaleLumi, level ):
     ) )
     
     plots.append( Plot( name = 'Z_phi',
-      texX = '#phi(Z) [GeV]', texY = y_label,
+#      texX = '#phi(Z) [GeV]', texY = y_label,
+      texX = 'phi(Z) [GeV]', texY = y_label,
       attribute = lambda event, sample: getattr( event, '%sZ_phi'%level ) if event.passing_checks else float('nan'),
-      binning=[20,-pi,pi],
+      binning=[20,-3,3],
+#      binning=[20,-pi,pi],
     ) )
     
     plots.append( Plot( name = 'Z_eta',
@@ -413,6 +416,6 @@ def getPlotList( scaleLumi, level ):
       attribute = lambda event, sample: event.t_MT if event.passing_checks else float('nan'),
       binning=[20,0,300],
     ) )
-    
+
     return plots
 
