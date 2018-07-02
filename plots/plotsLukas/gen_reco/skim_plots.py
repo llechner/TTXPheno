@@ -9,6 +9,7 @@ ROOT.gROOT.SetBatch(True)
 from math                                import sqrt, cos, sin, pi, isnan, sinh, cosh
 import copy
 import imp
+import pickle
 
 # RootTools
 from RootTools.core.standard             import *
@@ -42,6 +43,8 @@ argParser.add_argument('--parameters',         action='store',      default = ['
 argParser.add_argument('--luminosity',         action='store',      default=150,      help='Luminosity for weighting the plots')
 
 args = argParser.parse_args()
+
+if len(args.parameters) < 2: args.parameters = None
 
 # Import additional functions/classes specified for the level of reconstruction
 if args.level == 'reco':
@@ -79,16 +82,19 @@ subDirectory = '_'.join( subDirectory )
 
 # Format WC input parameters
 colors = [ ROOT.kOrange, ROOT.kOrange+10, ROOT.kBlue, ROOT.kBlue-2, ROOT.kCyan+1, ROOT.kGreen+1, ROOT.kRed, ROOT.kRed+2, ROOT.kViolet+2, ROOT.kYellow+2, ROOT.kRed-7, ROOT.kPink-7, ROOT.kPink-3, ROOT.kGreen+4, ROOT.kGray+2 ]
-coeffs = args.parameters[::2]
-str_vals = args.parameters[1::2]
-vals   = list( map( float, str_vals ) )
+
 params = []
-for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
-    params.append( [{ 
-        'legendText': ' '.join([coeff,str_val]),
-        'WC'        : { coeff:val },
-        'color'     : colors[i_param],
-        }])
+if args.parameters is not None:
+    coeffs   = args.parameters[::2]
+    str_vals = args.parameters[1::2]
+    vals     = list( map( float, str_vals ) )
+    for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
+        params.append( [{ 
+            'legendText': ' '.join([coeff,str_val]),
+            'WC'        : { coeff:val },
+            'color'     : colors[i_param],
+            }])
+
 params.append( [{'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack}] )
 
 # Import process specific variables
@@ -104,6 +110,7 @@ WZSample  = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
 ttSample  = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights_ref' )
 
 # Polynomial parametrization
+# ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
 w = WeightInfo(ttXSample.reweight_pkl)
 w.set_order(int(args.order))
 
@@ -117,14 +124,22 @@ for s in [ ttXSample, WZSample, ttSample ]:
 
 signal = [ ttXSample ]
 
-
 # SegFault in WZ bg samples <-- need to check
 #bg     = [ WZSample, ttSample ]
 bg = [ ttXSample, ttXSample, ttXSample ] #testing with these
 
+if args.backgrounds: stackList = [ bg ]
+else: stackList = []
 
-stack = Stack( *[ bg + signal if args.backgrounds and i==0 else signal for i, param in enumerate(params) ] ) 
-if args.backgrounds: params[0] = [ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed} for s in bg ] + params[0]
+stackList += [ signal for param in params ]
+stack = Stack( *stackList )
+
+if args.backgrounds: params = [[ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed} for s in bg ]] + params
+
+def checkReferencePoint( sample ):
+    ''' check if sample is simulated with a reference point
+    '''
+    return 'ref_point' in pickle.load(file(sample.reweight_pkl)).keys()
 
 # reweighting of pTZ
 if args.reweightPtXToSM:
@@ -140,7 +155,7 @@ if args.reweightPtXToSM:
         param['ptX_reweight_histo'].Divide(param['ptX_histo'])
         logger.info( 'Made reweighting histogram for ptX and param-point %r with integral %f', param, param['ptX_reweight_histo'].Integral())
 
-    def get_reweight( param, isSignal=True ):
+    def get_reweight( param, sample_, isSignal=True ):
 
         if isSignal:
             histo = param['ptX_reweight_histo']
@@ -151,27 +166,28 @@ if args.reweightPtXToSM:
             return reweight
 
         else:
-            def reweight(event, sample):
-                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
-            return reweight
+            def reweightRef(event, sample):
+                return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
 
-    weight = [ [ get_reweight( params[i][j], i!=0 or j>=len(bg) if args.backgrounds else True ) for j, s in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
+            def reweightNoRef(event, sample):
+                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+
+            return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
+
+    weight = [ [ get_reweight( params[i][j], sample_, i != 0 if args.backgrounds else True ) for j, sample_ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
 
 else:
-    def get_reweight( param , isSignal=True):
+    def get_reweight( param , sample_ ):
 
-        print param['WC']
-        print isSignal
-
-        def reweight_signal(event, sample):
+        def reweightRef(event, sample):
             return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
 
-        def reweight_bg(event, sample):
+        def reweightNoRef(event, sample):
             return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
 
-        return reweight_signal if isSignal else reweight_bg
+        return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 
-    weight = [ [ get_reweight( params[i][j], i!=0 or j>=len(bg) if args.backgrounds else True ) for j, _ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
+    weight = [ [ get_reweight( params[i][j], sample_ ) for j, sample_ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
 
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
@@ -188,7 +204,7 @@ def drawPlots(plots):
 
   for plot in plots:
     for signal_histo in plot.histos[1:]:
-      for bg_histo in plot.histos[0][:-1]:
+      for bg_histo in plot.histos[0]:
         signal_histo[0].Add(bg_histo)
 
   for plot in plots:
@@ -198,7 +214,7 @@ def drawPlots(plots):
 
   for log in [False, True]:
     # Directory structure
-    WC_directory = '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p') if len(args.parameters)>1 else 'SM'
+    WC_directory = '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p') if args.parameters is not None else 'SM'
     plot_directory_ = os.path.join(\
         plot_directory,
         '%s_%s'%(args.level, args.version),
@@ -231,7 +247,6 @@ def drawPlots(plots):
         copyIndexPHP = True,
     )
 
-    
     # plot the plots
     for plot in plots:
       for i_h, h in enumerate(plot.histos):
