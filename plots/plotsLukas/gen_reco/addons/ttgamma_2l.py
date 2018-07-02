@@ -25,6 +25,7 @@ def getVariableList( level ):
     # List of variables where gen is replaced by reco for reco
     read_variables_gen = [
         "ref_lumiweight1fb/F",
+        "lumiweight1fb/F",
         "genMet_pt/F", "genMet_phi/F",
     
         "ngenJet/I", "genJet[pt/F,eta/F,phi/F]",
@@ -64,8 +65,8 @@ def makeJets( event, sample, level ):
     event.bj1 = {'pt':getattr( event, '%sBj1_pt'%preTag ), 'phi':getattr( event, '%sBj1_phi'%preTag ), 'eta':getattr( event, '%sBj1_eta'%preTag )}
 
     # Define leptonic b-jets
-    event.bj0lep = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadlep_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else NanJet()
-    event.bj0had = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadhad_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else NanJet()
+    event.bj0lep = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadlep_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else nanJet()
+    event.bj0had = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadhad_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else nanJet()
 
     # Add extra vectors
     for p in [event.bj0, event.bj1, event.bj0lep, event.bj0had]:
