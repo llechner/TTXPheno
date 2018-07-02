@@ -209,6 +209,12 @@ def getPlotList( scaleLumi, level ):
 #      binning=[4,0,4],
 #    ))
 
+    plots.append( Plot( name = "Z_pt",
+      texX = 'p_{T}(Z) [GeV]', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_pt'%level ) if event.passing_checks else float('nan'),
+      binning=[10,0,500],
+    ))
+
     plots.append(Plot( name = 'njets',
       texX = 'Number of Jets', texY = 'Number of Events',
       attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
@@ -221,10 +227,11 @@ def getPlotList( scaleLumi, level ):
       binning=[8,0,8],
     ))
 
-    plots.append( Plot( name = "Z_pt",
-      texX = 'p_{T}(Z) [GeV]', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sZ_pt'%level ) if event.passing_checks else float('nan'),
-      binning=[10,0,500],
+    plots.append( Plot( name = 'Z_phi',
+      texX = '#phi(Z) [GeV]', texY = y_label,
+#      texX = 'phi(Z) [GeV]', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_phi'%level ) if event.passing_checks else float('nan'),
+      binning=[20,-pi,pi],
     ) )
     
     plots.append( Plot( name = "Z_mass",
@@ -233,24 +240,16 @@ def getPlotList( scaleLumi, level ):
       binning=[20,70,110],
     ) )
     
-    plots.append( Plot( name = 'Z_phi',
-#      texX = '#phi(Z) [GeV]', texY = y_label,
-      texX = 'phi(Z) [GeV]', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sZ_phi'%level ) if event.passing_checks else float('nan'),
-      binning=[20,-3,3],
-#      binning=[20,-pi,pi],
+    plots.append( Plot( name = "Z_cosThetaStar",
+      texX = 'cos(#theta*)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
+      binning=[20,-1.2,1.2],
     ) )
     
     plots.append( Plot( name = 'Z_eta',
       texX = '#eta(Z) [GeV]', texY = y_label,
       attribute = lambda event, sample: getattr( event, '%sZ_eta'%level ) if event.passing_checks else float('nan'),
       binning=[20,-3,3],
-    ) )
-    
-    plots.append( Plot( name = "Z_cosThetaStar",
-      texX = 'cos(#theta*)', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
-      binning=[20,-1.2,1.2],
     ) )
     
     plots.append( Plot( name = "b0_pt",

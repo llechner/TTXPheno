@@ -56,8 +56,7 @@ elif args.level == 'genLep':
 
 #remove Gen here for getting the reas cutInterpreter (this is just to check with old plots)
 else:
-#    from TTXPheno.Tools.cutInterpreterGen    import cutInterpreter
-    from TTXPheno.Tools.cutInterpreter       import cutInterpreter
+    from TTXPheno.Tools.cutInterpreterGen    import cutInterpreter
     from TTXPheno.Tools.objectSelection      import isGoodGenJet       as isGoodJet
     from TTXPheno.Tools.objectSelection      import isGoodGenLepton    as isGoodLepton
 
@@ -85,11 +84,12 @@ str_vals = args.parameters[1::2]
 vals   = list( map( float, str_vals ) )
 params = []
 for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
-    params.append( { 
+    params.append( [{ 
         'legendText': ' '.join([coeff,str_val]),
         'WC'        : { coeff:val },
         'color'     : colors[i_param],
-        })
+        }])
+params.append( [{'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack}] )
 
 # Import process specific variables
 process_file = os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'addons', '%s.py'%args.processFile )
@@ -99,38 +99,33 @@ process      = imp.load_source( "process", os.path.expandvars( process_file ) )
 sample_file   = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
-signalSample = getattr( loadedSamples, args.sample )
-WZSample     = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-ttSample     = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights_ref' )
+ttXSample = getattr( loadedSamples, args.sample )
+WZSample  = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
+ttSample  = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights_ref' )
 
 # Polynomial parametrization
-w = WeightInfo(signalSample.reweight_pkl)
+w = WeightInfo(ttXSample.reweight_pkl)
 w.set_order(int(args.order))
 
 # configure samples
-for s in [ signalSample, WZSample, ttSample ]:
+for s in [ ttXSample, WZSample, ttSample ]:
     s.setSelectionString( cutInterpreter.cutString(args.selection) )
     s.style = styles.lineStyle(ROOT.kBlue)
-    if args.small: s.reduceFiles( to = 5 )
+    if args.small: s.reduceFiles( to = 1 )
     # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
     s.event_factor = s.nEvents / float( s.chain.GetEntries() )
 
-signal = [ signalSample for param in params ]
-bg     = []
+signal = [ ttXSample ]
 
-if args.backgrounds:
-    bg += [ WZSample, ttSample ]
-    params = [ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed} for s in bg ] + params
 
-#append SM last
-signal += [ signalSample ]
-params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
+# SegFault in WZ bg samples <-- need to check
+#bg     = [ WZSample, ttSample ]
+bg = [ ttXSample, ttXSample, ttXSample ] #testing with these
 
-if args.backgrounds: stack = Stack( bg )
-else: stack = Stack()
-stack.extend( [ [s] for s in signal ] ) 
 
-it = itertools.count()
+stack = Stack( *[ bg + signal if args.backgrounds and i==0 else signal for i, param in enumerate(params) ] ) 
+if args.backgrounds: params[0] = [ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':ROOT.kRed} for s in bg ] + params[0]
+
 # reweighting of pTZ
 if args.reweightPtXToSM:
 
@@ -139,15 +134,15 @@ if args.reweightPtXToSM:
     elif 'ttgamma' in args.processFile: varX = "%sPhoton_pt"%args.level
 
     for param in params[::-1]:
-        param['ptX_histo'] = signalSample.get1DHistoFromDraw(varX, [10,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
+        param['ptX_histo'] = ttXSample.get1DHistoFromDraw(varX, [10,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param['WC']))
         if param['ptX_histo'].Integral()>0: param['ptX_histo'].Scale(1./param['ptX_histo'].Integral())
         param['ptX_reweight_histo'] = params[-1]['ptX_histo'].Clone()
         param['ptX_reweight_histo'].Divide(param['ptX_histo'])
         logger.info( 'Made reweighting histogram for ptX and param-point %r with integral %f', param, param['ptX_reweight_histo'].Integral())
 
-    def get_reweight( param, signal=True ):
+    def get_reweight( param, isSignal=True ):
 
-        if signal:
+        if isSignal:
             histo = param['ptX_reweight_histo']
             bsm_rw = w.get_weight_func( **param['WC'] )
             def reweight(event, sample):
@@ -160,14 +155,13 @@ if args.reweightPtXToSM:
                 return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
             return reweight
 
-    weight = [ [ get_reweight( params[next(it)], i!=0 if args.backgrounds else True ) for s in stackComponent ] for i, stackComponent in enumerate(stack) ]
-#    weight = [ [ get_reweight( param, i==param['n']-1 ) for i in range(param['n']) ] for param in params ]
-#    weight = [ [ get_reweight( param ) ] for param in params ]
+    weight = [ [ get_reweight( params[i][j], i!=0 or j>=len(bg) if args.backgrounds else True ) for j, s in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
 
 else:
-    def get_reweight( param , signal=True):
+    def get_reweight( param , isSignal=True):
 
-        print(param)
+        print param['WC']
+        print isSignal
 
         def reweight_signal(event, sample):
             return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
@@ -175,13 +169,11 @@ else:
         def reweight_bg(event, sample):
             return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
 
-        return reweight_signal if signal else reweight_bg
+        return reweight_signal if isSignal else reweight_bg
 
-    weight = [ [ get_reweight( params[next(it)], i!=0 if args.backgrounds else True ) for s in stackComponent ] for i, stackComponent in enumerate(stack) ]
-#    weight = [ [ get_reweight( param, i==param['n']-1 ) for i in range(param['n']) ] for param in params ]
+    weight = [ [ get_reweight( params[i][j], i!=0 or j>=len(bg) if args.backgrounds else True ) for j, _ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
 
 def drawObjects( hasData = False ):
-    print 'drawObjects check'
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
@@ -190,26 +182,27 @@ def drawObjects( hasData = False ):
       (0.15, 0.95, 'data' if hasData else "Simulation (%s)"%args.level),
       (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV) Scale %3.2f'% ( float(args.luminosity), dataMCScale ) ) if hasData else (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)' % float(args.luminosity))
     ]
-    print [tex.DrawLatex(*l) for l in lines] 
-    print 'drawObjects check done'
-    return [tex.DrawLatex(*l) for l in lines] 
+    return [tex.DrawLatex(*l) for l in lines]
 
 def drawPlots(plots):
-  print 'drawPlots'
+
   for plot in plots:
-    print 'plot in plots'
+    for signal_histo in plot.histos[1:]:
+      for bg_histo in plot.histos[0][:-1]:
+        signal_histo[0].Add(bg_histo)
+
+  for plot in plots:
     for i_h, h in enumerate(plot.histos):
-      print 'histo h'
-      h[0].style = styles.lineStyle(params[i_h]['color'])
+      for j_hi, hi in enumerate(h):
+        hi.style = styles.lineStyle(params[i_h][j_hi]['color'])
 
   for log in [False, True]:
-    print 'log ' + str(log)
     # Directory structure
     WC_directory = '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p') if len(args.parameters)>1 else 'SM'
     plot_directory_ = os.path.join(\
         plot_directory,
         '%s_%s'%(args.level, args.version),
-        signalSample.name, 
+        ttXSample.name, 
         subDirectory, 
         args.selection if args.selection is not None else 'no_selection', 
         WC_directory,
@@ -218,13 +211,14 @@ def drawPlots(plots):
     # plot the legend
     l_plot = copy.deepcopy(plots[0])
     for i_h, h in enumerate(l_plot.histos):
-      h[0].legendText = params[i_h]['legendText']
-      h[0].style = styles.lineStyle(params[i_h]['color'])
-      h[0].Scale(0.)
-      h[0].GetXaxis().SetTickLength(0.)
-      h[0].GetYaxis().SetTickLength(0.)
-      h[0].GetXaxis().SetLabelOffset(999.)
-      h[0].GetYaxis().SetLabelOffset(999.)
+      for j_hi, hi in enumerate(h):
+          hi.legendText = params[i_h][j_hi]['legendText']
+          hi.style = styles.lineStyle(params[i_h][j_hi]['color'])
+          hi.Scale(0.)
+          hi.GetXaxis().SetTickLength(0.)
+          hi.GetYaxis().SetTickLength(0.)
+          hi.GetXaxis().SetLabelOffset(999.)
+          hi.GetYaxis().SetLabelOffset(999.)
     l_plot.name = "legend"
     l_plot.texX = ''
     l_plot.texY = ''
@@ -237,12 +231,13 @@ def drawPlots(plots):
         copyIndexPHP = True,
     )
 
+    
     # plot the plots
     for plot in plots:
-      print 'plot 2 in plots'
       for i_h, h in enumerate(plot.histos):
-        h[0].legendText = params[i_h]['legendText']
-      if not max(l[0].GetMaximum() for l in plot.histos): continue # Empty plot
+        for j_hi, hi in enumerate(h):
+          hi.legendText = params[i_h][j_hi]['legendText']
+      if not max( max(li.GetMaximum() for li in l) for l in plot.histos): continue # Empty plot
 
       plotting.draw(plot,
 	    plot_directory = plot_directory_,
