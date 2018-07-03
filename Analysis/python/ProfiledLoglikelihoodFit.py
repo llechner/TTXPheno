@@ -39,6 +39,8 @@ class ProfiledLoglikelihoodFit:
         self.modelname                   = os.path.splitext(os.path.basename(self.filename))[0]
         self.nuisance_names              = []
         self.nuisance_uncertainty_values = {}
+        self.rmin = 0
+        self.rmax = 10.
 
         # read card filefile
         with open( filename, 'r' ) as file:
@@ -111,7 +113,7 @@ class ProfiledLoglikelihoodFit:
         self.glob      = ROOT.RooArgSet("global")
 
         # signal strength modifier
-        self.ws.factory( "r[1,0,10]" )
+        self.ws.factory( "r[1,%f,%f]"%(self.rmin, self.rmax) )
         self.poi       = ROOT.RooArgSet("poi")
         self.poi.add( self.ws.var("r") )
 
