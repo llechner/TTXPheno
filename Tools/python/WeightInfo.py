@@ -468,26 +468,27 @@ if __name__ == "__main__":
     selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
     #selection_string = "evt==955001&&run==1&&lumi==9551"
 
-    # Make a coeff histo from a sample
-    def getCoeffListFromDraw( sample, selectionString, weightString = None):
-        histo = sample.get1DHistoFromDraw( 
-            "Iteration$", 
-            [ len(w.combinations), 0, len(w.combinations) ], 
-            selectionString = selectionString, 
-            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
-        return histo_to_list( histo )
+    from TTXPheno.Tools.plot_helpers import getCoeffListFromDraw, getCoeffPlotFromDraw
+    ## Make a coeff histo from a sample
+    #def getCoeffListFromDraw( sample, selectionString, weightString = None):
+    #    histo = sample.get1DHistoFromDraw( 
+    #        "Iteration$", 
+    #        [ len(w.combinations), 0, len(w.combinations) ], 
+    #        selectionString = selectionString, 
+    #        weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+    #    return histo_to_list( histo )
 
-    # Make a coeff histo from a sample
-    def getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString = None):
-        # 2D Plot, Iteration$ is on x
-        histo = sample.get2DHistoFromDraw( 
-            "Iteration$:%s"%variableString, 
-            [ len(w.combinations), 0, len(w.combinations) ] + binning, 
-            selectionString = selectionString, 
-            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+    ## Make a coeff histo from a sample
+    #def getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString = None):
+    #    # 2D Plot, Iteration$ is on x
+    #    histo = sample.get2DHistoFromDraw( 
+    #        "Iteration$:%s"%variableString, 
+    #        [ len(w.combinations), 0, len(w.combinations) ] + binning, 
+    #        selectionString = selectionString, 
+    #        weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
 
-        return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
-#        return histo_to_list( histo )
+    #    return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
+#   #     return histo_to_list( histo )
 
     # Fisher information in ptZ histo
     coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*ref_lumiweight1fb')

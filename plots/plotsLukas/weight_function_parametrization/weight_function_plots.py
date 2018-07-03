@@ -23,7 +23,7 @@ from TTXPheno.Tools.cutInterpreter import cutInterpreter
 
 # Sample
 from TTXPheno.samples.benchmarks   import *
-from plot_helpers                  import *
+from TTXPheno.Tools.plot_helpers   import *
 
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
