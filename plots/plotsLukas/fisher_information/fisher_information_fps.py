@@ -43,6 +43,7 @@ argParser.add_argument('--selection',          action='store',      default='lep
 argParser.add_argument('--variables',          action='store',      default = [], type=str, nargs='+', help = "argument variables")
 argParser.add_argument('--parameters',         action='store',      default = [], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',         action='store',      default=150)
+argParser.add_argument('--binThreshold',       action='store',      default=100)
 
 args = argParser.parse_args()
 
@@ -103,6 +104,7 @@ weightFunction = get_reweight_function()
 # Additional plot variables from process_variables.py (defined for ttZ, ttW and ttgamma)
 plotVariables2D = getattr( process_variables, args.process )['2D']
 plotVariables3D = getattr( process_variables, args.process )['3D']
+plotVariables4D = getattr( process_variables, args.process )['4D']
 
 if args.level != 'gen':
     if args.level == 'reco': search_string, replacement_string = ( 'gen', 'reco' )
@@ -114,26 +116,33 @@ if args.level != 'gen':
 # Calculate coefficients for binned distribution
 # Calculate determinant using the 'variables' submatrix of FI
 for var in plotVariables2D:
-
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = getCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
+    var['coeff']       = getCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
 
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s bins)' %str(var['binning'][0])
     var['color']       = 30
 
 for var in plotVariables3D:
-
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = get2DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
+    var['coeff']       = get2DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
 
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]))
     var['color']       = 41
+
+for var in plotVariables4D:
+    #remove initial selection string
+    sample.setSelectionString('1')
+
+    var['coeff']       = get3DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
+    # add bin information to plot labels
+    var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]), str(var['binning'][6]))
+    var['color']       = 45
 
 # Calculate coefficients unbinned (event loop)
 # Calculate determinant using the 'variables' submatrix of FI
@@ -142,14 +151,18 @@ selection['coeff'] = getCoeffListFromEvents( sample, selectionString = cutInterp
 selection['color'] = 46
 
 expo = 1. / len(args.variables)
-data = [selection] + plotVariables2D + plotVariables3D
+data = [selection] + plotVariables2D + plotVariables3D + plotVariables4D
 n_data = len(data)
 
 # Fill dictionaries with normalized fisher information and plotting data
 for i,item in enumerate(data):
-    detI            = np.linalg.det( w.get_total_fisherInformation_matrix( item['coeff'], args.variables, **WC )[1] )
-    if i==0: detI0  = detI
-    norm_detI       = abs( detI / detI0 )**expo if detI0 != 0 else 0
+    if item['coeff'] == []:
+        norm_detI = 0
+        if i==0: detI0 = 0
+    else:
+        detI = np.linalg.det( w.get_total_fisherInformation_matrix( item['coeff'], args.variables, **WC )[1] )
+        if i==0 or detI==0: detI0  = detI
+        norm_detI       = abs( detI / detI0 )**expo if detI0 != 0 else 0
     item['x_graph'] = array( 'd', range( 1, n_data+1 ) )
     item['y_graph'] = array( 'd', [0]*i + [norm_detI] + [0]*(n_data-i) )
 

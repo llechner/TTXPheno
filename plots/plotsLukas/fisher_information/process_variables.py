@@ -24,6 +24,7 @@ ttZ     = { '2D':[
 #                  { 'index':2, 'plotstring':'p_{T}(Z) : cos(#theta*)',       'var':'genZ_cosThetaStar:genZ_pt', 'binning':[ 20, 0, 500, 5, -1.2, 1.2 ] },
 #                  { 'index':3, 'plotstring':'p_{T}(Z) : #phi(E_{T}^{miss})', 'var':'genMet_phi:genZ_pt',     'binning':[ 10, 0, 500, 5, -np.pi, np.pi ] },
                   { 'index':4, 'plotstring':'p_{T}(Z) : #phi(Z)',            'var':'genZ_phi:genZ_pt',          'binning':[ 10, 0, 500, 5, -np.pi, np.pi ] },
+                  { 'index':4, 'plotstring':'#phi(Z) : p_{T}(Z)',            'var':'genZ_pt:genZ_phi',          'binning':[ 5, -np.pi, np.pi, 10, 0, 500 ] },
                   { 'index':5, 'plotstring':'p_{T}(Z) : #eta(Z)',            'var':'genZ_eta:genZ_pt',          'binning':[ 10, 0, 500, 5, -3, 3 ] },
 
 #                  { 'index':6, 'plotstring':'cos(#theta*) : #phi(E_{T}^{miss})', 'var':'genMet_phi:genZ_cosThetaStar', 'binning':[ 5, -1.2, 1.2, 5, -np.pi, np.pi ] },
@@ -32,6 +33,11 @@ ttZ     = { '2D':[
 
 #                  { 'index':9, 'plotstring':'#phi(E_{T}^{miss}) : #phi(Z)', 'var':'genZ_phi:genMet_phi', 'binning':[ 5, -np.pi, np.pi, 5, -np.pi, np.pi  ] },
 #                  { 'index':10, 'plotstring':'#phi(E_{T}^{miss}) : #eta(Z)', 'var':'genZ_eta:genMet_phi', 'binning':[ 5, -np.pi, np.pi, 5, -3, 3 ] },
+                 ],
+            '4D':[
+                  { 'index':1, 'plotstring':'p_{T}(Z) : cos(#theta*) : p_{T}(E_{T}^{miss})',    'var':'genMet_pt:genZ_cosThetaStar:genZ_pt',     'binning':[ 10, 0, 500, 3, -1.2, 1.2, 10, 0, 500 ] },
+                  { 'index':2, 'plotstring':'p_{T}(Z) : cos(#theta*) : #phi(Z)',                'var':'genZ_phi:genZ_cosThetaStar:genZ_pt',      'binning':[ 10, 0, 500, 3, -1.2, 1.2, 5, -np.pi, np.pi ] },
+                  { 'index':3, 'plotstring':'p_{T}(Z) : cos(#theta*) : #eta(Z)',                'var':'genZ_eta:genZ_cosThetaStar:genZ_pt',      'binning':[ 10, 0, 500, 3, -1.2, 1.2, 5, -3, 3 ] },
                  ],
 }
 
