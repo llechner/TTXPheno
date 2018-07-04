@@ -41,6 +41,7 @@ class DelphesProducer:
                 logger.warning( "Found output file %s. Deleting", tmp_file )
                 os.remove( tmp_file )
             tmp_files.append( tmp_file )
+            print os.path.join( self.delphes_dir, 'DelphesCMSFWLite'), os.path.join( self.delphes_dir, self.card), tmp_file, infile
             subprocess.check_call( [ os.path.join( self.delphes_dir, 'DelphesCMSFWLite'), os.path.join( self.delphes_dir, self.card), tmp_file, infile ] )
 
         # Hadd
