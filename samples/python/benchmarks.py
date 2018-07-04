@@ -22,6 +22,7 @@ if __name__ == "__main__":
 
 import glob
 
+gridpack_dir = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/"
 gen_dir = "/afs/hephy.at/data/rschoefbeck02/TopEFT/skims/gen/v2/"
 
 # Robert first ttZ_ll dim6top scan
@@ -34,8 +35,8 @@ dim6top_ttZ_ll_LO_currentplane_highStat_scan.reweight_pkl = "/afs/hephy.at/data/
 test = Sample.fromFiles("test", files = ["/afs/hephy.at/data/rschoefbeck02/TTXPheno/skims/gen/v2/test/test.root"], texName = "test")
 test.reweight_pkl = '/afs/cern.ch/user/l/llechner/public/gridpacks_data/order_3/ttZ/gridpacks/reweight_card.pkl'
 
+'''
 gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v3/"
-gridpack_dir = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/"
 
 # no reference point 8/3
 fwlite_ttZ_ll_LO_order3_8weights               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order3_8weights",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order3_8weights" )]) 
@@ -102,13 +103,16 @@ fwlite_ttW_LO_order2_15weights_ref_old.reweight_pkl     = gridpack_dir + "180520
 fwlite_ttW_LO_order2_15weights_ref_old.nEvents          = 945000
 fwlite_ttW_LO_order2_15weights_ref_old.xsec             = 0.2043 * 0.4097 / 0.1323 #pb ttW, W->lnu, xsec_SM_NNLO * xsec_BSM_LO / xsec_SM_LO
 
-gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v7/"
+'''
+gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v8/"
 
 # reference point 15/2
 fwlite_ttZ_ll_LO_order2_15weights_ref               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights_ref" )]) 
 fwlite_ttZ_ll_LO_order2_15weights_ref.reweight_pkl  = gridpack_dir + "18052018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttZ_ll_LO_order2_15weights_ref.nEvents       = 990000
 fwlite_ttZ_ll_LO_order2_15weights_ref.xsec          = 0.0915 * 0.6823 / 0.07082 #pb ttZ, Z->ll, xsec_SM_NNLO * xsec_BSM_LO / xsec_SM_LO
+
+gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v7/"
 
 fwlite_ttW_LO_order2_15weights_ref                  = Sample.fromDirectory("fwlite_ttW_LO_order2_15weights_ref",     texName = "ttW",      directory = [os.path.join( gen_dir, "fwlite_ttW_LO_order2_15weights_ref" )])
 fwlite_ttW_LO_order2_15weights_ref.reweight_pkl     = gridpack_dir + "18052018_ref/ttW/order2/ttW0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
@@ -127,6 +131,8 @@ fwlite_ttgamma_LO_order2_15weights_ref_delphes      = Sample.fromDirectory("fwli
 #fwlite_ttZ_ll_LO_order2_15weights_ref.addFriend(  fwlite_ttZ_ll_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttW_LO_order2_15weights_ref.addFriend(  fwlite_ttW_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttgamma_LO_order2_15weights_ref.addFriend(  fwlite_ttgamma_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
+
+gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v8/"
 
 # backgrounds 15/2 (tt) or 0/2 (WZ)
 # leptonic decays W > lnu, Z > ll, t > Wb

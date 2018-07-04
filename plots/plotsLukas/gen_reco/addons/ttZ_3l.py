@@ -60,13 +60,6 @@ def getVariableList( level ):
     return read_variables
 
 
-def checkVariables( event, sample, level ):
-    event.lumiweight1fb = 1.
-#    for var in getVariableList( level ):
-#        try: print getattr( event, var.split('/F')[0].split('/I')[0] )
-#        except: continue
-
-
 def makeJets( event, sample, level ):
     ''' Add a list of filtered jets to the event (full list is required for lepton cross cleaning)
     '''
@@ -191,7 +184,6 @@ def getSequenceList( level ):
     '''
     sequence = []
 
-    sequence.append( lambda event, sample: checkVariables( event, sample, level ) )
     sequence.append( lambda event, sample: makeJets( event, sample, level ) )
     sequence.append( lambda event, sample: makeMET( event, sample, level ) )
     sequence.append( lambda event, sample: makeZ( event, sample, level ) )
@@ -256,7 +248,7 @@ def getPlotList( scaleLumi, level ):
     plots.append( Plot( name = "b0_phi",
       texX = '#phi(b_{0})', texY = y_label,
       attribute = lambda event, sample: event.bj0['phi'] if event.passing_checks else float('nan'),
-      binning=[20,pi,pi],
+      binning=[20,-pi,pi],
     ) )
     
     plots.append( Plot( name = "b0_eta",
@@ -274,7 +266,7 @@ def getPlotList( scaleLumi, level ):
     plots.append( Plot( name = "b1_phi",
       texX = '#phi(b_{1})', texY = y_label,
       attribute = lambda event, sample: event.bj1['phi'] if event.passing_checks else float('nan'),
-      binning=[20,pi,pi],
+      binning=[20,-pi,pi],
     ) )
     
     plots.append( Plot( name = "b1_eta",
@@ -292,7 +284,7 @@ def getPlotList( scaleLumi, level ):
     plots.append(Plot( name = "blep_phi",
       texX = '#phi(b_{lep})', texY = y_label,
       attribute = lambda event, sample: event.bjNonZlep['phi'] if event.passing_checks else float('nan'),
-      binning=[20,pi,pi],
+      binning=[20,-pi,pi],
     ) )
     
     plots.append(Plot( name = "blep_eta",

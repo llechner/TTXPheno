@@ -24,7 +24,7 @@ def getVariableList( level ):
    
     # List of variables where gen is replaced by reco for reco
     read_variables_gen = [
-        "ref_lumiweight1fb/F",
+#        "ref_lumiweight1fb/F",
         "lumiweight1fb/F",
         "genMet_pt/F", "genMet_phi/F",
     
@@ -55,7 +55,7 @@ def getVariableList( level ):
 
     read_variables = read_variables_gen + read_variables_genLep
     read_variables = list( set( read_variables ) ) # remove double entries
-    read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
+#    read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
     return read_variables
 
@@ -198,28 +198,10 @@ def getPlotList( scaleLumi, level ):
 #      binning=[4,0,4],
 #    ))
 
-    plots.append(Plot( name = 'njets',
-      texX = 'Number of Jets', texY = 'Number of Events',
-      attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
-      binning=[10,0,10],
-    ))
-
-    plots.append(Plot( name = 'nleps',
-      texX = 'Number of Leptons', texY = 'Number of Events',
-      attribute = lambda event, sample: getattr( event, 'n%sLep'%preTag ) if event.passing_checks else float('nan'),
-      binning=[8,0,8],
-    ))
-
     plots.append( Plot( name = "Z_pt",
       texX = 'p_{T}(Z) [GeV]', texY = y_label,
       attribute = lambda event, sample: getattr( event, '%sZ_pt'%level ) if event.passing_checks else float('nan'),
       binning=[10,0,500],
-    ) )
-    
-    plots.append( Plot( name = "Z_mass",
-      texX = 'm(ll) [GeV]', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sZ_mass'%level ) if event.passing_checks else float('nan'),
-      binning=[20,70,110],
     ) )
     
     plots.append( Plot( name = 'Z_phi',
@@ -240,16 +222,22 @@ def getPlotList( scaleLumi, level ):
       binning=[20,-1.2,1.2],
     ) )
     
+    plots.append( Plot( name = "Z_mass",
+      texX = 'm(ll) [GeV]', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_mass'%level ) if event.passing_checks else float('nan'),
+      binning=[20,70,110],
+    ) )
+    
     plots.append( Plot( name = "b0_pt",
       texX = 'p_{T}(b_{0}) [GeV]', texY = y_label,
       attribute = lambda event, sample: event.bj0['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,400],
     ) )
     
-    plots.append( Plot( name = "b1_pt",
-      texX = 'p_{T}(b_{1}) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.bj1['pt'] if event.passing_checks else float('nan'),
-      binning=[20,0,400],
+    plots.append( Plot( name = "b0_phi",
+      texX = '#phi(b_{0})', texY = y_label,
+      attribute = lambda event, sample: event.bj0['phi'] if event.passing_checks else float('nan'),
+      binning=[20,-pi,pi],
     ) )
     
     plots.append( Plot( name = "b0_eta",
@@ -258,22 +246,22 @@ def getPlotList( scaleLumi, level ):
       binning=[20,-3,3],
     ) )
     
-    plots.append( Plot( name = "b1_eta",
-      texX = '#eta(b_{1})', texY = y_label,
-      attribute = lambda event, sample: event.bj1['eta'] if event.passing_checks else float('nan'),
-      binning=[20,-3,3],
-    ) )
-    
-    plots.append( Plot( name = "b0_phi",
-      texX = '#phi(b_{0})', texY = y_label,
-      attribute = lambda event, sample: event.bj0['phi'] if event.passing_checks else float('nan'),
-      binning=[20,pi,pi],
+    plots.append( Plot( name = "b1_pt",
+      texX = 'p_{T}(b_{1}) [GeV]', texY = y_label,
+      attribute = lambda event, sample: event.bj1['pt'] if event.passing_checks else float('nan'),
+      binning=[20,0,400],
     ) )
     
     plots.append( Plot( name = "b1_phi",
       texX = '#phi(b_{1})', texY = y_label,
       attribute = lambda event, sample: event.bj1['phi'] if event.passing_checks else float('nan'),
-      binning=[20,pi,pi],
+      binning=[20,-pi,pi],
+    ) )
+    
+    plots.append( Plot( name = "b1_eta",
+      texX = '#eta(b_{1})', texY = y_label,
+      attribute = lambda event, sample: event.bj1['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-3,3],
     ) )
     
     plots.append( Plot( name = 'deltaPhi_bb',
@@ -294,10 +282,10 @@ def getPlotList( scaleLumi, level ):
       binning=[20,0,300],
     ) )
     
-    plots.append( Plot( name = "nonZl1_pt",
-      texX = 'p_{T}(l^{non-Z}_{1}) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.NonZ_l1['pt'] if event.passing_checks else float('nan'),
-      binning=[20,0,200],
+    plots.append( Plot( name = "nonZl0_phi",
+      texX = '#phi(l^{non-Z}_{0})', texY = y_label,
+      attribute = lambda event, sample: event.NonZ_l0['phi'] if event.passing_checks else float('nan'),
+      binning=[20,-pi,pi],
     ) )
     
     plots.append( Plot( name = "nonZl0_eta",
@@ -306,24 +294,24 @@ def getPlotList( scaleLumi, level ):
       binning=[20,-3,3],
     ) )
     
+    plots.append( Plot( name = "nonZl1_pt",
+      texX = 'p_{T}(l^{non-Z}_{1}) [GeV]', texY = y_label,
+      attribute = lambda event, sample: event.NonZ_l1['pt'] if event.passing_checks else float('nan'),
+      binning=[20,0,200],
+    ) )
+    
+    plots.append( Plot( name = "nonZl1_phi",
+      texX = '#phi(l^{non-Z}_{1})', texY = y_label,
+      attribute = lambda event, sample: event.NonZ_l1['phi'] if event.passing_checks else float('nan'),
+      binning=[20,-pi,pi],
+    ) )
+    
     plots.append( Plot( name = "nonZl1_eta",
       texX = '#eta(l^{non-Z}_{1})', texY = y_label,
       attribute = lambda event, sample: event.NonZ_l1['eta'] if event.passing_checks else float('nan'),
       binning=[20,-3,3],
     ) )
         
-    plots.append( Plot( name = "nonZl0_phi",
-      texX = '#phi(l^{non-Z}_{0})', texY = y_label,
-      attribute = lambda event, sample: event.NonZ_l0['phi'] if event.passing_checks else float('nan'),
-      binning=[20,pi,pi],
-    ) )
-    
-    plots.append( Plot( name = "nonZl1_phi",
-      texX = '#phi(l^{non-Z}_{1})', texY = y_label,
-      attribute = lambda event, sample: event.NonZ_l1['phi'] if event.passing_checks else float('nan'),
-      binning=[20,pi,pi],
-    ) )
-    
     plots.append( Plot( name = 'nonZ_deltaPhi_ll',
       texX = '#Delta#phi(ll)^{non-Z}', texY = y_label,
       attribute = lambda event, sample: event.nonZ_lldPhi if event.passing_checks else float('nan'),
@@ -373,6 +361,18 @@ def getPlotList( scaleLumi, level ):
       attribute = lambda event, sample: event.nonZlep1chargept if event.passing_checks else float('nan'),
       binning=[20,-200,200],
     ) )
+
+    plots.append(Plot( name = 'njets',
+      texX = 'Number of Jets', texY = 'Number of Events',
+      attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
+      binning=[10,0,10],
+    ))
+
+    plots.append(Plot( name = 'nleps',
+      texX = 'Number of Leptons', texY = 'Number of Events',
+      attribute = lambda event, sample: getattr( event, 'n%sLep'%preTag ) if event.passing_checks else float('nan'),
+      binning=[8,0,8],
+    ))
 
     return plots
 

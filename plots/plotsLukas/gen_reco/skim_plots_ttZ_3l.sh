@@ -22,8 +22,8 @@ declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights_ref')
 declare -a samples3=('')
 
 # declare selection strings to analyze
-#declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0to100' 'lepSel3-onZ-njet3p-nbjet1p-Zpt100to200' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200to300' 'lepSel3-onZ-njet3p-nbjet1p-Zpt300to400' 'lepSel3-onZ-njet3p-nbjet1p-Zpt400')
-declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
+declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0to100' 'lepSel3-onZ-njet3p-nbjet1p-Zpt100to200' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200to300' 'lepSel3-onZ-njet3p-nbjet1p-Zpt300to400' 'lepSel3-onZ-njet3p-nbjet1p-Zpt400')
+#declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -46,12 +46,11 @@ declare -a scales=('' '--scaleLumi')
 #declare -a levels=('gen' 'genLep' 'reco')
 declare -a levels=('gen' 'reco')
 
-version='bgtest'
+version='v8'
 luminosity='150'
 process='ttZ_3l'
 
 backgrounds="--backgrounds"
-fill="--fill"
 
 # define program to run by python
 prog=skim_plots.py
@@ -84,7 +83,7 @@ do
                      continue
                   fi
 
-                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} ${fill} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
 
                done
 
@@ -96,7 +95,7 @@ do
                      continue
                   fi
 
-                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} ${fill} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
 
                done
             done
