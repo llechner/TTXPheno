@@ -31,7 +31,7 @@ def getVariableList( level ):
         "ngenJet/I", "genJet[pt/F,eta/F,phi/F]",
         "ngenLep/I", "genLep[pt/F,eta/F,phi/F,pdgId/I]",
     
-        "genPhoton_pt/F", "genPhoton_eta/F", "genPhoton_phi/F", "genPhoton_mass/F",
+        "genPhoton_pt/F", "genPhoton_eta/F", "genPhoton_phi/F",
     
         "genBj0_pt/F", "genBj0_phi/F", "genBj0_eta/F",
         "genBj1_pt/F", "genBj1_phi/F", "genBj1_eta/F",
@@ -66,10 +66,10 @@ def makeJets( event, sample, level ):
 
     # Define leptonic b-jets
     event.bj0lep = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadlep_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else nanJet()
-    event.bj0had = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadhad_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else nanJet()
+#    event.bj0had = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi'], getattr( event, '%sBjLeadhad_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else nanJet()
 
     # Add extra vectors
-    for p in [event.bj0, event.bj1, event.bj0lep, event.bj0had]:
+    for p in [event.bj0, event.bj1, event.bj0lep]:
         addTransverseVector( p )
         addTLorentzVector( p )
 
@@ -78,11 +78,8 @@ def makeJets( event, sample, level ):
     else:                    from TTXPheno.Tools.objectSelection      import isGoodGenJet      as isGoodJet
 
     # selection checks
-    event.foundBj0 = isGoodJet( event.bj0 )
-#    event.foundBjNonZlep = getattr( event, '%sBjNonZlep_index'%preTag ) >= 0 and isGoodJet( event.bjNonZlep )
-#    event.foundBjNonZhad = getattr( event, '%sBjNonZhad_index'%preTag ) >= 0 and isGoodJet( event.bjNonZhad )
-    event.foundBj0lep    = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
-#    event.foundBj0had    = getattr( event, '%sBjLeadhad_index'%preTag ) >= 0 and isGoodJet( event.bj0had )
+    event.foundBj0    = isGoodJet( event.bj0 )
+    event.foundBj0lep = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
 
     # choose your selection on b-jets
     event.passing_bjets = event.foundBj0 and event.foundBj0lep
@@ -103,7 +100,7 @@ def makePhoton( event, sample, level ):
     '''
     event.gamma_unitVec2D = UnitVectorT2( getattr( event, '%sPhoton_phi'%level     ) )
     event.gamma_vec4D     = ROOT.TLorentzVector()
-    event.gamma_vec4D.SetPtEtaPhiM( getattr( event, '%sPhoton_pt'%level ), getattr( event, '%sPhoton_eta'%level ), getattr( event, '%sPhoton_phi'%level ), getattr( event, '%sPhoton_mass'%level     ) )
+    event.gamma_vec4D.SetPtEtaPhiM( getattr( event, '%sPhoton_pt'%level ), getattr( event, '%sPhoton_eta'%level ), getattr( event, '%sPhoton_phi'%level ), 0 )
     event.gamma_unitVec3D = event.gamma_vec4D.Vect().Unit()
 
 
@@ -197,12 +194,6 @@ def getPlotList( scaleLumi, level ):
       texX = 'p_{T}(#gamma) [GeV]', texY = y_label,
       attribute = lambda event, sample: getattr( event, '%sPhoton_pt'%level ) if event.passing_checks else float('nan'),
       binning=[20,0,400],
-    ))
-    
-    plots.append(Plot( name = "gamma_mass",
-      texX = 'm(#gamma) [GeV]', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sPhoton_mass'%level ) if event.passing_checks else float('nan'),
-      binning=[20,-5,5],
     ))
     
     plots.append(Plot( name = "b0_pt",

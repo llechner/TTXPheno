@@ -136,8 +136,8 @@ for s in [ ttXSample, WZSample, ttSample ]:
         s.read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
 signal = ttXSample
-#bg = [ WZSample, ttSample ]
-bg = [ WZSample ]
+bg = [ WZSample, ttSample ]
+#bg = [ WZSample ]
 
 stackList = [ [signal] for param in params ]
 if args.backgrounds: stackList += [ bg ]
