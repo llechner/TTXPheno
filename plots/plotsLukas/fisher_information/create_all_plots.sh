@@ -11,17 +11,28 @@ small=""
 
 #declare -a variables=("cpt cpQM ctZ ctW" "cpt cpQM ctZI ctWI" "cpt cpQM ctZ ctZI" "cpt cpQM ctW ctWI" "cpt cpQM" "ctZ ctZI" "ctW ctWI" "ctZ ctW" "ctZI ctWI" "ctZ" "ctW" "cpt" "cpQM")
 #declare -a variables=("cpt cpQM ctZ ctW" "cpt cpQM ctZ ctZI" "cpt cpQM ctW ctWI" "cpt cpQM" "ctZ ctZI" "ctW ctWI" "ctZ ctW" "ctZ" "ctW" "cpt" "cpQM")
-declare -a variables=("cpt cpQM ctZ ctZI")
+#declare -a variables=("cpt cpQM ctW ctWI" "ctW ctWI" "cpt cpQM ctZ ctW")
+#declare -a variables=("cpt cpQM ctZ ctZI")
+
+declare -a variables=("cpt cpQM ctZ ctZI" "cpt cpQM" "ctZ ctZI" "cpt cpQM ctZ ctW" "cpt cpQM ctW ctWI")
+#declare -a variables=("cpt cpQM ctZ ctZI")
 
 #declare -a levels=("reco" "genLep" "gen")
 declare -a levels=("reco" "gen")
 #declare -a levels=("gen")
+#declare -a levels=("reco")
 
-version="v8"
+# Scale bars to full event loop or to full pre-selection
+#declare -a fpsScales=("--fpsScaling" "")
+declare -a fpsScales=("")
+#declare -a fpsScales=("--fpsScaling")
 
-binThreshold='100'
-parameters="--parameters ctZ 3 ctZI 3"
-#parameters=""
+declare -a binThresholds=("400" "100" "25" "0") #5% 10% relError
+
+declare -a parameters=("--parameters ctZ 3 ctZI 3 ctW 3 ctWI 3" "")
+
+version="v9"
+
 
 #################################################
 
@@ -33,13 +44,21 @@ do
     for level in "${levels[@]}"
     do
 
-        submitBatch.py --dpm "python fisher_information_full.py ${small} --level ${level} --version ${version} --sample fwlite_ttZ_ll_LO_order2_15weights_ref  --process ttZ     --order 2 --selection lepSel3-onZ-njet3p-nbjet1p-Zpt0 --variables ${variable} --binThreshold ${binThreshold} ${parameters}"
-#        submitBatch.py --dpm "python fisher_information_full.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --binThreshold ${binThreshold} ${parameters}"
-#        submitBatch.py --dpm "python fisher_information_full.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --binThreshold ${binThreshold} ${parameters}"
+        for fpsScale in "${fpsScales[@]}"
+        do
 
-        submitBatch.py --dpm "python fisher_information_fps.py ${small} --level ${level} --version ${version} --sample fwlite_ttZ_ll_LO_order2_15weights_ref  --process ttZ     --order 2 --selection lepSel3-onZ-njet3p-nbjet1p-Zpt0 --variables ${variable} --binThreshold ${binThreshold} ${parameters}"
-#        submitBatch.py --dpm "python fisher_information_fps.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --binThreshold ${binThreshold} ${parameters}"
-#        submitBatch.py --dpm "python fisher_information_fps.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --binThreshold ${binThreshold} ${parameters}"
+            for binThreshold in "${binThresholds[@]}"
+            do
 
+                for parameter in "${parameters[@]}"
+                do
+
+                    submitBatch.py --dpm "python fisher_information.py ${small} --level ${level} --version ${version} --sample fwlite_ttZ_ll_LO_order2_15weights_ref  --process ttZ     --order 2 --selection lepSel3-onZ-njet3p-nbjet1p-Zpt0 --variables ${variable} --binThreshold ${binThreshold} ${parameter} ${fpsScale}"
+#                    submitBatch.py --dpm "python fisher_information.py ${small} --level ${level} --version ${version} --sample fwlite_ttW_LO_order2_15weights_ref     --process ttW     --order 2 --selection nlep2p-njet2p-nbjet1p-Wpt0      --variables ${variable} --binThreshold ${binThreshold} ${parameter} ${fpsScale}"
+                    submitBatch.py --dpm "python fisher_information.py ${small} --level ${level} --version ${version} --sample fwlite_ttgamma_LO_order2_15weights_ref --process ttgamma --order 2 --selection gammapt40-nlep1p-njet3p-nbjet1p --variables ${variable} --binThreshold ${binThreshold} ${parameter} ${fpsScale}"
+
+                done
+            done
+        done
     done
 done

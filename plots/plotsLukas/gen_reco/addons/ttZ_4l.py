@@ -82,13 +82,13 @@ def makeJets( event, sample, level ):
     # selection checks
     event.foundBj0       = isGoodJet( event.bj0 )
 #    event.foundBj1       = isGoodJet( event.bj1 )
-    event.foundBjNonZlep = getattr( event, '%sBjNonZlep_index'%preTag ) >= 0 and isGoodJet( event.bjNonZlep )
+#    event.foundBjNonZlep = getattr( event, '%sBjNonZlep_index'%preTag ) >= 0 and isGoodJet( event.bjNonZlep )
 #    event.foundBjNonZhad = getattr( event, '%sBjNonZhad_index'%preTag ) >= 0 and isGoodJet( event.bjNonZhad )
 #    event.foundBj0lep    = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
 #    event.foundBj0had    = getattr( event, '%sBjLeadhad_index'%preTag ) >= 0 and isGoodJet( event.bj0had )
 
     # choose your selection on b-jets
-    event.passing_bjets = event.foundBj0 and event.foundBjNonZlep
+    event.passing_bjets = event.foundBj0
 
 
 def makeMET( event, sample, level ):

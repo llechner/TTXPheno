@@ -115,6 +115,11 @@ ttXSample = getattr( loadedSamples, args.sample )
 WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
 ttSample = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights_ref' )
 
+if args.small:
+    ttXSample.reduceFiles( to = 20 )
+    WZSample.reduceFiles( to = 20 )
+    ttSample.reduceFiles( to = 20 )
+
 # Polynomial parametrization
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
 w = WeightInfo(ttXSample.reweight_pkl)
@@ -125,9 +130,9 @@ def checkReferencePoint( sample ):
     '''
     return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
 
+
 # configure samples
 for s in [ ttXSample, WZSample, ttSample ]:
-    if args.small: s.reduceFiles( to = 10 )
     # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
     s.event_factor = s.nEvents / float( s.chain.GetEntries() )
     s.setSelectionString( cutInterpreter.cutString(args.selection) )
@@ -136,8 +141,9 @@ for s in [ ttXSample, WZSample, ttSample ]:
         s.read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
 signal = ttXSample
-bg = [ WZSample, ttSample ]
-#bg = [ WZSample ]
+#bg = [ WZSample, ttSample ]
+#bg = [ ttSample ]
+bg = [ WZSample ]
 
 stackList = [ [signal] for param in params ]
 if args.backgrounds: stackList += [ bg ]

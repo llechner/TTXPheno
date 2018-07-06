@@ -30,7 +30,7 @@ def getCoeffListFromDraw( sample, order, selectionString, weightString = None ):
     return histo_to_list( histo )
 
 # Make a coeff histo from a sample
-def getCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None, nEventsThresh = 100 ):
+def getCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
     ''' Create list of weights using the Draw function
     '''
 
@@ -44,11 +44,11 @@ def getCoeffPlotFromDraw( sample, order, variableString, binning, selectionStrin
         selectionString = selectionString,
         weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
 
-    return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) if histo.ProjectionX("%i_px"%i, i+1, i+1).GetEntries() >= nEventsThresh ]
+    return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) if histo.ProjectionX("%i_px"%i, i+1, i+1).GetEntries() >= int(nEventsThresh) ]
 
 
 # Make a coeff histo from a sample
-def get2DCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None, nEventsThresh = 100 ):
+def get2DCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
     ''' Create list of weights using the Draw function
     '''
 
@@ -62,11 +62,11 @@ def get2DCoeffPlotFromDraw( sample, order, variableString, binning, selectionStr
         selectionString = selectionString,
         weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
 
-    return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) if histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1).GetEntries() > nEventsThresh ]
+    return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) if histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1).GetEntries() > int(nEventsThresh) ]
 
 
 # Make a coeff histo from a sample
-def get3DCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None, nEventsThresh = 100 ):
+def get3DCoeffPlotFromDraw( sample, order, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
     ''' Create list of weights using the Draw function
     '''
 
@@ -83,14 +83,13 @@ def get3DCoeffPlotFromDraw( sample, order, variableString, binning, selectionStr
         coeffList3D.append( get2DCoeffPlotFromDraw( sample, order, variableString2D, binning[:6], selectionString + '&&%s>=%f&&%s<%f'%( variableString3D, bounds[i], variableString3D, bound ), weightString, nEventsThresh ) )
 
     coeffList = []
-    for i, coeffs in enumerate( coeffList3D ):
+    for coeffs in coeffList3D:
         if len( coeffs ) == 0: continue
-        for j, coeff in enumerate( coeffs ):
+        for coeff in coeffs:
             if len( coeff ) == 0: continue
             coeffList.append( coeff )
 
     return coeffList
-#    return [ coeffList3D[i][j][:] for j in range( len( coeffList3D[i] ) ) if len( coeffList3D[i] ) > 0 for i in range( len( coeffList3D ) ) ]
 
 
 def getCoeffListFromEvents( sample, selectionString = None, weightFunction = None ):

@@ -112,8 +112,6 @@ fwlite_ttZ_ll_LO_order2_15weights_ref.reweight_pkl  = gridpack_dir + "18052018_r
 fwlite_ttZ_ll_LO_order2_15weights_ref.nEvents       = 990000
 fwlite_ttZ_ll_LO_order2_15weights_ref.xsec          = 0.0915 * 0.6823 / 0.07082 #pb ttZ, Z->ll, xsec_SM_NNLO * xsec_BSM_LO / xsec_SM_LO
 
-gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v7/"
-
 fwlite_ttW_LO_order2_15weights_ref                  = Sample.fromDirectory("fwlite_ttW_LO_order2_15weights_ref",     texName = "ttW",      directory = [os.path.join( gen_dir, "fwlite_ttW_LO_order2_15weights_ref" )])
 fwlite_ttW_LO_order2_15weights_ref.reweight_pkl     = gridpack_dir + "18052018_ref/ttW/order2/ttW0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttW_LO_order2_15weights_ref.nEvents          = 945000
@@ -132,14 +130,39 @@ fwlite_ttgamma_LO_order2_15weights_ref_delphes      = Sample.fromDirectory("fwli
 #fwlite_ttW_LO_order2_15weights_ref.addFriend(  fwlite_ttW_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttgamma_LO_order2_15weights_ref.addFriend(  fwlite_ttgamma_LO_order2_15weights_ref_delphes, treeName = "Delphes", sortFiles = True)
 
-gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v8/"
-
+"""
 # backgrounds 15/2 (tt) or 0/2 (WZ)
 # leptonic decays W > lnu, Z > ll, t > Wb
-fwlite_tt_lep_LO_order2_15weights_ref               = Sample.fromDirectory("fwlite_tt_lep_LO_order2_15weights_ref",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_lep_LO_order2_15weights_ref" )]) 
-fwlite_tt_lep_LO_order2_15weights_ref.reweight_pkl  = gridpack_dir + "05062018/tt/order2/tt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-fwlite_tt_lep_LO_order2_15weights_ref.nEvents       = 1000000 #? not checked!
-fwlite_tt_lep_LO_order2_15weights_ref.xsec          = 87.3148 * 735.1 / 46.57 #pb tt, W->lnu, xsec_SM_NNLO * xsec_BSM_LO / xsec_SM_LO
+fwlite_tt_lep_LO_order2_15weights               = Sample.fromDirectory("fwlite_tt_lep_LO_order2_15weights",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_lep_LO_order2_15weights" )]) 
+fwlite_tt_lep_LO_order2_15weights.reweight_pkl  = gridpack_dir + "06072018/tt/order2/tt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_tt_lep_LO_order2_15weights.nEvents       = 1000000 #? not checked!
+fwlite_tt_lep_LO_order2_15weights.xsec          = 87.3148 #pb tt, W->lnu, xsec_SM_NNLO
+
+fwlite_tZq_LO_order2_15weights               = Sample.fromDirectory("fwlite_tZq_LO_order2_15weights",  texName = "tZq",      directory = [os.path.join( gen_dir, "fwlite_tZq_LO_order2_15weights" )]) 
+fwlite_tZq_LO_order2_15weights.reweight_pkl  = gridpack_dir + "06072018/tZq/order2/tZq_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_tZq_LO_order2_15weights.nEvents       = 1000000 #? not checked!
+fwlite_tZq_LO_order2_15weights.xsec          = 0.09418 #pb tZq_ll
+
+fwlite_tW_LO_order2_15weights               = Sample.fromDirectory("fwlite_tW_LO_order2_15weights",  texName = "tW",      directory = [os.path.join( gen_dir, "fwlite_tW_LO_order2_15weights" )]) 
+fwlite_tW_LO_order2_15weights.reweight_pkl  = gridpack_dir + "06072018/tW/order2/tW_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_tW_LO_order2_15weights.nEvents       = 1000000 #? not checked!
+fwlite_tW_LO_order2_15weights.xsec          = 35.6 #pb T_tWch_ext
+
+fwlite_tWZ_LO_order2_15weights               = Sample.fromDirectory("fwlite_tWZ_LO_order2_15weights",  texName = "tWZ",      directory = [os.path.join( gen_dir, "fwlite_tWZ_LO_order2_15weights" )]) 
+fwlite_tWZ_LO_order2_15weights.reweight_pkl  = gridpack_dir + "06072018/tWZ/order2/tWZ_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_tWZ_LO_order2_15weights.nEvents       = 1000000 #? not checked!
+fwlite_tWZ_LO_order2_15weights.xsec          = 0.01123 #pb tWll
+
+fwlite_Zgamma_LO_order2_15weights               = Sample.fromDirectory("fwlite_Zgamma_LO_order2_15weights",  texName = "Zgamma",      directory = [os.path.join( gen_dir, "fwlite_Zgamma_LO_order2_15weights" )]) 
+fwlite_Zgamma_LO_order2_15weights.reweight_pkl  = gridpack_dir + "06072018/Zgamma/order2/Zgamma_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_Zgamma_LO_order2_15weights.nEvents       = 1000000 #? not checked!
+fwlite_Zgamma_LO_order2_15weights.xsec          = 131.3 #pb ZGTo2LG_ext
+
+fwlite_ttgamma_bg_LO_order2_15weights               = Sample.fromDirectory("fwlite_ttgamma_bg_LO_order2_15weights",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_bg_LO_order2_15weights" )]) 
+fwlite_ttgamma_bg_LO_order2_15weights.reweight_pkl  = gridpack_dir + "06072018/ttgamma/order2/ttgamma_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgamma_bg_LO_order2_15weights.nEvents       = 1000000 #? not checked!
+fwlite_ttgamma_bg_LO_order2_15weights.xsec          = 3.697 #pb ttgamma
+"""
 
 fwlite_WZ_lep_LO_order2_15weights                   = Sample.fromDirectory("fwlite_WZ_lep_LO_order2_15weights",     texName = "WZ",      directory = [os.path.join( gen_dir, "fwlite_WZ_lep_LO_order2_15weights" )])
 fwlite_WZ_lep_LO_order2_15weights.reweight_pkl      = gridpack_dir + "05062018/WZ/order2/WZ_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
@@ -153,6 +176,13 @@ fwlite_WZ_lep_LO_order2_15weights_delphes           = Sample.fromDirectory("fwli
 #fwlite_WZ_lep_LO_order2_15weights.addFriend(      fwlite_WZ_lep_LO_order2_15weights_delphes, treeName = "Delphes", sortFiles = True)
 
 """
+# backgrounds 15/2 (tt) or 0/2 (WZ)
+# leptonic decays W > lnu, Z > ll, t > Wb
+fwlite_tt_lep_LO_order2_15weights_ref               = Sample.fromDirectory("fwlite_tt_lep_LO_order2_15weights_ref",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_lep_LO_order2_15weights_ref" )]) 
+fwlite_tt_lep_LO_order2_15weights_ref.reweight_pkl  = gridpack_dir + "05062018_ref/tt/order2/tt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_tt_lep_LO_order2_15weights_ref.nEvents       = 1000000 #? not checked!
+fwlite_tt_lep_LO_order2_15weights_ref.xsec          = 87.3148 * 735.1 / 46.57 #pb tt, W->lnu, xsec_SM_NNLO * xsec_BSM_LO / xsec_SM_LO
+
 # hadronic + leptonic decays
 fwlite_tt_LO_order2_15weights_ref               = Sample.fromDirectory("fwlite_tt_LO_order2_15weights_ref",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_LO_order2_15weights_ref" )]) 
 fwlite_tt_LO_order2_15weights_ref.reweight_pkl  = gridpack_dir + "04062018/tt/order2/tt_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"

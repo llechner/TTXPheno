@@ -43,7 +43,7 @@ declare -a scales=('' '--scaleLumi')
 declare -a levels=('gen' 'reco')
 #declare -a levels=('gen')
 
-version='v7'
+version='v9'
 luminosity='150'
 process='ttW_2l'
 

@@ -60,6 +60,8 @@ ttW     = { '2D':[
 #                  { 'index':4, 'plotstring':'#phi(E_{T}^{miss}) : #phi(W)', 'var':'genW_phi:genMet_phi', 'binning':[ 5, -np.pi, np.pi, 5, -np.pi, np.pi  ] },
 #                  { 'index':5, 'plotstring':'#phi(E_{T}^{miss}) : #eta(W)', 'var':'genW_eta:genMet_phi', 'binning':[ 5, -np.pi, np.pi, 5, -3, 3 ] },
                  ],
+            '4D':[
+                 ],
 }
 
 # Additional plot variables for ttgamma
@@ -79,5 +81,10 @@ ttgamma = { '2D':[
 
 #                  { 'index':4, 'plotstring':'#phi(E_{T}^{miss}) : #phi(#gamma)', 'var':'genPhoton_phi:genMet_phi', 'binning':[ 5, -np.pi, np.pi, 5, -np.pi, np.pi  ] },
 #                  { 'index':5, 'plotstring':'#phi(E_{T}^{miss}) : #eta(#gamma)', 'var':'genPhoton_eta:genMet_phi', 'binning':[ 5, -np.pi, np.pi, 5, -3, 3 ] },
+                 ],
+            '4D':[
+                  { 'index':1, 'plotstring':'p_{T}(#gamma) : #phi(E_{T}^{miss}) : #phi(#gamma)', 'var':'genPhoton_phi:genMet_phi:genPhoton_pt',     'binning':[ 10, 0, 500, 5, -np.pi, np.pi, 5, -np.pi, np.pi ] },
+                  { 'index':2, 'plotstring':'p_{T}(#gamma) : #phi(E_{T}^{miss}) : #eta(#gamma)', 'var':'genPhoton_eta:genMet_phi:genPhoton_pt',     'binning':[ 10, 0, 500, 5, -np.pi, np.pi, 5, -3, 3  ] },
+                  { 'index':3, 'plotstring':'p_{T}(#gamma) : #phi(#gamma) : #eta(#gamma)',       'var':'genPhoton_eta:genPhoton_phi:genPhoton_pt',  'binning':[ 10, 0, 500, 5, -np.pi, np.pi, 5, -3, 3  ] },
                  ],
 }
