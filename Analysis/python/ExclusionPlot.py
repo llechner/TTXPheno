@@ -29,7 +29,6 @@ ttZ_sample.setWeightString("200")
 
 # get the reweighting function
 from TTXPheno.Tools.WeightInfo import WeightInfo
-from TTXPheno.Tools.plot_helpers import  getCoeffListFromDraw
 ttZ_sample.weightInfo = WeightInfo(ttZ_sample.reweight_pkl)
 ttZ_sample.weightInfo.set_order( 2 )
 
@@ -75,7 +74,7 @@ for i_region, region in enumerate(regions):
     logger.info( "At region %s", region )
 
     # compute signal yield for this region (this is the final code)
-    ttZ_coeffList[region] = getCoeffListFromDraw( ttZ_sample, 2, region.cutString(), weightString='150*ref_lumiweight1fb' ) 
+    ttZ_coeffList[region] = ttZ_sample.weightInfo.getCoeffListFromDraw( ttZ_sample, region.cutString(), weightString='150*ref_lumiweight1fb' ) 
     # TTZ SM
     ttZ_SM_rate[region] = ttZ_sample.weightInfo.get_weight_yield( ttZ_coeffList[region] )
     ttZ_SM_jec_uncertainty      [region] = 1.05 

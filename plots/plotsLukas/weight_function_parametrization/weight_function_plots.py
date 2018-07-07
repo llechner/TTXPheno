@@ -81,8 +81,8 @@ selection_string = cutInterpreter.cutString(args.selection)
 weight_string = None
 
 # coefficient list (all weights)
-#coeffList =  getCoeffPlotFromDraw( sample, args.order, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString=weight_string)
-coeffList = [getCoeffListFromDraw( sample, args.order, selection_string, weightString = weight_string )]
+#coeffList =  w.getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString=weight_string)
+coeffList = [w.getCoeffListFromDraw( sample, selection_string, weightString = weight_string )]
 
 def plot_1D_yield( var, coeffList, range = [-10, 10, .5], differential = False, normalization = False ):
     ''' Create 1D plot of (differential) yield as a function of WC (val) for a given list of weights (coeffList)

@@ -115,6 +115,93 @@ class WeightInfo:
             substrings.append( "p_C[%i]*%s" %(i_comb, str(fac).rstrip('0') ) )
         return "+".join( substrings )
 
+    # Make a coeff histo from a sample
+    def getCoeffListFromDraw( self, sample, selectionString, weightString = None ):
+        ''' Create list of weights using the Draw function
+        '''
+
+        # Draw 
+        histo = sample.get1DHistoFromDraw(
+            "Iteration$",
+            [ len(self.combinations), 0, len(self.combinations) ],
+            selectionString = selectionString,
+            weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
+
+        return histo_to_list( histo )
+
+    # Make a coeff histo from a sample
+    def getCoeffPlotFromDraw( self, sample, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
+        ''' Create list of weights using the Draw function
+        '''
+
+        histo = sample.get2DHistoFromDraw(
+            "%s:Iteration$"%variableString,
+            [ len(self.combinations), 0, len(self.combinations) ] + binning,
+            selectionString = selectionString,
+            weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
+
+        return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) if histo.ProjectionX("%i_px"%i, i+1, i+1).GetEntries() >= int(nEventsThresh) ]
+
+
+    # Make a coeff histo from a sample
+    def get2DCoeffPlotFromDraw( self, sample, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
+        ''' Create list of weights using the Draw function
+        '''
+        histo = sample.get3DHistoFromDraw(
+            "%s:Iteration$"%variableString,
+            [ len(self.combinations), 0, len(self.combinations) ] + binning,
+            selectionString = selectionString,
+            weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
+
+        return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) if histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1).GetEntries() > int(nEventsThresh) ]
+
+
+    # Make a coeff histo from a sample
+    def get3DCoeffPlotFromDraw( self, sample, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
+        ''' Create list of weights using the Draw function
+        '''
+
+        if len(binning) != 9: raise
+        if len(variableString.split(':')) != 3: raise
+
+        variableString2D = ':'.join( variableString.split(':')[1:] )
+        variableString3D = variableString.split(':')[0]
+
+        bounds = np.linspace( start=binning[7], stop=binning[8], num=binning[6]+1 )
+        coeffList3D = []
+        for i, bound in enumerate(bounds[1:]):
+            sample.setSelectionString('(1)')
+            coeffList3D.append( self.get2DCoeffPlotFromDraw( sample, variableString2D, binning[:6], selectionString + '&&%s>=%f&&%s<%f'%( variableString3D, bounds[i], variableString3D, bound ), weightString, nEventsThresh ) )
+
+        coeffList = []
+        for coeffs in coeffList3D:
+            if len( coeffs ) == 0: continue
+            for coeff in coeffs:
+                if len( coeff ) == 0: continue
+                coeffList.append( coeff )
+
+        return coeffList
+
+    # Get CoeffList from sample by looping over events
+    @staticmethod
+    def getCoeffListFromEvents( sample, selectionString = None, weightFunction = None ):
+        ''' Create list of weights for each event
+        '''
+
+        sample.setSelectionString( selectionString ) 
+
+        variables = map( TreeVariable.fromString, [ "np/I", "ref_lumiweight1fb/F", "lumiweight1fb/F" ] )
+        variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=1000) )
+
+        reader = sample.treeReader( variables = variables )
+        reader.start()
+
+        coeffs = []
+        while reader.run():
+            coeffs.append( [ reader.event.p_C[i] * (weightFunction( reader.event, sample )) if weightFunction is not None else reader.event.p_C[i] for i in range(reader.event.np) ] )
+
+        return coeffs
+
     @staticmethod
     @helpers.memoized
     def differentiate( comb, var ):
@@ -146,7 +233,7 @@ class WeightInfo:
             return prefac0*prefac1, comb_diff2
             
     # String methods
-    def diff_weight_string_WC(self, var):
+    def diff_weight_string_allWC(self, var):
         ''' return string of the full weight string, differentiated wrt to var as a function of all WC
         '''
 
@@ -167,8 +254,7 @@ class WeightInfo:
         
         return "+".join( substrings )
 
-
-    def fisher_parametrization_string_WC( self, var1, var2 ):
+    def fisher_parametrization_string_allWC( self, var1, var2 ):
         ''' return a string for the fisher information vor variables var1, vars as a function of the weight coefficients and all WC 
         '''
 
@@ -468,33 +554,14 @@ if __name__ == "__main__":
     selection_string = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
     #selection_string = "evt==955001&&run==1&&lumi==9551"
 
-    from TTXPheno.Tools.plot_helpers import getCoeffListFromDraw, getCoeffPlotFromDraw
-    ## Make a coeff histo from a sample
-    #def getCoeffListFromDraw( sample, selectionString, weightString = None):
-    #    histo = sample.get1DHistoFromDraw( 
-    #        "Iteration$", 
-    #        [ len(w.combinations), 0, len(w.combinations) ], 
-    #        selectionString = selectionString, 
-    #        weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
-    #    return histo_to_list( histo )
-
-    ## Make a coeff histo from a sample
-    #def getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString = None):
-    #    # 2D Plot, Iteration$ is on x
-    #    histo = sample.get2DHistoFromDraw( 
-    #        "Iteration$:%s"%variableString, 
-    #        [ len(w.combinations), 0, len(w.combinations) ] + binning, 
-    #        selectionString = selectionString, 
-    #        weightString = 'p_C*(%s)'%weightString if weightString is not None else 'p_C' )
-
     #    return [ histo_to_list(histo.ProjectionX("%i_px"%i, i+1, i+1)) for i in range( histo.GetNbinsY() ) ]
 #   #     return histo_to_list( histo )
 
     # Fisher information in ptZ histo
-    coeff_Z_pt = getCoeffPlotFromDraw( sample, 2, 'genZ_pt', [ 20, 0, 500 ], selection_string, weightString='150*ref_lumiweight1fb')
+    coeff_Z_pt = w.getCoeffPlotFromDraw( sample, 'genZ_pt', [ 20, 0, 500 ], selection_string, weightString='150*ref_lumiweight1fb')
     # Fisher information in x-sec
     #coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
-    coeff_tot = getCoeffListFromDraw( sample, 2, selection_string, weightString='150*ref_lumiweight1fb' )
+    coeff_tot = w.getCoeffListFromDraw( sample, selection_string, weightString='150*ref_lumiweight1fb' )
 
     print w.get_weight_yield(coeff_tot, ctZ=0.),  w.get_weight_yield(coeff_tot, ctZ=5)
 
