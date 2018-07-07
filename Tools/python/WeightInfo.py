@@ -455,7 +455,7 @@ if __name__ == "__main__":
     logger    = logger.get_logger(   'INFO', logFile = None)
     logger_rt = logger_rt.get_logger('INFO', logFile = None)
     # TTXPheno
-    from TTXPheno.Tools.cutInterpreter import cutInterpreter
+    from TTXPheno.Tools.cutInterpreterGen import cutInterpreter
     from TTXPheno.samples.benchmarks import * 
 
     # Sample
@@ -491,60 +491,60 @@ if __name__ == "__main__":
 #   #     return histo_to_list( histo )
 
     # Fisher information in ptZ histo
-    coeff_Z_pt = getCoeffPlotFromDraw( sample, 'Z_pt', [ 20, 0, 500 ], selection_string, weightString='150*ref_lumiweight1fb')
+    coeff_Z_pt = getCoeffPlotFromDraw( sample, 2, 'genZ_pt', [ 20, 0, 500 ], selection_string, weightString='150*ref_lumiweight1fb')
     # Fisher information in x-sec
     #coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*lumiweight1fb')
-    coeff_tot = getCoeffListFromDraw( sample, selection_string, weightString='150*ref_lumiweight1fb' )
+    coeff_tot = getCoeffListFromDraw( sample, 2, selection_string, weightString='150*ref_lumiweight1fb' )
 
-#    w.get_weight_yield(coeff_Z_pt, ctG=10)
+    print w.get_weight_yield(coeff_tot, ctZ=0.),  w.get_weight_yield(coeff_tot, ctZ=5)
 
 
     #print(len(coeff_Z_pt))
     #print w.matrix_to_string(*w.get_total_fisherInformation_matrix(coeff_Z_pt, variables))
     #print np.linalg.eigvals(w.get_total_fisherInformation_matrix(coeff_Z_pt, variables)[1])
 
-    from TTXPheno.Tools.Geodesic import Geodesic
+    #from TTXPheno.Tools.Geodesic import Geodesic
 
-    variables = ('cpQM', 'cpt')
+    #variables = ('cpQM', 'cpt')
 
-    def phase_space_dict(  point ):
-        return { var:val for var,val in zip( sum( [ [v, v+'_dot'] for v in variables ], [] ), point ) }
+    #def phase_space_dict(  point ):
+    #    return { var:val for var,val in zip( sum( [ [v, v+'_dot'] for v in variables ], [] ), point ) }
 
-    christoffel_symbols = w.get_christoffels(  coeff_Z_pt,  variables = variables) 
+    #christoffel_symbols = w.get_christoffels(  coeff_Z_pt,  variables = variables) 
 
-    initial_point      = (0, 0.)
+    #initial_point      = (0, 0.)
 
-    Npoints = 24
-    phis = [2*pi*float(n)/Npoints for n in range(Npoints)]
-    initial_derivatives = [ (.04*cos(phi), .04*sin(phi) ) for phi in phis ]
+    #Npoints = 24
+    #phis = [2*pi*float(n)/Npoints for n in range(Npoints)]
+    #initial_derivatives = [ (.04*cos(phi), .04*sin(phi) ) for phi in phis ]
 
-    # Initialize Geodesic
-    geodesics = [Geodesic( initial_point, initial_derivative, christoffel_symbols ) for initial_derivative in initial_derivatives ]
+    ## Initialize Geodesic
+    #geodesics = [Geodesic( initial_point, initial_derivative, christoffel_symbols ) for initial_derivative in initial_derivatives ]
 
-    # How far we want to go in the parameter q
-    q_max = 500
-    nq    = 50
+    ## How far we want to go in the parameter q
+    #q_max = 500
+    #nq    = 50
 
+    ##
+    ##solver_args = {'hmax':0.01}
+    #solver_args = {}
+    ## Define q values & solve
+    #q_values = np.linspace(0, q_max, nq+1)
+    #solutions = [ map( phase_space_dict, geodesic.solve(q_values, **solver_args) ) for geodesic in geodesics]
+    ## Add the parameter value
+    #for solution in solutions:
+    #    for i_q_value, q_value in enumerate( q_values ):
+    #        solution[i_q_value]['q'] = q_value
     #
-    #solver_args = {'hmax':0.01}
-    solver_args = {}
-    # Define q values & solve
-    q_values = np.linspace(0, q_max, nq+1)
-    solutions = [ map( phase_space_dict, geodesic.solve(q_values, **solver_args) ) for geodesic in geodesics]
-    # Add the parameter value
-    for solution in solutions:
-        for i_q_value, q_value in enumerate( q_values ):
-            solution[i_q_value]['q'] = q_value
-    
-    import ROOT
-    import array
+    #import ROOT
+    #import array
 
-    tgraphs = [ ROOT.TGraph(nq, array.array('d', [ y[variables[0]] for y in solution ]),  array.array('d', [ y[variables[1]] for y in solution ]) ) for solution in solutions ]
+    #tgraphs = [ ROOT.TGraph(nq, array.array('d', [ y[variables[0]] for y in solution ]),  array.array('d', [ y[variables[1]] for y in solution ]) ) for solution in solutions ]
 
-    multigraph = ROOT.TMultiGraph("gr","gr")
-    for graph in tgraphs:
-        multigraph.Add(graph)
-        
-    c1 = ROOT.TCanvas()
-    multigraph.Draw("AC")
-    c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/info_geodesic_4.png")
+    #multigraph = ROOT.TMultiGraph("gr","gr")
+    #for graph in tgraphs:
+    #    multigraph.Add(graph)
+    #    
+    #c1 = ROOT.TCanvas()
+    #multigraph.Draw("AC")
+    #c1.Print("/afs/hephy.at/user/r/rschoefbeck/www/etc/info_geodesic_4.png")
