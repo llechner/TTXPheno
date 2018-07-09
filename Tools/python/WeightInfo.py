@@ -131,7 +131,7 @@ class WeightInfo:
 
     # Make a coeff histo from a sample
     def getCoeffPlotFromDraw( self, sample, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
-        ''' Create list of weights using the Draw function
+        ''' Create list of weights using the Draw function (statistic check with nEventsThresh not yet implemented)
         '''
 
         histo = sample.get2DHistoFromDraw(
@@ -140,12 +140,13 @@ class WeightInfo:
             selectionString = selectionString,
             weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
 
-        return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) if histo.ProjectionX("%i_px"%i, i+1, i+1).GetEntries() >= int(nEventsThresh) ]
+#        return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) if histo.ProjectionX("%i_px"%i, i+1, i+1).GetEntries() >= int(nEventsThresh) ]
+        return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) ]
 
 
     # Make a coeff histo from a sample
     def get2DCoeffPlotFromDraw( self, sample, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
-        ''' Create list of weights using the Draw function
+        ''' Create list of weights using the Draw function (statistic check with nEventsThresh not yet implemented)
         '''
         histo = sample.get3DHistoFromDraw(
             "%s:Iteration$"%variableString,
@@ -153,16 +154,19 @@ class WeightInfo:
             selectionString = selectionString,
             weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
 
-        return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) if histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1).GetEntries() > int(nEventsThresh) ]
+#        return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) if histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1).GetEntries() > int(nEventsThresh) ]
+        return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) ]
 
 
     # Make a coeff histo from a sample
     def get3DCoeffPlotFromDraw( self, sample, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
-        ''' Create list of weights using the Draw function
+        ''' Create list of weights using the Draw function (statistic check with nEventsThresh not yet implemented)
         '''
 
-        if len(binning) != 9: raise
-        if len(variableString.split(':')) != 3: raise
+        if len(binning) != 9:
+            raise ValueError('Binning has to be in the format [bins1, min1, max1, bins2, min2, max2, bins3, min3, max3]!')
+        if len(variableString.split(':')) != 3:
+            raise ValueError('VariableString has to be in the format var1:var2:var3!')
 
         variableString2D = ':'.join( variableString.split(':')[1:] )
         variableString3D = variableString.split(':')[0]
