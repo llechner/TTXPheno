@@ -132,7 +132,7 @@ for var in plotVariables2D:
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = getCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
+    var['coeff']       = w.getCoeffPlotFromDraw( sample, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s bins)' %str(var['binning'][0])
     var['color']       = 30
@@ -141,7 +141,7 @@ for var in plotVariables3D:
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = get2DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
+    var['coeff']       = w.get2DCoeffPlotFromDraw( sample, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]))
     var['color']       = 41
@@ -150,7 +150,7 @@ for var in plotVariables4D:
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = get3DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
+    var['coeff']       = w.get3DCoeffPlotFromDraw( sample, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]), str(var['binning'][6]))
     var['color']       = 45
@@ -159,14 +159,14 @@ for var in plotVariables4D:
 # Calculate determinant using the 'variables' submatrix of FI
 for selection in selections:
     sample.setSelectionString('1')
-    selection['coeff'] = getCoeffListFromEvents( sample, selectionString = cutInterpreter.cutString(selection['selection']), weightFunction = weightFunction )
+    selection['coeff'] = w.getCoeffListFromEvents( sample, selectionString = cutInterpreter.cutString(selection['selection']), weightFunction = weightFunction )
     selection['color'] = 46
 
 # Full Fisher information
 if not args.fpsScaling:
     sample.setSelectionString('1')
     full              = { 'plotstring':'full'}
-    full['coeff']     = getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
+    full['coeff']     = w.getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
     full['color']     = 15
 
 expo = 1. / len(args.variables)

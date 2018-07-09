@@ -30,6 +30,48 @@ def float_cast( string ):
         return 1.0
     else:
         return float( string )
+
+def minimize( nll ):
+    '''Minimize NLL according to 
+       https://root.cern.ch/doc/v606/classRooStats_1_1ProfileLikelihoodCalculator.html#a5fb0beddc24d1bd4bf4346532a517497
+    '''
+    minimType = ROOT.Math.MinimizerOptions.DefaultMinimizerType()
+    minimAlgo = ROOT.Math.MinimizerOptions.DefaultMinimizerAlgo()
+    strategy  = ROOT.Math.MinimizerOptions.DefaultStrategy()
+    level     = ROOT.Math.MinimizerOptions.DefaultPrintLevel() -1
+    tolerance = ROOT.Math.MinimizerOptions.DefaultTolerance()
+
+    minimizer = ROOT.RooMinimizer(nll)
+
+    minimizer.setStrategy(strategy)
+    minimizer.setEps(tolerance)
+    minimizer.setPrintLevel(999)
+    minimizer.optimizeConst(2) #to optimize likelihood calculations
+
+    status = minimizer.minimize(minimType,minimAlgo)
+    result = minimizer.save()
+
+    status   = -1
+    maxtries = 4
+    for ntry in range(1, maxtries+1):
+       status = minimizer.minimize(minimType,minimAlgo)
+       if (status%1000 == 0): # ignore erros from Improve 
+          break
+       elif ntry < maxtries:
+          logger.warning( "minimizer re-try %i: Doing a re-scan first", ntry)
+          minimizer.minimize(minimType,"Scan")
+          if (ntry == 2):
+             if (strategy == 0 ):
+                logger.warning( "minimizer re-try %i, trying with strategy = 1", ntry)
+                minimizer.setStrategy(1)
+             else: 
+                ntry+=1 # skip this trial if strategy is already 1 
+          if (ntry == 3):
+             logger.warning("minimizer re-try %i, trying with migradimproved", ntry)
+             minimType = "Minuit"
+             minimAlgo = "migradimproved"
+
+    if (status%1000 == 0): return minimizer.save()
         
 class ProfiledLoglikelihoodFit:
 
@@ -39,8 +81,6 @@ class ProfiledLoglikelihoodFit:
         self.modelname                   = os.path.splitext(os.path.basename(self.filename))[0]
         self.nuisance_names              = []
         self.nuisance_uncertainty_values = {}
-        self.rmin = 0
-        self.rmax = 10.
 
         # read card filefile
         with open( filename, 'r' ) as file:
@@ -95,7 +135,7 @@ class ProfiledLoglikelihoodFit:
         self.nNuisances     = len(self.nuisance_names)  
         logger.info( "Nuisances: %i (%s)", self.nNuisances, ",".join( self.nuisance_names ) )
 
-    def make_workspace( self ):
+    def make_workspace( self, rmin=0, rmax=10.):
         self.ws = ROOT.RooWorkspace("workspace")
         ROOT.SetOwnership( self.ws, False )
 
@@ -113,7 +153,7 @@ class ProfiledLoglikelihoodFit:
         self.glob      = ROOT.RooArgSet("global")
 
         # signal strength modifier
-        self.ws.factory( "r[1,%f,%f]"%(self.rmin, self.rmax) )
+        self.ws.factory( "r[1,%f,%f]"%(rmin, rmax) )
         self.poi       = ROOT.RooArgSet("poi")
         self.poi.add( self.ws.var("r") )
 
@@ -262,7 +302,10 @@ class ProfiledLoglikelihoodFit:
         if not os.path.exists( directory ):
             os.makedirs( directory )
         c1.Print( os.path.join( directory, calculator+"_HTI_Result_Plot.png") )
-        
+
+        plot.IsA().Destructor( plot )
+        del plot
+ 
         # Plots of test statistic 
         n = r.ArraySize()
         if (n> 0 and r.GetResult(0).GetNullDistribution() ):
@@ -278,6 +321,35 @@ class ProfiledLoglikelihoodFit:
 
         return {i:r.GetExpectedUpperLimit(i) for i in range(-2,3)}
 
+    def cleanup( self ):
+        for obj in [ self.data, self.ws]:
+            obj.IsA().Destructor( obj )
+
+    def likelihoodTest( self ):
+        '''Make likelihood test '''
+        # read PDF and data
+        pdf =  self.ws.pdf("model")
+        data = self.ws.data("data")
+
+        # Here we only test hypothesis
+        self.poi.first().setVal(1)
+        self.poi.first().setConstant(True)
+
+        # get the fit parameters
+        parameters = pdf.getParameters(data)
+        ROOT.RooStats.RemoveConstantParameters( parameters )
+        
+        # create NLL
+        self.nll = pdf.createNLL(data, ROOT.RooFit.CloneData(True), ROOT.RooFit.Constrain(parameters))
+        ROOT.SetOwnership( self.nll, False )
+
+        # minimize
+        fitResult = minimize( self.nll )
+        if fitResult is not None:
+            logger.info( "Minimum NLL is %f", fitResult.minNll() )
+            return fitResult.minNll()
+        else:
+            logger.warning( "Did not get fitResult!" )
 
 #    def make_profiled_interval( self ):
 #
@@ -311,7 +383,8 @@ if __name__=="__main__":
     profiledLoglikelihoodFit.make_workspace() 
 
     #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
-    expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
+    #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
+    #for i in range( -2, 3):
+    #    print "expected limit %+i sigma %f"%( i, expected_limit[i] )
 
-    for i in range( -2, 3):
-        print "expected limit %+i sigma %f"%( i, expected_limit[i] )
+    profiledLoglikelihoodFit.likelihoodTest()

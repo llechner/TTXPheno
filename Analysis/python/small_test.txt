@@ -1,12 +1,10 @@
-# Simple counting experiment, with one signal and a few background processes 
-# Simplified version of the 35/pb H->WW analysis for mH = 160 GeV
 imax 1  number of channels
 jmax 3  number of backgrounds
 kmax 5  number of nuisance parameters (sources of systematical uncertainties)
 ------------
 # we have just one channel, in which we observe 0 events
 bin B1
-observation 1
+observation 2
 ------------
 # now we list the expected events for signal and all backgrounds in that bin
 # the second 'process' line must have a positive number for backgrounds, and 0 for signal

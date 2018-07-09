@@ -122,7 +122,7 @@ def appendPlotInformation( VariableList ):
         #remove initial selection string
         sample.setSelectionString('1')
 
-        coeffList = getCoeffPlotFromDraw( sample, args.order, plotVariable['var'], plotVariable['binning'], selectionString, weightString=weightString )
+        coeffList = w.getCoeffPlotFromDraw( sample, plotVariable['var'], plotVariable['binning'], selectionString, weightString=weightString )
 
         detIList  = [ np.linalg.det( w.get_fisherInformation_matrix( coeffs, args.variables, **WC )[1] ) for coeffs in coeffList ]
         detIList  = [ abs(detI)**expo for detI in detIList ]

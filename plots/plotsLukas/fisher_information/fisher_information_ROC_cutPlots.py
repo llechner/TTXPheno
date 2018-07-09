@@ -121,11 +121,11 @@ if args.level != 'gen':
         item['var'] = item['var'].replace(search_string, replacement_string)
 
 # fps info for normalization to full-pre-selection
-coeff_sel = getCoeffListFromEvents( sample, selectionString = selectionString, weightFunction = weightFunction )
+coeff_sel = w.getCoeffListFromEvents( sample, selectionString = selectionString, weightFunction = weightFunction )
 detI0_sel = np.linalg.det( w.get_total_fisherInformation_matrix( coeff_sel, args.variables, **WC )[1] )
 
 # full info for normalization to full-sample
-coeff_full = getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
+coeff_full = w.getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
 detI0_full = np.linalg.det( w.get_total_fisherInformation_matrix( coeff_full, args.variables, **WC )[1] )
 
 def appendPlotInformation( VariableList ):
@@ -166,7 +166,7 @@ def appendPlotInformation( VariableList ):
                 # add additional graphs for various bin values to the cut plot, do the usual for the bin plot
                 binning_ = [int(val)] + plotVariable['binning'][1:]
         
-                coeff = getCoeffPlotFromDraw( sample, args.order, plotVariable['var'], binning_, selectionString = selectionString_, weightString = weightString ) 
+                coeff = w.getCoeffPlotFromDraw( sample, plotVariable['var'], binning_, selectionString = selectionString_, weightString = weightString ) 
         
                 # check if all entries are non-zero (otherwise FI matrix is 0-dim object -> Error)
                 if all( [ all( [ v==0. for v in item ] ) for item in coeff ] ): continue
