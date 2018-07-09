@@ -170,7 +170,7 @@ if not args.fpsScaling:
 
 expo = 1. / len(inputvariables)
 data = [full] if not args.fpsScaling else []
-data += selections + plotVariables2D + plotVariables3D
+data += selections + plotVariables2D + plotVariables3D + plotVariables4D
 n_data = len(data)
 
 plot_directory_ = os.path.join(\
