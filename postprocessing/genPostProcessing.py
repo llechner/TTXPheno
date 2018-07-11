@@ -167,7 +167,9 @@ variables     += ["genLepZ_l1_index/I", "genLepZ_l2_index/I", "genLepNonZ_l1_ind
 # W vector
 variables     += ["genW_pt/F", "genW_phi/F", "genW_eta/F", "genW_mass/F", "genW_daughterPdg/I"]
 # gamma vector
-variables     += ["genPhoton_pt/F", "genPhoton_phi/F", "genPhoton_eta/F", "genPhoton_mass/F"]
+gen_photon_vars = "pt/F,phi/F,eta/F,mass/F"
+variables     += ["genPhotons[%s,motherPdgId/I]"%gen_photon_vars]
+gen_photon_varnames = varnames( gen_photon_vars )
 
 if args.delphes:
     # reconstructed bosons
@@ -316,14 +318,16 @@ def filler( event ):
     event.genMet_pt  = genMet['pt']
     event.genMet_phi = genMet['phi'] 
 
-    genPhotons = filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp)
-    genPhotons.sort( key = lambda p: -p.pt() )
-    if len(genPhotons)>0: 
-        genPhoton = genPhotons[0]
-        for var in boson_read_varnames:
-           setattr( event, "genPhoton_"+var,  getattr(genPhoton, var)() )
-    else:
-        genPhoton = None
+    # gen photons
+    genPhotons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp) ]
+    genPhotons.sort( key = lambda p: -p[1].pt() )
+    genPhots   = [] 
+    for first, last in genPhotons: 
+        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
+        genPhots.append( {var: getattr(last, var)() for var in gen_photon_varnames} )
+        genPhots[-1]['motherPdgId'] = motherPdgId
+
+    fill_vector_collection( event, "genPhotons", gen_photon_varnames, genPhotons ) 
     
     # find all genLeptons 
     genLeptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0,  gp) ]
