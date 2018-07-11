@@ -64,8 +64,8 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=10 # Number of files
-    sample.files=sample.files[:10]
+    maxEvents=1000 # Number of files
+    sample.files=sample.files[:1]
 
 xsec = sample.xsec
 nEvents = sample.nEvents
@@ -165,8 +165,8 @@ variables     += ["genLepZ_l1_index/I", "genLepZ_l2_index/I", "genLepNonZ_l1_ind
 # W vector
 variables     += ["genW_pt/F", "genW_phi/F", "genW_eta/F", "genW_mass/F", "genW_daughterPdg/I"]
 # gamma vector
-gen_photon_vars = "pt/F,phi/F,eta/F,mass/F"
-variables     += ["genPhotons[%s,motherPdgId/I]"%gen_photon_vars]
+gen_photon_vars = "pt/F,phi/F,eta/F,mass/F,motherPdgId/I"
+variables     += ["genPhoton[%s]"%gen_photon_vars]
 gen_photon_varnames = varnames( gen_photon_vars )
 
 if args.delphes:
@@ -190,7 +190,7 @@ if args.delphes:
     variables += [ "recoBjNonZlep_index/I", "recoBjNonZhad_index/I" ]
     variables += [ "recoBjLeadlep_index/I", "recoBjLeadhad_index/I" ]
     # reconstructed photons
-    recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F'
+    recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I'
     variables      += ["recoPhoton[%s]"%recoPhoton_vars]
     recoPhoton_varnames = varnames( recoPhoton_vars )
 
@@ -317,15 +317,15 @@ def filler( event ):
     event.genMet_phi = genMet['phi'] 
 
     # gen photons
-    genPhotons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId())==22 and search.isLast(p), gp) ]
+    genPhotons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId())==22 and p.pt()>15 and search.isLast(p), gp) ]
     genPhotons.sort( key = lambda p: -p[1].pt() )
-    genPhots   = [] 
-    for first, last in genPhotons: 
+    genPhotons_   = [] 
+    for first, last in genPhotons[:100]: 
         mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
-        genPhots.append( {var: getattr(last, var)() for var in gen_photon_varnames} )
-        genPhots[-1]['motherPdgId'] = motherPdgId
+        genPhotons_.append( {var: getattr(last, var)() for var in boson_read_varnames} )
+        genPhotons_[-1]['motherPdgId'] = mother_pdgId
 
-    fill_vector_collection( event, "genPhotons", gen_photon_varnames, genPhotons ) 
+    fill_vector_collection( event, "genPhoton", gen_photon_varnames, genPhotons_ ) 
     
     # find all genLeptons 
     genLeptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0,  gp) ]
@@ -443,7 +443,7 @@ def filler( event ):
                     min_DR_jet = jet
                     min_DR     = deltaR2(jet, lep)
             if min_DR<0.4**2: 
-                print "Filtering lepton", lep, "because DR", sqrt(min_DR), "of jet", jet
+                #print "Filtering lepton", lep, "because DR", sqrt(min_DR), "of jet", jet
                 break
 
         # cross-cleaning of reco-objects
@@ -463,7 +463,14 @@ def filler( event ):
 
         # Photons
         recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
-
+        for recoPhoton in recoPhotons:
+            recoPhoton['genIndex'] = -1
+            minDR = 999
+            for index, genPhoton in enumerate(genPhotons_):
+                dr = deltaR( recoPhoton, genPhoton )
+                if dr<0.4 and dr<minDR:
+                    minDR = dr
+                    recoPhoton['genIndex'] = index 
         # Store
         fill_vector_collection( event, "recoLep",    recoLep_varnames, recoLeps )
         fill_vector_collection( event, "recoJet",    recoJet_varnames, recoJets )
@@ -509,7 +516,6 @@ tmp_dir     = ROOT.gDirectory
 #post_fix = '_%i'%args.job if args.nJobs > 1 else ''
 output_filename =  os.path.join(output_directory, sample.name + '.root')
 
-print output_filename.replace('.root', '.log'), output_filename.replace('.root', '_rt.log')
 _logger.   add_fileHandler( output_filename.replace('.root', '.log'), args.logLevel )
 _logger_rt.add_fileHandler( output_filename.replace('.root', '_rt.log'), args.logLevel )
 
