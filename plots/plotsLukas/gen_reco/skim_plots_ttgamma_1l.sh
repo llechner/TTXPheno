@@ -22,8 +22,8 @@ declare -a samples2=('fwlite_ttgamma_LO_order2_15weights_ref')
 declare -a samples3=('')
 
 # declare selection strings to analyze
-declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-njet3p-nbjet1p' 'gammapt100to200-nlep1p-njet3p-nbjet1p' 'gammapt200to300-nlep1p-njet3p-nbjet1p' 'gammapt300-nlep1p-njet3p-nbjet1p')
-#declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p')
+#declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-njet3p-nbjet1p' 'gammapt100to200-nlep1p-njet3p-nbjet1p' 'gammapt200to300-nlep1p-njet3p-nbjet1p' 'gammapt300-nlep1p-njet3p-nbjet1p')
+declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p', 'gammapt15-nlep1p-njet3p-nbjet1p', 'gammapt15-gammaeta0to2.5-nlepttgamma1p-njet3p-nbjet1p', 'gammapt15-gammaeta0to2.5-nlepttgamma1p-nbjet1p')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -44,11 +44,12 @@ declare -a scales=('' '--scaleLumi')
 #declare -a levels=('reco')
 declare -a levels=('gen' 'reco')
 
-version='v9'
+version='v17_bg'
 luminosity='150'
 process='ttgamma_1l'
 
 backgrounds="--backgrounds"
+#backgrounds=""
 
 # define program to run by python
 prog=skim_plots.py

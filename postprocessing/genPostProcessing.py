@@ -1,4 +1,4 @@
-2#!/usr/bin/env python
+#!/usr/bin/env python
 ''' Make flat ntuple from GEN data tier 
 '''
 #
@@ -65,13 +65,11 @@ maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
     maxEvents=10 # Number of files
-    sample.files=sample.files[:1]
+    sample.files=sample.files[:10]
 
 xsec = sample.xsec
 nEvents = sample.nEvents
 lumiweight1fb = xsec * 1000. / nEvents
-
-print lumiweight1fb
 
 # output directory
 output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, sample.name) 

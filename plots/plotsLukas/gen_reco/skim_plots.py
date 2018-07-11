@@ -42,6 +42,7 @@ argParser.add_argument('--scaleLumi',       action='store_true', help='Scale lum
 argParser.add_argument('--reweightPtXToSM', action='store_true', help='Reweight Pt(X) to the SM for all the signals?')
 argParser.add_argument('--parameters',      action='store',     default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
+argParser.add_argument('--leptonFlavor',    action='store',     default='all', nargs='?', choices=['all', 'same', 'opposite'], help='same flavor of nonZ leptons for ttZ 4l and ttgamma 2l? No effect on other processes') 
 
 args = argParser.parse_args()
 
@@ -105,7 +106,7 @@ process = imp.load_source( "process", os.path.expandvars( process_file ) )
 #root file variables
 read_variables = process.getVariableList( args.level )
 #sequence functions
-sequence = process.getSequenceList( args.level )
+sequence = process.getSequenceList( args.level, args.leptonFlavor )
 
 # Import samples
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
@@ -113,12 +114,24 @@ loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
 ttXSample = getattr( loadedSamples, args.sample )
 WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-ttSample = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights_ref' )
+ttSample = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights' )
+ttSemiLepSample = getattr( loadedSamples, 'fwlite_tt_semilep_LO_order2_15weights' )
+tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
+tWZSample = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
+tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
+ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
+ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
 
 if args.small:
-    ttXSample.reduceFiles( to = 20 )
-    WZSample.reduceFiles( to = 20 )
-    ttSample.reduceFiles( to = 20 )
+    ttXSample.reduceFiles( to = 1 )
+    WZSample.reduceFiles( to = 1 )
+    ttSample.reduceFiles( to = 1 )
+    ttSemiLepSample.reduceFiles( to = 1 )
+    tWSample.reduceFiles( to = 1 )
+    tWZSample.reduceFiles( to = 1 )
+    tZqSample.reduceFiles( to = 1 )
+    ZgammaSample.reduceFiles( to = 1 )
+    ttgammaSample.reduceFiles( to = 1 )
 
 # Polynomial parametrization
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
@@ -130,9 +143,8 @@ def checkReferencePoint( sample ):
     '''
     return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
 
-
 # configure samples
-for s in [ ttXSample, WZSample, ttSample ]:
+for s in [ ttXSample, WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]:
     # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
     s.event_factor = s.nEvents / float( s.chain.GetEntries() )
     s.setSelectionString( cutInterpreter.cutString(args.selection) )
@@ -141,15 +153,27 @@ for s in [ ttXSample, WZSample, ttSample ]:
         s.read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
 signal = ttXSample
+if args.processFile == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+elif args.processFile == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+#elif args.processFile == 'ttgamma_1l': bg = [ ttSample, tWSample, ZgammaSample ] #ttSemiLepSample
+elif args.processFile == 'ttgamma_1l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+elif args.processFile == 'ttgamma_2l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+else: bg = [ WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]
+
 #bg = [ WZSample, ttSample ]
 #bg = [ ttSample ]
-bg = [ WZSample ]
+#bg = [ WZSample ]
 
 stackList = [ [signal] for param in params ]
 if args.backgrounds: stackList += [ bg ]
 stack = Stack( *stackList )
 
-if args.backgrounds: params += [[ {'legendText':s.name.split('_')[1], 'WC':{}, 'color':colors[len(params)+i]} for i, s in enumerate(bg) ]]
+def legendtext( sample ):
+    splitname = sample.name.split('_')
+    if splitname[1] != 'tt': return splitname[1]
+    else: return ' '.join(splitname[1:3])
+
+if args.backgrounds: params += [[ {'legendText':legendtext(s), 'WC':{}, 'color':colors[-1-i]} for i, s in enumerate(bg) ]]
 
 # reweighting of pTZ
 if args.reweightPtXToSM:
@@ -242,6 +266,7 @@ def drawPlots(plots):
         ttXSample.name,
         subDirectory,
         args.selection if args.selection is not None else 'no_selection',
+        '%sLeptonFlavors',
         WC_directory,
         "log" if log else "lin")
 
