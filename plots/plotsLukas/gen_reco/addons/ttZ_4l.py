@@ -28,7 +28,7 @@ def getVariableList( level ):
         "lumiweight1fb/F",
         "genMet_pt/F", "genMet_phi/F",
     
-        "ngenJet/I", "genJet[pt/F,eta/F,phi/F]",
+        "ngenJet/I", #"genJet[pt/F,eta/F,phi/F]",
         "ngenLep/I", "genLep[pt/F,eta/F,phi/F,pdgId/I]",
     
         "genZ_pt/F", "genZ_eta/F", "genZ_phi/F", "genZ_mass/F", "genZ_cosThetaStar/F",
@@ -52,6 +52,9 @@ def getVariableList( level ):
     if level == 'reco':
         read_variables_gen    = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
         read_variables_genLep = [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
+        read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
+    else:
+        read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/F]")
 
     read_variables = read_variables_gen + read_variables_genLep
     read_variables = list( set( read_variables ) ) # remove double entries
@@ -65,6 +68,11 @@ def makeJets( event, sample, level ):
     '''
     preTag = 'reco' if level == 'reco' else 'gen'
     tag    = 'reco' if level == 'reco' else 'genLep'
+
+    # load jets
+    btag = 'bTag' if level == 'reco' else 'matchBParton'
+    event.jets = getCollection( event, '%sJet'%preTag, ['pt', 'eta', 'phi', btag ], 'n%sJet'%preTag )
+    event.bjets = list( filter( lambda j: j[btag], event.jets ) )
 
     # get (second) hardest bjets
     event.bj0 = {'pt':getattr( event, '%sBj0_pt'%preTag ), 'phi':getattr( event, '%sBj0_phi'%preTag ), 'eta':getattr( event, '%sBj0_eta'%preTag )}
@@ -110,7 +118,7 @@ def makeZ( event, sample, level ):
     event.Z_unitVec3D = event.Z_vec4D.Vect().Unit()
 
 
-def makeLeps( event, sample, level ):
+def makeLeps( event, sample, level, flavorCheck ):
     ''' Add important leptons (no full list of leptons is required for now)
     '''
     preTag = 'reco' if level == 'reco' else 'gen'
@@ -144,9 +152,12 @@ def makeLeps( event, sample, level ):
     event.found3lep    = getattr( event, '%sNonZ_l1_index'%tag ) >= 0 and isGoodLepton( event.NonZ_l0 )
     event.found4lep    = getattr( event, '%sNonZ_l2_index'%tag ) >= 0 and isGoodLepton( event.NonZ_l1 )
     event.oppositeSign = event.NonZ_l0['pdgId'] * event.NonZ_l1['pdgId'] < 0
+    event.sameFlavor   = abs(event.NonZ_l0['pdgId']) == abs(event.NonZ_l1['pdgId'])
 
     # choose your selection on leptons
     event.passing_leptons = event.found3lep and event.found4lep and event.foundZl0 and event.foundZl1 and event.foundZ and event.oppositeSign
+    if flavorCheck == 'same': event.passing_leptons = event.passing_leptons and event.sameFlavor
+    elif flavorCheck == 'opposite': event.passing_leptons = event.passing_leptons and not event.sameFlavor
 
 
 def makeObservables( event, sample, level):
@@ -168,7 +179,7 @@ def makeObservables( event, sample, level):
     event.passing_checks = event.passing_leptons and event.passing_bjets
 
 
-def getSequenceList( level ):
+def getSequenceList( level, flavorCheck ):
     ''' sequence functions
     '''
     sequence = []
@@ -176,7 +187,7 @@ def getSequenceList( level ):
     sequence.append( lambda event, sample: makeJets( event, sample, level ) )
     sequence.append( lambda event, sample: makeMET( event, sample, level ) )
     sequence.append( lambda event, sample: makeZ( event, sample, level ) )
-    sequence.append( lambda event, sample: makeLeps( event, sample, level ) )
+    sequence.append( lambda event, sample: makeLeps( event, sample, level, flavorCheck ) )
     sequence.append( lambda event, sample: makeObservables( event, sample, level ) )
 
     return sequence
@@ -363,15 +374,21 @@ def getPlotList( scaleLumi, level ):
     ) )
 
     plots.append(Plot( name = 'njets',
-      texX = 'Number of Jets', texY = 'Number of Events',
+      texX = 'Number of Jets', texY = y_label,
       attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
       binning=[10,0,10],
     ))
 
     plots.append(Plot( name = 'nleps',
-      texX = 'Number of Leptons', texY = 'Number of Events',
+      texX = 'Number of Leptons', texY = y_label,
       attribute = lambda event, sample: getattr( event, 'n%sLep'%preTag ) if event.passing_checks else float('nan'),
       binning=[8,0,8],
+    ))
+
+    plots.append(Plot( name = 'nbjets',
+      texX = 'Number of bJets', texY = y_label,
+      attribute = lambda event, sample: len(event.bjets) if event.passing_checks else float('nan'),
+      binning=[4,0,4],
     ))
 
     return plots

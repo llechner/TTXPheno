@@ -28,7 +28,7 @@ def getVariableList( level ):
         "lumiweight1fb/F",
         "genMet_pt/F", "genMet_phi/F",
     
-        "ngenJet/I", "genJet[pt/F,eta/F,phi/F]",
+        "ngenJet/I", #"genJet[pt/F,eta/F,phi/F]",
         "ngenLep/I", "genLep[pt/F,eta/F,phi/F,pdgId/I]",
     
         "genPhoton_pt/F", "genPhoton_eta/F", "genPhoton_phi/F",
@@ -46,6 +46,9 @@ def getVariableList( level ):
     if level == 'reco':
         read_variables_gen    = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
         read_variables_genLep = [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
+        read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
+    else:
+        read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/F]")
 
     read_variables = read_variables_gen + read_variables_genLep
     read_variables = list( set( read_variables ) ) # remove double entries
@@ -59,6 +62,11 @@ def makeJets( event, sample, level ):
     '''
     preTag = 'reco' if level == 'reco' else 'gen'
     tag    = 'reco' if level == 'reco' else 'genLep'
+
+    # load jets
+    btag = 'bTag' if level == 'reco' else 'matchBParton'
+    event.jets = getCollection( event, '%sJet'%preTag, ['pt', 'eta', 'phi', btag ], 'n%sJet'%preTag )
+    event.bjets = list( filter( lambda j: j[btag], event.jets ) )
 
     # get (second) hardest bjets
     event.bj0 = {'pt':getattr( event, '%sBj0_pt'%preTag ), 'phi':getattr( event, '%sBj0_phi'%preTag ), 'eta':getattr( event, '%sBj0_eta'%preTag )}
@@ -79,10 +87,10 @@ def makeJets( event, sample, level ):
 
     # selection checks
     event.foundBj0    = isGoodJet( event.bj0 )
-    event.foundBj0lep = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
+#    event.foundBj0lep = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
 
     # choose your selection on b-jets
-    event.passing_bjets = event.foundBj0 and event.foundBj0lep
+    event.passing_bjets = event.foundBj0
 
 
 def makeMET( event, sample, level ):
@@ -160,7 +168,7 @@ def makeObservables( event, sample, level):
     event.passing_checks = event.passing_leptons and event.passing_bjets
 
 
-def getSequenceList( level ):
+def getSequenceList( level, flavorCheck ):
     ''' sequence functions
     '''
     sequence = []
@@ -329,15 +337,20 @@ def getPlotList( scaleLumi, level ):
     ))
     
     plots.append(Plot( name = 'njets',
-      texX = 'Number of Jets', texY = 'Number of Events',
+      texX = 'Number of Jets', texY = y_label,
       attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
       binning=[10,0,10],
     ))
 
     plots.append(Plot( name = 'nleps',
-      texX = 'Number of Leptons', texY = 'Number of Events',
+      texX = 'Number of Leptons', texY = y_label,
       attribute = lambda event, sample: getattr( event, 'n%sLep'%preTag ) if event.passing_checks else float('nan'),
       binning=[8,0,8],
     ))
 
+    plots.append(Plot( name = 'nbjets',
+      texX = 'Number of bJets', texY = y_label,
+      attribute = lambda event, sample: len(event.bjets) if event.passing_checks else float('nan'),
+      binning=[4,0,4],
+    ))
     return plots

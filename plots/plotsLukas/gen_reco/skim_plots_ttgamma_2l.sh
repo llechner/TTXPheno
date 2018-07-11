@@ -22,8 +22,8 @@ declare -a samples2=('fwlite_ttgamma_LO_order2_15weights_ref')
 declare -a samples3=('')
 
 # declare selection strings to analyze
-declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p' 'gammapt40to100-nlep2p-njet2p-nbjet1p' 'gammapt100to200-nlep2p-njet2p-nbjet1p' 'gammapt200to300-nlep2p-njet2p-nbjet1p' 'gammapt300-nlep2p-njet2p-nbjet1p')
-#declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p')
+#declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p' 'gammapt40to100-nlep2p-njet2p-nbjet1p' 'gammapt100to200-nlep2p-njet2p-nbjet1p' 'gammapt200to300-nlep2p-njet2p-nbjet1p' 'gammapt300-nlep2p-njet2p-nbjet1p')
+declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p' 'gammapt15-nlep2p-njet2p-nbjet1p' 'LepSelttgamma2-gammapt15-njet2p-nbjet1p' 'LepSelttgamma2-gammapt15-nbjet1p')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -44,11 +44,14 @@ declare -a scales=('' '--scaleLumi')
 #declare -a levels=('reco')
 declare -a levels=('gen' 'reco')
 
-version='v9'
+declare -a flavors=('all' 'same' 'opposite')
+
+version='v17_bg'
 luminosity='150'
 process='ttgamma_2l'
 
 backgrounds="--backgrounds"
+#backgrounds=""
 
 # define program to run by python
 prog=skim_plots.py
@@ -73,28 +76,32 @@ do
             for level in "${levels[@]}"
             do
 
-               order=2
-               for sample in "${samples2[@]}"
+               for flavor in "${flavors[@]}"
                do
 
-                  if [ -z $sample ]; then
-                     continue
-                  fi
+                  order=2
+                  for sample in "${samples2[@]}"
+                  do
 
-                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+                     if [ -z $sample ]; then
+                        continue
+                     fi
 
-               done
+                     submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
 
-               order=3
-               for sample in "${samples3[@]}"
-               do
+                  done
 
-                  if [ -z $sample ]; then
-                     continue
-                  fi
+                  order=3
+                  for sample in "${samples3[@]}"
+                  do
 
-                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+                     if [ -z $sample ]; then
+                        continue
+                     fi
 
+                     submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+
+                  done
                done
             done
          done
