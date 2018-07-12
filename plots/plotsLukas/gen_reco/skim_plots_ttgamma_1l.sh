@@ -23,7 +23,8 @@ declare -a samples3=('')
 
 # declare selection strings to analyze
 #declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-njet3p-nbjet1p' 'gammapt100to200-nlep1p-njet3p-nbjet1p' 'gammapt200to300-nlep1p-njet3p-nbjet1p' 'gammapt300-nlep1p-njet3p-nbjet1p')
-declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p', 'gammapt15-nlep1p-njet3p-nbjet1p', 'gammapt15-gammaeta0to2.5-nlepttgamma1p-njet3p-nbjet1p', 'gammapt15-gammaeta0to2.5-nlepttgamma1p-nbjet1p')
+declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt15-nlep1p-njet3p-nbjet1p' 'gammapt15-nlepttgamma2l1p-njet3p-nbjet1p' 'gammapt15-nlepttgamma2l1p')
+#declare -a selections=('gammapt15-nlepttgamma2l1p')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -31,20 +32,20 @@ declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p', 'gammapt15-nlep1p-njet
 declare -a samplesizes=('')
 
 # declare reweighting
-declare -a reweightings=('' '--reweightPtXToSM')
+#declare -a reweightings=('' '--reweightPtXToSM')
 #declare -a reweightings=('--reweightPtXToSM')
-#declare -a reweightings=('')
+declare -a reweightings=('')
 
 # declare scale
-declare -a scales=('' '--scaleLumi')
+#declare -a scales=('' '--scaleLumi')
 #declare -a scales=('--scaleLumi')
-#declare -a scales=('')
+declare -a scales=('')
 
 #declare -a levels=('gen')
 #declare -a levels=('reco')
 declare -a levels=('gen' 'reco')
 
-version='v17_bg'
+version='v22'
 luminosity='150'
 process='ttgamma_1l'
 

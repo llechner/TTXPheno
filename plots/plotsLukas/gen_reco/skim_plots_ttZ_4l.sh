@@ -31,14 +31,14 @@ declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0')
 declare -a samplesizes=('')
 
 # declare reweighting
-declare -a reweightings=('' '--reweightPtXToSM')
+#declare -a reweightings=('' '--reweightPtXToSM')
 #declare -a reweightings=('--reweightPtXToSM')
-#declare -a reweightings=('')
+declare -a reweightings=('')
 
 # declare scale
-declare -a scales=('' '--scaleLumi')
+#declare -a scales=('' '--scaleLumi')
 #declare -a scales=('--scaleLumi')
-#declare -a scales=('')
+declare -a scales=('')
 
 #declare -a levels=('genLep')
 #declare -a levels=('gen')
@@ -48,7 +48,7 @@ declare -a levels=('gen' 'reco')
 
 declare -a flavors=('all' 'same' 'opposite')
 
-version='v17_bg'
+version='v18_bg'
 luminosity='150'
 process='ttZ_4l'
 

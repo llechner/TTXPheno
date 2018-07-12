@@ -11,7 +11,7 @@ from math                                import pi, sqrt
 from RootTools.core.standard             import *
 
 # TTXPheno
-from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR, nanJet, nanLepton, getObjDict
+from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR, nanJet, nanLepton, nanPhoton, getObjDict
 
 # Import samples
 from TTXPheno.samples.benchmarks         import *
@@ -29,9 +29,10 @@ def getVariableList( level ):
         "genMet_pt/F", "genMet_phi/F",
     
         "ngenJet/I", #"genJet[pt/F,eta/F,phi/F]",
-        "ngenLep/I", "genLep[pt/F,eta/F,phi/F,pdgId/I]",
+        "ngenLep/I", #"genLep[pt/F,eta/F,phi/F,pdgId/I]",
     
-        "genPhoton_pt/F", "genPhoton_eta/F", "genPhoton_phi/F",
+        "ngenPhoton/I", #"genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I]"
+#        "genPhoton_pt/F", "genPhoton_eta/F", "genPhoton_phi/F",
     
         "genBj0_pt/F", "genBj0_phi/F", "genBj0_eta/F",
         "genBj1_pt/F", "genBj1_phi/F", "genBj1_eta/F",
@@ -47,8 +48,12 @@ def getVariableList( level ):
         read_variables_gen    = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
         read_variables_genLep = [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
         read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
+        read_variables_gen.append("recoPhoton[pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I]")
+        read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F]")
     else:
-        read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/F]")
+        read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
+        read_variables_gen.append("genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I]")
+        read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I]")
 
     read_variables = read_variables_gen + read_variables_genLep
     read_variables = list( set( read_variables ) ) # remove double entries
@@ -90,7 +95,7 @@ def makeJets( event, sample, level ):
 #    event.foundBj0lep    = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
 
     # choose your selection on b-jets
-    event.passing_bjets = event.foundBj0
+    event.passing_bjets = True #event.foundBj0
 
 
 def makeMET( event, sample, level ):
@@ -106,9 +111,31 @@ def makeMET( event, sample, level ):
 def makePhoton( event, sample, level ):
     ''' Make a Z vector to facilitate further calculations (either recoZ, genLepZ or genZ)
     '''
-    event.gamma_unitVec2D = UnitVectorT2( getattr( event, '%sPhoton_phi'%level     ) )
+    preTag = 'reco' if level == 'reco' else 'gen'
+
+    if level == 'reco':
+        photonList = ['pt', 'eta', 'phi', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
+    else:
+        photonList = ['pt', 'eta', 'phi', 'mass', 'motherPdgId']
+
+    event.gammas = getCollection( event, '%sPhoton'%preTag, photonList, 'n%sPhoton'%preTag )
+
+    event.gamma0 = event.gammas[0]
+    event.gamma1 = event.gammas[1] if len(event.gammas)>1 else nanPhoton()
+    event.gamma2 = event.gammas[2] if len(event.gammas)>2 else nanPhoton()
+#    event.gamma0 = getObjDict( event, '%sPhoton_'%preTag, photonList, 0 )
+#    try: event.gamma1 = getObjDict( event, '%sPhoton_'%preTag, photonList, 1 )
+#    except: event.gamma1 = nanPhoton()
+#    try: event.gamma2 = getObjDict( event, '%sPhoton_'%preTag, photonList, 2 )
+#    except: event.gamma2 = nanPhoton()
+
+    if level == 'reco':
+        for p in [event.gamma2, event.gamma1, event.gamma0]:
+            addIDeltaBeta( p )
+
+    event.gamma_unitVec2D = UnitVectorT2( event.gamma0['phi'] )
     event.gamma_vec4D     = ROOT.TLorentzVector()
-    event.gamma_vec4D.SetPtEtaPhiM( getattr( event, '%sPhoton_pt'%level ), getattr( event, '%sPhoton_eta'%level ), getattr( event, '%sPhoton_phi'%level ), 0 )
+    event.gamma_vec4D.SetPtEtaPhiM( event.gamma0['pt'], event.gamma0['eta'], event.gamma0['phi'], 0 )
     event.gamma_unitVec3D = event.gamma_vec4D.Vect().Unit()
 
 
@@ -118,14 +145,24 @@ def makeLeps( event, sample, level, flavorCheck ):
     preTag = 'reco' if level == 'reco' else 'gen'
     tag    = 'reco' if level == 'reco' else 'genLep'
 
+    if level == 'reco':
+        leptonList = ['pt', 'eta', 'phi', 'pdgId', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
+    else:
+        leptonList = ['pt', 'eta', 'phi', 'pdgId']
+
+    event.leps = getCollection( event, '%sLep'%preTag, leptonList, 'n%sLep'%preTag )
+
     # Define hardest leptons
-    event.l0 = getObjDict( event, '%sLep_'%preTag, ['pt', 'eta', 'phi', 'pdgId'], 0 )
-    event.l1 = getObjDict( event, '%sLep_'%preTag, ['pt', 'eta', 'phi', 'pdgId'], 1 )
+    event.l0 = event.leps[0]
+    event.l1 = event.leps[1]
 
     # Add extra vectors
     for p in [ event.l0, event.l1 ]:
         addTransverseVector( p )
         addTLorentzVector( p )
+        if level == 'reco':
+            addIDeltaBeta( p )
+
 
     # Import additional functions/classes specified for the level of reconstruction
     if level == 'reco': from TTXPheno.Tools.objectSelection      import isGoodRecoLepton  as isGoodLepton
@@ -154,13 +191,23 @@ def makeObservables( event, sample, level):
     event.lldPhi = deltaPhi( event.l0['phi'], event.l1['phi'] )
     event.lldR   = deltaR( event.l0, event.l1 )
 
+    event.minLeptonG0dR   = min([ deltaR( lepton, event.gamma0 ) for lepton in event.leps ]) if len(event.leps)>0 and event.gamma0['pt']==event.gamma0['pt'] else float('nan')
+    event.minLeptonG1dR   = min([ deltaR( lepton, event.gamma1 ) for lepton in event.leps ]) if len(event.leps)>0 and event.gamma1['pt']==event.gamma1['pt'] else float('nan')
+    event.minLeptonG2dR   = min([ deltaR( lepton, event.gamma2 ) for lepton in event.leps ]) if len(event.leps)>0 and event.gamma2['pt']==event.gamma2['pt'] else float('nan')
+
+    event.minJetG0dR      = min([ deltaR( jet, event.gamma0 ) for jet in event.jets ]) if len(event.jets)>0 and event.gamma0['pt']==event.gamma0['pt'] else float('nan')
+    event.minJetG1dR      = min([ deltaR( jet, event.gamma1 ) for jet in event.jets ]) if len(event.jets)>0 and event.gamma1['pt']==event.gamma1['pt'] else float('nan')
+    event.minJetG2dR      = min([ deltaR( jet, event.gamma2 ) for jet in event.jets ]) if len(event.jets)>0 and event.gamma2['pt']==event.gamma2['pt'] else float('nan')
+
     # signed lepton pt, Nan if len(event.lepsNotFromZ == 0)
     event.lep0chargept = event.l0['pt'] if event.l0['pdgId']>0 else -event.l0['pt']
     event.lep1chargept = event.l1['pt'] if event.l1['pdgId']>0 else -event.l1['pt']
 
+    event.mll = (event.l0['vec4D'] + event.l1['vec4D']).Mag()
+    event.mllgamma = (event.l0['vec4D'] + event.l1['vec4D'] + event.gamma_vec4D).Mag()
+
     # choose your final selection
     event.passing_checks = event.passing_leptons and event.passing_bjets
-
 
 def getSequenceList( level, flavorCheck ):
     ''' sequence functions
@@ -175,7 +222,6 @@ def getSequenceList( level, flavorCheck ):
 
     return sequence
     
-
 def getPlotList( scaleLumi, level ):
 
     tag = 'reco' if level == 'reco' else 'genLep'
@@ -193,11 +239,53 @@ def getPlotList( scaleLumi, level ):
 #    ))
 
     plots.append(Plot( name = "gamma_pt",
-      texX = 'p_{T}(#gamma) [GeV]', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sPhoton_pt'%level ) if event.passing_checks else float('nan'),
+      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label,
+      attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,400],
     ))
-    
+
+    plots.append(Plot( name = "gamma_phi",
+      texX = '#phi(#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.gamma0['phi'] if event.passing_checks else float('nan'),
+      binning=[20,-pi,pi],
+    ))
+
+    plots.append(Plot( name = "gamma_eta",
+      texX = '#eta(#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.gamma0['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-3,3],
+    ))
+
+    if level == 'reco':
+
+        leptonIsolationPlotList = []
+        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'l0'} )
+        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'l0'} )
+        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'l1'} )
+        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'l1'} )
+
+        photonIsolationPlotList = []
+        photonIsolationPlotList.append( {'particleString':'gamma0', 'eventString':'gamma0'} )
+        photonIsolationPlotList.append( {'particleString':'gamma1', 'eventString':'gamma1'} )
+        photonIsolationPlotList.append( {'particleString':'gamma2', 'eventString':'gamma2'} )
+
+        plots += getLeptonIsolationPlotList( leptonIsolationPlotList, y_label )
+        plots += getPhotonIsolationPlotList( photonIsolationPlotList, y_label )
+
+    elif level == 'gen':
+
+        plots.append(Plot( name = "gamma_motherPdgId",
+          texX = 'motherPdgId(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['motherPdgId'] if event.passing_checks else float('nan'),
+          binning=[52,-26,26],
+        ))
+
+        plots.append(Plot( name = "gamma_mass",
+          texX = 'm(#gamma_{0}) [GeV]', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['mass'] if event.passing_checks else float('nan'),
+          binning=[20,-1e-4,1e-4],
+        ))
+
     plots.append(Plot( name = "b0_pt",
       texX = 'p_{T}(b_{0}) [GeV]', texY = y_label,
       attribute = lambda event, sample: event.bj0['pt'] if event.passing_checks else float('nan'),
@@ -270,6 +358,18 @@ def getPlotList( scaleLumi, level ):
       binning=[20,-3,3],
     ))
     
+    plots.append(Plot( name = "mll",
+      texX = 'm(ll) [GeV]', texY = y_label,
+      attribute = lambda event, sample: event.mll if event.passing_checks else float('nan'),
+      binning=[20,0,200],
+    ))
+    
+    plots.append(Plot( name = "mllgamma",
+      texX = 'm(ll#gamma) [GeV]', texY = y_label,
+      attribute = lambda event, sample: event.mllgamma if event.passing_checks else float('nan'),
+      binning=[20,0,200],
+    ))
+    
     plots.append(Plot( name = 'deltaPhi_bb',
       texX = '#Delta#phi(bb)', texY = y_label,
       attribute = lambda event, sample: event.bbdPhi if event.passing_checks else float('nan'),
@@ -291,6 +391,42 @@ def getPlotList( scaleLumi, level ):
     plots.append(Plot( name = 'deltaR_ll',
       texX = '#DeltaR(ll)', texY = y_label,
       attribute = lambda event, sample: event.lldR if event.passing_checks else float('nan'),
+      binning=[20,0,6],
+    ))
+
+    plots.append(Plot( name = 'deltaR_lepg0',
+      texX = 'min(#DeltaR(lep, #gamma_{0}))', texY = y_label,
+      attribute = lambda event, sample: event.minLeptonG0dR if event.passing_checks else float('nan'),
+      binning=[20,0,6],
+    ))
+    
+    plots.append(Plot( name = 'deltaR_lepg1',
+      texX = 'min(#DeltaR(lep, #gamma_{1}))', texY = y_label,
+      attribute = lambda event, sample: event.minLeptonG1dR if event.passing_checks else float('nan'),
+      binning=[20,0,6],
+    ))
+    
+    plots.append(Plot( name = 'deltaR_lepg2',
+      texX = 'min(#DeltaR(lep, #gamma_{2}))', texY = y_label,
+      attribute = lambda event, sample: event.minLeptonG2dR if event.passing_checks else float('nan'),
+      binning=[20,0,6],
+    ))
+    
+    plots.append(Plot( name = 'deltaR_jetg0',
+      texX = 'min(#DeltaR(jet, #gamma_{0}))', texY = y_label,
+      attribute = lambda event, sample: event.minJetG0dR if event.passing_checks else float('nan'),
+      binning=[20,0,6],
+    ))
+    
+    plots.append(Plot( name = 'deltaR_jetg1',
+      texX = 'min(#DeltaR(jet, #gamma_{1}))', texY = y_label,
+      attribute = lambda event, sample: event.minJetG1dR if event.passing_checks else float('nan'),
+      binning=[20,0,6],
+    ))
+    
+    plots.append(Plot( name = 'deltaR_jetg2',
+      texX = 'min(#DeltaR(jet, #gamma_{2}))', texY = y_label,
+      attribute = lambda event, sample: event.minJetG2dR if event.passing_checks else float('nan'),
       binning=[20,0,6],
     ))
     
@@ -334,6 +470,12 @@ def getPlotList( scaleLumi, level ):
       texX = 'Number of bJets', texY = y_label,
       attribute = lambda event, sample: len(event.bjets) if event.passing_checks else float('nan'),
       binning=[4,0,4],
+    ))
+
+    plots.append(Plot( name = 'ngammas',
+      texX = 'Number of photons', texY = y_label,
+      attribute = lambda event, sample: len(event.gammas) if event.passing_checks else float('nan'),
+      binning=[10,0,10],
     ))
 
     return plots

@@ -29,7 +29,7 @@ def getVariableList( level ):
         "genMet_pt/F", "genMet_phi/F",
     
         "ngenJet/I", #"genJet[pt/F,eta/F,phi/F]",
-        "ngenLep/I", "genLep[pt/F,eta/F,phi/F,pdgId/I]",
+        "ngenLep/I", #"genLep[pt/F,eta/F,phi/F,pdgId/I]",
     
         "genW_pt/F", "genW_eta/F", "genW_phi/F", "genW_mass/F",
     
@@ -45,8 +45,10 @@ def getVariableList( level ):
         read_variables_gen    = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
         read_variables_genLep = [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
         read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
+        read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I]")
     else:
-        read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/F]")
+        read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I]")
+        read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
 
     read_variables = read_variables_gen + read_variables_genLep
     read_variables = list( set( read_variables ) ) # remove double entries

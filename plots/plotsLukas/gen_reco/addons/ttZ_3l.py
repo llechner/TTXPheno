@@ -29,7 +29,7 @@ def getVariableList( level ):
         "genMet_pt/F", "genMet_phi/F",
     
         "ngenJet/I", #"genJet[pt/F,eta/F,phi/F]",
-        "ngenLep/I", "genLep[pt/F,eta/F,phi/F,pdgId/I]",
+        "ngenLep/I", #"genLep[pt/F,eta/F,phi/F,pdgId/I]",
     
         "genZ_pt/F", "genZ_eta/F", "genZ_phi/F", "genZ_mass/F", "genZ_cosThetaStar/F",
     
@@ -53,8 +53,10 @@ def getVariableList( level ):
         read_variables_gen    = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
         read_variables_genLep = [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
         read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
+        read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I]")
     else:
-        read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/F]")
+        read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
+        read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I]")
 
     read_variables = read_variables_gen + read_variables_genLep
     read_variables = list( set( read_variables ) ) # remove double entries
@@ -131,13 +133,18 @@ def makeLeps( event, sample, level ):
     preTag = 'reco' if level == 'reco' else 'gen'
     tag    = 'reco' if level == 'reco' else 'genLep'
 
+    if level == 'reco':
+        leptonList = ['pt', 'eta', 'phi', 'pdgId', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
+    else:
+        leptonList = ['pt', 'eta', 'phi', 'pdgId']
+
     # Define Z leptons
-    event.Z_l0 = getObjDict( event, '%sLep_'%preTag, ['pt', 'eta', 'phi', 'pdgId'], getattr( event, '%sZ_l1_index'%tag     ) ) if getattr( event, '%sZ_l1_index'%tag ) >= 0 else nanLepton()
-    event.Z_l1 = getObjDict( event, '%sLep_'%preTag, ['pt', 'eta', 'phi', 'pdgId'], getattr( event, '%sZ_l2_index'%tag     ) ) if getattr( event, '%sZ_l2_index'%tag ) >= 0 else nanLepton()
+    event.Z_l0 = getObjDict( event, '%sLep_'%preTag, leptonList, getattr( event, '%sZ_l1_index'%tag     ) ) if getattr( event, '%sZ_l1_index'%tag ) >= 0 else nanLepton()
+    event.Z_l1 = getObjDict( event, '%sLep_'%preTag, leptonList, getattr( event, '%sZ_l2_index'%tag     ) ) if getattr( event, '%sZ_l2_index'%tag ) >= 0 else nanLepton()
 
     # Define non-Z leptons
-    event.NonZ_l0 = getObjDict( event, '%sLep_'%preTag, ['pt', 'eta', 'phi', 'pdgId'], getattr( event, '%sNonZ_l1_index'%tag     ) ) if getattr( event, '%sNonZ_l1_index'%tag ) >= 0 else nanLepton()
-    event.NonZ_l1 = getObjDict( event, '%sLep_'%preTag, ['pt', 'eta', 'phi', 'pdgId'], getattr( event, '%sNonZ_l2_index'%tag     ) ) if getattr( event, '%sNonZ_l2_index'%tag ) >= 0 else nanLepton()
+    event.NonZ_l0 = getObjDict( event, '%sLep_'%preTag, leptonList, getattr( event, '%sNonZ_l1_index'%tag     ) ) if getattr( event, '%sNonZ_l1_index'%tag ) >= 0 else nanLepton()
+    event.NonZ_l1 = getObjDict( event, '%sLep_'%preTag, leptonList, getattr( event, '%sNonZ_l2_index'%tag     ) ) if getattr( event, '%sNonZ_l2_index'%tag ) >= 0 else nanLepton()
 
     # Add extra vectors
     for p in [ event.Z_l0, event.Z_l1, event.NonZ_l0, event.NonZ_l1 ]:

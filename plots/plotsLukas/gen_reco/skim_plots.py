@@ -157,6 +157,7 @@ if args.processFile == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaS
 elif args.processFile == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
 #elif args.processFile == 'ttgamma_1l': bg = [ ttSample, tWSample, ZgammaSample ] #ttSemiLepSample
 elif args.processFile == 'ttgamma_1l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+#elif args.processFile == 'ttgamma_2l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 elif args.processFile == 'ttgamma_2l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 else: bg = [ WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]
 
@@ -266,7 +267,7 @@ def drawPlots(plots):
         ttXSample.name,
         subDirectory,
         args.selection if args.selection is not None else 'no_selection',
-        '%sLeptonFlavors',
+        '%sLeptonFlavors'%args.leptonFlavor,
         WC_directory,
         "log" if log else "lin")
 
