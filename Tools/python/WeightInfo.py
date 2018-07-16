@@ -119,7 +119,6 @@ class WeightInfo:
     def getCoeffListFromDraw( self, sample, selectionString, weightString = None ):
         ''' Create list of weights using the Draw function
         '''
-
         # Draw 
         histo = sample.get1DHistoFromDraw(
             "Iteration$",
@@ -133,15 +132,19 @@ class WeightInfo:
     def getCoeffPlotFromDraw( self, sample, variableString, binning, selectionString, weightString = None, nEventsThresh = 0 ):
         ''' Create list of weights using the Draw function (statistic check with nEventsThresh not yet implemented)
         '''
-
         histo = sample.get2DHistoFromDraw(
             "%s:Iteration$"%variableString,
             [ len(self.combinations), 0, len(self.combinations) ] + binning,
             selectionString = selectionString,
             weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
 
-#        return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) if histo.ProjectionX("%i_px"%i, i+1, i+1).GetEntries() >= int(nEventsThresh) ]
-        return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) ]
+        # works without if as well, but saves time
+        if nEventsThresh > 0:
+            histEntries = sample.get1DHistoFromDraw( variableString, binning, selectionString = selectionString, weightString = '(1)')
+            numEntries = histo_to_list( histEntries )
+            return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i, nBinEvents in enumerate( numEntries ) if int(nBinEvents) >= int(nEventsThresh) ]
+        else:
+            return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) ]
 
 
     # Make a coeff histo from a sample
@@ -154,8 +157,13 @@ class WeightInfo:
             selectionString = selectionString,
             weightString = 'p_C*(%s)' %(weightString) if weightString is not None else 'p_C' )
 
-#        return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) if histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1).GetEntries() > int(nEventsThresh) ]
-        return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) ]
+        # works without if as well, but saves time
+        if nEventsThresh > 0:
+            histEntries = sample.get2DHistoFromDraw( variableString, binning, selectionString = selectionString, weightString = '(1)')
+            numEntries = [ histo_to_list( histEntries.ProjectionY("%i_py"%j, j+1, j+1) ) for j in range( histEntries.GetNbinsX() ) ]
+            return [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i, nEventsList in enumerate( numEntries ) for j, nBinEvents in enumerate( nEventsList ) if int(nBinEvents) >= int(nEventsThresh) ]
+        else:
+            return  [ histo_to_list( histo.ProjectionX("%i_%i_px"%(i,j), i+1, i+1, j+1, j+1) ) for i in range( histo.GetNbinsY() ) for j in range( histo.GetNbinsZ() ) ]
 
 
     # Make a coeff histo from a sample
@@ -177,20 +185,15 @@ class WeightInfo:
             sample.setSelectionString('(1)')
             coeffList3D.append( self.get2DCoeffPlotFromDraw( sample, variableString2D, binning[:6], selectionString + '&&%s>=%f&&%s<%f'%( variableString3D, bounds[i], variableString3D, bound ), weightString, nEventsThresh ) )
 
-        coeffList = []
-        for coeffs in coeffList3D:
-            if len( coeffs ) == 0: continue
-            for coeff in coeffs:
-                if len( coeff ) == 0: continue
-                coeffList.append( coeff )
-
-        return coeffList
+        return [ coeff for coeffs in coeffList3D if len( coeffs ) != 0 for coeff in coeffs if len( coeff ) != 0 ]
 
     # Get CoeffList from sample by looping over events
     @staticmethod
     def getCoeffListFromEvents( sample, selectionString = None, weightFunction = None ):
         ''' Create list of weights for each event
         '''
+        # RootTools
+        from RootTools.core.standard             import TreeVariable, VectorTreeVariable
 
         sample.setSelectionString( selectionString ) 
 
@@ -206,6 +209,34 @@ class WeightInfo:
 
         return coeffs
 
+    # getFisherInformationHisto is still in testing phase!!!!
+    def getFisherInformationHisto( self, sample, variableString, binning, parameter, selectionString = None, weightString = None, variables = None, nEventsThresh = 0, normalize = False ):
+        ''' Create a histogram showing the fisher information for each bin of the given kinematic distribution
+        '''
+        from array import array
+        import ROOT
+
+        if variables is None: variables = self.variables
+    
+        #remove initial selection string
+        sample.setSelectionString('1')
+        coeffList = self.getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString=weightString, nEventsThresh=nEventsThresh )
+        detIList  = [ np.linalg.det( self.get_fisherInformation_matrix( coeffs, variables, **parameter )[1] ) for coeffs in coeffList ]
+
+        if normalize:
+            detIListSM  = [ np.linalg.det( self.get_fisherInformation_matrix( coeffs, variables )[1] ) for coeffs in coeffList ]
+            detIList = [ detI/sum(detIListSM) for detI in detIList ]
+
+        expo = 1. / len(variables)
+        y_graph = array( 'd', [ abs(detI)**expo for detI in detIList ] )
+
+        histoName = 'histo_%s_%s'%(variableString,'_'.join(parameter.keys()))
+        histo = ROOT.TH1F( histoName, histoName, binning[0], binning[1], binning[2] )
+        for i in range(binning[0]):
+            histo.SetBinContent(i+1, y_graph[i])
+
+        return histo
+    
     @staticmethod
     @helpers.memoized
     def differentiate( comb, var ):
