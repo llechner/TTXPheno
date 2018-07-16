@@ -32,7 +32,7 @@ argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO',          nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')#, default = True)
 argParser.add_argument('--delphes',            action='store_true', help='Run Delphes?')
-argParser.add_argument('--overwrite',          action='store_true', help='Overwrite?')#, default = True)
+argParser.add_argument('--overwrite',          action='store',      nargs='?', choices = ['none', 'all', 'target'], default = 'none', help='Overwrite?')#, default = True)
 argParser.add_argument('--targetDir',          action='store',      default='v5')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_scan', help="Name of the sample loaded from fwlite_benchmarks. Only if no inputFiles are specified")
 argParser.add_argument('--inputFiles',         action='store',      nargs = '*', default=[])
@@ -519,14 +519,15 @@ output_filename =  os.path.join(output_directory, sample.name + '.root')
 _logger.   add_fileHandler( output_filename.replace('.root', '.log'), args.logLevel )
 _logger_rt.add_fileHandler( output_filename.replace('.root', '_rt.log'), args.logLevel )
 
-if os.path.exists( output_filename ) and not args.overwrite:
+if os.path.exists( output_filename ) and args.overwrite =='none' :
     logger.info( "File %s found. Quit.", output_filename )
     sys.exit(0)
 
 if args.delphes:
-    delphesProducer = DelphesProducer()
     delphes_file = os.path.join( output_directory, 'delphes', sample.name+'.root' )
-    delphesProducer.produce( sample.files, delphes_file )
+    if not os.path.exists( delphes_file ) or args.overwrite in ['all']:
+        delphesProducer = DelphesProducer()
+        delphesProducer.produce( sample.files, delphes_file )
     delphesReader = DelphesReader( delphes_file )
 
 output_file = ROOT.TFile( output_filename, 'recreate')

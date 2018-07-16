@@ -144,6 +144,5 @@ fwlite_WZ_LO_order2_15weights.reweight_pkl     = "/afs/hephy.at/data/llechner01/
 fwlite_WZ_LO_order2_15weights.nEvents          = 1000000 #? not checked!
 fwlite_WZ_LO_order2_15weights.xsec             = 47.13 #pb WZ, xsec_SM_NNLO
 
-
-
+TTGJets_Summer16                                = FWLiteSample.fromDAS("TTGJets_Summer16", "/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM", dbFile = dbFile)
 
