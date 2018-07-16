@@ -17,10 +17,9 @@ scram b -j40
 export PYTHIA8=/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/pythia8/223-mlhled2/
 export LD_LIBRARY_PATH=$PYTHIA8/lib:$LD_LIBRARY_PATH
 cd $CMSSW_BASE/..
-git clone https://github.com/delphes/delphes.git
+git clone https://github.com/TTXPheno/delphes.git
 patch $CMSSW_BASE/../delphes/cards/delphes_card_CMS.tcl < $CMSSW_BASE/src/TTXPheno/patches/slim_delphes.diff # Reduce Delphes output
 cd delphes
-git checkout tags/3.4.2pre12
 ./configure
 sed -i -e 's/c++0x/c++1y/g' Makefile
 make -j 4 
