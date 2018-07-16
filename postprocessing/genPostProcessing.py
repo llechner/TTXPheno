@@ -179,7 +179,7 @@ if args.delphes:
     recoLep_varnames  = varnames( recoLep_vars )
         
     # reconstructed jets
-    recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F,bTagPhys/F' 
+    recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F'#,bTagPhys/F' 
     variables      += ["recoJet[%s]"%recoJet_vars]
     recoJet_write_varnames = varnames( recoJet_vars )
     variables += ["recoBj0_%s"%var for var in recoJet_vars.split(',')]
@@ -325,7 +325,6 @@ def filler( event ):
         genPhotons_.append( {var: getattr(last, var)() for var in boson_read_varnames} )
         genPhotons_[-1]['motherPdgId'] = mother_pdgId
 
-    fill_vector_collection( event, "genPhoton", gen_photon_varnames, genPhotons_ ) 
     
     # find all genLeptons 
     genLeptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0,  gp) ]
@@ -345,6 +344,10 @@ def filler( event ):
     genJets = map( lambda t:{var: getattr(t, var)() for var in jet_read_varnames}, filter( lambda j:j.pt()>30, fwlite_genJets) )
     # filter genJets
     genJets = list( filter( lambda j:isGoodGenJet( j ), genJets ) )
+
+    # removing photons in dR cone of jets and leptons (radiation photons)
+    genPhotons_ = filter( lambda g: (min([999]+[deltaR2(g, l) for l in genLeps]) > 0.4**2 ), genPhotons_ )
+    genPhotons_ = filter( lambda g: (min([999]+[deltaR2(g, j) for j in genJets]) > 0.4**2 ), genPhotons_ )
 
     # find b's from tops:
     b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
@@ -412,6 +415,7 @@ def filler( event ):
     #        assert False, ""
 
 
+    fill_vector_collection( event, "genPhoton", gen_photon_varnames, genPhotons_ ) 
     fill_vector_collection( event, "genLep", lep_all_varnames, genLeps)
     fill_vector_collection( event, "genJet", jet_write_varnames, genJets)
 
@@ -435,16 +439,22 @@ def filler( event ):
         recoLeps =  filter( isGoodRecoMuon, delphesReader.muons()) + filter( isGoodRecoElectron, delphesReader.electrons() )
         recoLeps.sort( key = lambda p:-p['pt'] )
 
-        for i_lep, lep in enumerate(recoLeps):
-            min_DR=999
-            min_jet=None
-            for jet in recoJets:
-                if deltaR2(jet, lep)<min_DR:
-                    min_DR_jet = jet
-                    min_DR     = deltaR2(jet, lep)
-            if min_DR<0.4**2: 
-                #print "Filtering lepton", lep, "because DR", sqrt(min_DR), "of jet", jet
-                break
+#        for i_lep, lep in enumerate(recoLeps):
+#            min_DR=999
+#            min_jet=None
+#            for jet in recoJets:
+#                if deltaR2(jet, lep)<min_DR:
+#                    min_DR_jet = jet
+#                    min_DR     = deltaR2(jet, lep)
+#            if min_DR<0.4**2: 
+#                #print "Filtering lepton", lep, "because DR", sqrt(min_DR), "of jet", jet
+#                break
+
+        # Photons
+        recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
+        # Remove radiated photons in dR cone
+        recoPhotons = filter( lambda g: (min([999]+[deltaR2(g, l) for l in recoLeps]) > 0.4**2 ), recoPhotons )
+        recoPhotons = filter( lambda g: (min([999]+[deltaR2(g, j) for j in recoJets]) > 0.4**2 ), recoPhotons )
 
         # cross-cleaning of reco-objects
         recoLeps = filter( lambda l: (min([999]+[deltaR2(l, j) for j in recoJets if j['pt']>30]) > 0.3**2 ), recoLeps )
@@ -462,7 +472,6 @@ def filler( event ):
                 event.recoBjLeadlep_index, event.recoBjLeadhad_index = recoBj1['index'], recoBj0['index']
 
         # Photons
-        recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
         for recoPhoton in recoPhotons:
             recoPhoton['genIndex'] = -1
             minDR = 999
