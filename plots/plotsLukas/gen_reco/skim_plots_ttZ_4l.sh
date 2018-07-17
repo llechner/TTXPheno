@@ -36,9 +36,9 @@ declare -a samplesizes=('')
 declare -a reweightings=('')
 
 # declare scale
-#declare -a scales=('' '--scaleLumi')
+declare -a scales=('' '--scaleLumi')
 #declare -a scales=('--scaleLumi')
-declare -a scales=('')
+#declare -a scales=('')
 
 #declare -a levels=('genLep')
 #declare -a levels=('gen')
@@ -47,13 +47,24 @@ declare -a scales=('')
 declare -a levels=('gen' 'reco')
 
 declare -a flavors=('all' 'same' 'opposite')
+#declare -a flavors=('all')
 
-version='v18_bg'
+declare -a variables=("cpt" "cpQM")
+#declare -a variables=("cpt")
+
+#declare -a binThresholds=("400" "100" "25" "0")
+declare -a binThresholds=("100" "0")
+#declare -a binThresholds=("10")
+
+#declare -a fisherInfo=("--addFisherInformation" "")
+declare -a fisherInfo=("--addFisherInformation")
+
+#declare -a backgrounds=("--backgrounds" "")
+declare -a backgrounds=("--backgrounds")
+
+version='v23'
 luminosity='150'
 process='ttZ_4l'
-
-backgrounds='--backgrounds'
-#backgrounds=''
 
 # define program to run by python
 prog=skim_plots.py
@@ -81,28 +92,45 @@ do
                for flavor in "${flavors[@]}"
                do
 
-                  order=2
-                  for sample in "${samples2[@]}"
+                  for variable in "${variables[@]}"
                   do
 
-                     if [ -z $sample ]; then
-                        continue
-                     fi
+                     for binThreshold in "${binThresholds[@]}"
+                     do
 
-                     submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+                        for addFisher in "${fisherInfo[@]}"
+                        do
 
-                  done
+                           for background in "${backgrounds[@]}"
+                           do
 
-                  order=3
-                  for sample in "${samples3[@]}"
-                  do
+                               order=2
+                               for sample in "${samples2[@]}"
+                               do
 
-                     if [ -z $sample ]; then
-                        continue
-                     fi
+                                  if [ -z $sample ]; then
+                                     continue
+                                  fi
 
-                     submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+#                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThresholds ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThresholds ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
 
+                               done
+
+                               order=3
+                               for sample in "${samples3[@]}"
+                               do
+
+                                  if [ -z $sample ]; then
+                                     continue
+                                  fi
+
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThresholds ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
+
+                               done
+                            done
+                        done
+                     done
                   done
                done
             done

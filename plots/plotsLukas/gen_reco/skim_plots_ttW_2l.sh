@@ -43,6 +43,12 @@ declare -a scales=('' '--scaleLumi')
 declare -a levels=('gen' 'reco')
 #declare -a levels=('gen')
 
+#declare -a binThresholds=("400" "100" "25" "0")
+declare -a binThresholds=("100" "0")
+
+#declare -a fisherInfo=("--addFisherInformation" "")
+declare -a fisherInfo=("--addFisherInformation")
+
 version='v9'
 luminosity='150'
 process='ttW_2l'

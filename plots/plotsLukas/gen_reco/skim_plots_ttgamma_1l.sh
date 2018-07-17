@@ -23,7 +23,7 @@ declare -a samples3=('')
 
 # declare selection strings to analyze
 #declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-njet3p-nbjet1p' 'gammapt100to200-nlep1p-njet3p-nbjet1p' 'gammapt200to300-nlep1p-njet3p-nbjet1p' 'gammapt300-nlep1p-njet3p-nbjet1p')
-declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt15-nlep1p-njet3p-nbjet1p' 'gammapt15-nlepttgamma2l1p-njet3p-nbjet1p' 'gammapt15-nlepttgamma2l1p')
+declare -a selections=('GammaSel40-nlep1p-njet3p-nbjet1p' 'GammaSel15-nlepttgamma2l1p-njet3p-nbjet1p' 'GammaSel15-nlepttgamma2l1p')
 #declare -a selections=('gammapt15-nlepttgamma2l1p')
 
 # declare sample size to analyze
@@ -37,20 +37,30 @@ declare -a samplesizes=('')
 declare -a reweightings=('')
 
 # declare scale
-#declare -a scales=('' '--scaleLumi')
+declare -a scales=('' '--scaleLumi')
 #declare -a scales=('--scaleLumi')
-declare -a scales=('')
+#declare -a scales=('')
 
 #declare -a levels=('gen')
 #declare -a levels=('reco')
 declare -a levels=('gen' 'reco')
 
-version='v22'
+declare -a variables=("cpt" "cpQM")
+#declare -a variables=("cpt")
+
+#declare -a binThresholds=("400" "100" "25" "0")
+declare -a binThresholds=("100" "0")
+#declare -a binThresholds=("10")
+
+#declare -a fisherInfo=("--addFisherInformation" "")
+declare -a fisherInfo=("--addFisherInformation")
+
+#declare -a backgrounds=("--backgrounds" "")
+declare -a backgrounds=("--backgrounds")
+
+version='v23'
 luminosity='150'
 process='ttgamma_1l'
-
-backgrounds="--backgrounds"
-#backgrounds=""
 
 # define program to run by python
 prog=skim_plots.py
@@ -75,29 +85,46 @@ do
             for level in "${levels[@]}"
             do
 
-               order=2
-               for sample in "${samples2[@]}"
-               do
+                  for variable in "${variables[@]}"
+                  do
 
-                  if [ -z $sample ]; then
-                     continue
-                  fi
+                     for binThreshold in "${binThresholds[@]}"
+                     do
 
-                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+                        for addFisher in "${fisherInfo[@]}"
+                        do
 
-               done
+                           for background in "${backgrounds[@]}"
+                           do
 
-               order=3
-               for sample in "${samples3[@]}"
-               do
+                               order=2
+                               for sample in "${samples2[@]}"
+                               do
 
-                  if [ -z $sample ]; then
-                     continue
-                  fi
+                                  if [ -z $sample ]; then
+                                     continue
+                                  fi
 
-                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+#                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThresholds ${binThreshold} --variables ${variable}"
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThresholds ${binThreshold} --variables ${variable}"
 
-               done
+                               done
+
+                               order=3
+                               for sample in "${samples3[@]}"
+                               do
+
+                                  if [ -z $sample ]; then
+                                     continue
+                                  fi
+
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThresholds ${binThreshold} --variables ${variable}"
+
+                               done
+                            done
+                        done
+                     done
+                  done
             done
          done
       done

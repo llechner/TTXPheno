@@ -37,123 +37,123 @@ def addIDeltaBeta( p_dict ):
     '''
     p_dict['IDeltaBeta'] = ( p_dict['sumPtCharged'] + p_dict['sumPtNeutral'] - 0.5* p_dict['sumPtChargedPU'] ) / ( p_dict['pt'] )
 
-def getLeptonIsolationPlotList( particleList, y_label ):
+def getLeptonIsolationPlotList( particleList, y_label, zoom=False ):
     ''' return plotlist for Isolation plots
     '''
     plots = []
 
     for p in particleList:
 
-        plots.append(Plot( name = "%s_isolationVar_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_isolationVar_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'isolationVar(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample: getattr( event, p['eventString'] )['isolationVar'] if abs( getattr( event, p['eventString'] )['pdgId'] ) == p['pdg'] and event.passing_checks else float('nan'),
-          binning=[20,0,0.25],
+          binning=[20,0,0.1] if zoom else [20,0,0.25],
         ))
 
-        plots.append(Plot( name = "%s_isolationVarRhoCorr_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_isolationVarRhoCorr_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'isolationVarRhoCorr(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['isolationVarRhoCorr'] if abs( getattr( event, p['eventString'] )['pdgId'] ) == p['pdg'] and event.passing_checks else float('nan'),
-          binning=[20,0,0.25],
+          binning=[20,0,0.1] if zoom else [20,0,0.25],
         ))
 
-        plots.append(Plot( name = "%s_sumPtCharged_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_sumPtCharged_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'sumPtCharged(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['sumPtCharged'] if abs( getattr( event, p['eventString'] )['pdgId'] ) == p['pdg'] and event.passing_checks else float('nan'),
-          binning=[20,0,15],
+          binning=[20,0,2] if zoom else [20,0,15],
         ))
 
-        plots.append(Plot( name = "%s_sumPtNeutral_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_sumPtNeutral_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'sumPtNeutral(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['sumPtNeutral'] if abs( getattr( event, p['eventString'] )['pdgId'] ) == p['pdg'] and event.passing_checks else float('nan'),
-          binning=[20,0,15],
+          binning=[20,0,2] if zoom else [20,0,15],
         ))
 
-        plots.append(Plot( name = "%s_sumPtChargedPU_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_sumPtChargedPU_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'sumPtChargedPU(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['sumPtChargedPU'] if abs( getattr( event, p['eventString'] )['pdgId'] ) == p['pdg'] and event.passing_checks else float('nan'),
-          binning=[20,0,0.1],
+          binning=[20,0,2] if zoom else [20,0,0.1],
         ))
 
-        plots.append(Plot( name = "%s_sumPt_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_sumPt_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'sumPt(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['sumPt'] if abs( getattr( event, p['eventString'] )['pdgId'] ) == p['pdg'] and event.passing_checks else float('nan'),
-          binning=[15,0,25],
+          binning=[20,0,5] if zoom else [15,0,25],
         ))
 
-        plots.append(Plot( name = "%s_ehadOverEem_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_ehadOverEem_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'ehadOverEem(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['ehadOverEem'] if abs( getattr( event, p['eventString'] )['pdgId'] ) == p['pdg'] and event.passing_checks else float('nan'),
           binning=[20,0,0.1],
         ))
 
-        plots.append(Plot( name = "%s_IDeltaBeta_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_IDeltaBeta_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'I^{#Delta#beta}_{rel}(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['IDeltaBeta'] if abs( getattr( event, p['eventString'] )['pdgId'] ) == p['pdg'] and event.passing_checks else float('nan'),
-          binning=[20,0,0.3],
+          binning=[20,0,0.05] if zoom else [20,0,0.3],
         ))
 
     return plots
 
 
-def getPhotonIsolationPlotList( particleList, y_label ):
+def getPhotonIsolationPlotList( particleList, y_label, zoom=False ):
     ''' return plotlist for Isolation plots for photons
     '''
     plots = []
 
     for p in particleList:
 
-        plots.append(Plot( name = "%s_isolationVar_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_isolationVar_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'isolationVar(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample: getattr( event, p['eventString'] )['isolationVar'] if event.passing_checks else float('nan'),
-          binning=[20,0,0.15],
+          binning=[20,0,0.05] if zoom else [20,0,0.15],
         ))
 
-        plots.append(Plot( name = "%s_isolationVarRhoCorr_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_isolationVarRhoCorr_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'isolationVarRhoCorr(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['isolationVarRhoCorr'] if event.passing_checks else float('nan'),
-          binning=[20,0,0.15],
+          binning=[20,0,0.05] if zoom else [20,0,0.15],
         ))
 
-        plots.append(Plot( name = "%s_sumPtCharged_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_sumPtCharged_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'sumPtCharged(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['sumPtCharged'] if event.passing_checks else float('nan'),
-          binning=[20,0,10],
+          binning=[20,0,2] if zoom else [20,0,10],
         ))
 
-        plots.append(Plot( name = "%s_sumPtNeutral_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_sumPtNeutral_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'sumPtNeutral(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['sumPtNeutral'] if event.passing_checks else float('nan'),
-          binning=[20,0,10],
+          binning=[20,0,2] if zoom else [20,0,10],
         ))
 
-        plots.append(Plot( name = "%s_sumPtChargedPU_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_sumPtChargedPU_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'sumPtChargedPU(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['sumPtChargedPU'] if event.passing_checks else float('nan'),
           binning=[20,0,0.1],
         ))
 
-        plots.append(Plot( name = "%s_sumPt_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_sumPt_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'sumPt(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['sumPt'] if event.passing_checks else float('nan'),
-          binning=[15,0,20],
+          binning=[20,0,5] if zoom else [15,0,20],
         ))
 
-        plots.append(Plot( name = "%s_ehadOverEem_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_ehadOverEem_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'ehadOverEem(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['ehadOverEem'] if event.passing_checks else float('nan'),
           binning=[20,0,0.1],
         ))
 
-        plots.append(Plot( name = "%s_genIndex_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_genIndex_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'genIndex(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['genIndex'] if event.passing_checks else float('nan'),
           binning=[6,-2,4],
         ))
 
-        plots.append(Plot( name = "%s_IDeltaBeta_%s"%( p['particleString'], p['eventString'] ),
+        plots.append(Plot( name = "%s_IDeltaBeta_%s%s"%( p['particleString'], p['eventString'], '_zoom' if zoom else ''),
           texX = 'I^{#Delta#beta}_{rel}(%s)'%p['eventString'], texY = y_label,
           attribute = lambda event, sample:  getattr( event, p['eventString'] )['IDeltaBeta'] if event.passing_checks else float('nan'),
-          binning=[20,0,0.15],
+          binning=[20,0,0.05] if zoom else [20,0,0.15],
         ))
 
     return plots

@@ -43,10 +43,16 @@ argParser.add_argument('--reweightPtXToSM', action='store_true', help='Reweight 
 argParser.add_argument('--parameters',      action='store',     default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 argParser.add_argument('--leptonFlavor',    action='store',     default='all', nargs='?', choices=['all', 'same', 'opposite'], help='same flavor of nonZ leptons for ttZ 4l and ttgamma 2l? No effect on other processes') 
+argParser.add_argument('--variables',       action='store',     default = [], type=str, nargs='+', help = "argument variables")
+argParser.add_argument('--binThreshold',    action='store',     default=100)
+argParser.add_argument('--addFisherInformation', action='store_true', help='include Fisher Information Plot in a.u.?')
 
 args = argParser.parse_args()
 
 if len(args.parameters) < 2: args.parameters = None
+
+#Fisher Information Wilson Coeff, {} for SM
+fisherInfo_WC = {}
 
 # Import additional functions/classes specified for the level of reconstruction
 if args.level == 'reco':
@@ -137,6 +143,7 @@ if args.small:
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
 w = WeightInfo(ttXSample.reweight_pkl)
 w.set_order(int(args.order))
+if len(args.variables) == 0: args.variables = w.variables
 
 def checkReferencePoint( sample ):
     ''' check if sample is simulated with a reference point
@@ -155,15 +162,17 @@ for s in [ ttXSample, WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, 
 signal = ttXSample
 if args.processFile == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
 elif args.processFile == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-#elif args.processFile == 'ttgamma_1l': bg = [ ttSample, tWSample, ZgammaSample ] #ttSemiLepSample
-elif args.processFile == 'ttgamma_1l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+#elif args.processFile == 'ttgamma_1l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+elif args.processFile == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 #elif args.processFile == 'ttgamma_2l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-elif args.processFile == 'ttgamma_2l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+elif args.processFile == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 else: bg = [ WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]
 
 #bg = [ WZSample, ttSample ]
 #bg = [ ttSample ]
 #bg = [ WZSample ]
+
+if args.addFisherInformation: params.append( [ {'legendText':'FI SM [a.u.] (%s)'%' '.join(args.variables), 'WC':fisherInfo_WC, 'color':colors[-1]} ] )
 
 stackList = [ [signal] for param in params ]
 if args.backgrounds: stackList += [ bg ]
@@ -229,6 +238,8 @@ else:
 
     weight = [ [ get_reweight( params[i][j], sample_ ) for j, sample_ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
 
+ttXWeightString = 'ref_lumiweight1fb*%s*%s*%s'%(str(args.luminosity), str(ttXSample.event_factor), w.get_weight_string( **fisherInfo_WC ))
+
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
@@ -244,12 +255,17 @@ def drawPlots(plots):
 
   if args.backgrounds:
     for plot in plots:
-      for signal_histo in plot.histos[:-1]:
+      for s, signal_histo in enumerate(plot.histos[:-1]):
+        # no bg adding to fisher plot
+        if args.addFisherInformation and s == len(plot.histos)-2: continue
         for bg_histo in plot.histos[-1]:
           signal_histo[0].Add(bg_histo)
 
   for plot in plots:
-    histoIndexSM = len(plot.histos)-2 if args.backgrounds else len(plot.histos)-1
+    histoIndexSM = len(plot.histos)-1
+    if args.backgrounds: histoIndexSM -= 1
+    if args.addFisherInformation: histoIndexSM -= 1
+
     for i_h, h in enumerate(plot.histos):
       for j_hi, hi in enumerate(h):
         if i_h == len(plot.histos)-1 and args.backgrounds:
@@ -265,10 +281,15 @@ def drawPlots(plots):
         plot_directory,
         '%s_%s'%(args.level, args.version),
         ttXSample.name,
+        'fisher_information' if args.addFisherInformation else '',
+        'kinematics' if args.addFisherInformation else '',
+        'backgrounds' if args.backgrounds else 'signalOnly',
         subDirectory,
         args.selection if args.selection is not None else 'no_selection',
         '%sLeptonFlavors'%args.leptonFlavor,
         WC_directory,
+        '_'.join(args.variables) if args.addFisherInformation else '',
+        '%sEventsPerBin'%str(binThreshold) if args.addFisherInformation else '',
         "log" if log else "lin")
 
     # plot the legend
@@ -297,13 +318,27 @@ def drawPlots(plots):
     )
 
     # plot the plots
-    for plot in plots:
+    for p, plot in enumerate(plots):
+      histoIndexSM = len(plot.histos)-1
+      if args.backgrounds: histoIndexSM -= 1
+      if args.addFisherInformation:
+        histoIndexSM -= 1
+        fi_Integral = plot.histos[histoIndexSM+1][0].Integral()
+        fisherInfoScale = plot.histos[histoIndexSM][0].Integral() / fi_Integral if fi_Integral != 0 else 0 #scaling factor from SM histo
+        fisherInfoScale *= 100 if log else 2. #offset
+
       for i_h, h in enumerate(plot.histos):
         for j_hi, hi in enumerate(h):
+          if args.addFisherInformation and i_h == histoIndexSM+1:
+            if fisherInfoVariables[p] is not None: hi.Scale(fisherInfoScale)
+            else: hi.Scale(0) #no fisherInfo histo, only place holder
           hi.legendText = params[i_h][j_hi]['legendText']
+
       if not max( max(li.GetMaximum() for li in l) for l in plot.histos): continue # Empty plot
 
-      scaleIndex = len(params)-2 if args.backgrounds else len(params)-1
+      scaleIndex = len(params)-1
+      if args.backgrounds: scaleIndex -= 1
+      if args.addFisherInformation: scaleIndex -= 1
 
       plotting.draw(plot,
 	    plot_directory = plot_directory_,
@@ -323,8 +358,21 @@ def drawPlots(plots):
 # Use some defaults
 Plot.setDefaults(stack = stack, weight = weight, addOverFlowBin=None)
 
-plots = process.getPlotList( args.scaleLumi, args.level )
+plots, fisherInfoVariables = process.getPlotList( args.scaleLumi, args.level )
 
 plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_events = -1 if args.small else -1)
+
+if args.addFisherInformation:
+    for i, plot in enumerate(plots):
+        if fisherInfoVariables[i] is None: continue
+
+        plotListIndex = len(plot.histos)-2 if args.backgrounds else len(plot.histos)-1
+        bins = plot.binning
+
+        #SM Integral + shift (*100)
+#        normFactor = plot.histos[plotListIndex-1][0].Integral()*100 #scaling factor from SM histo, why factor 100?
+        var = fisherInfoVariables[i] #replace with better solution than FI_plots!!
+        hist = w.getFisherInformationHisto( ttXSample, var, bins, selectionString=cutInterpreter.cutString(args.selection), weightString=ttXWeightString, variables=args.variables, nEventsThresh = args.binThreshold, **fisherInfo_WC)
+        plot.histos[plotListIndex][0] = plot.fromHisto( 'histo_%i'%i, hist ).histos
 
 drawPlots(plots)

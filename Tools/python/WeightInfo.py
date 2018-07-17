@@ -142,7 +142,8 @@ class WeightInfo:
         if nEventsThresh > 0:
             histEntries = sample.get1DHistoFromDraw( variableString, binning, selectionString = selectionString, weightString = '(1)')
             numEntries = histo_to_list( histEntries )
-            return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i, nBinEvents in enumerate( numEntries ) if int(nBinEvents) >= int(nEventsThresh) ]
+            # else Zero Array is important for kinematic Fisher Info plot, as it conserves the bin number
+            return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) if int(nBinEvents) >= int(nEventsThresh) else [ 0 for j in range( histo.GetNbinsX() ) ] for i, nBinEvents in enumerate( numEntries ) ]
         else:
             return [ histo_to_list( histo.ProjectionX("%i_px"%i, i+1, i+1) ) for i in range( histo.GetNbinsY() ) ]
 
@@ -210,27 +211,31 @@ class WeightInfo:
         return coeffs
 
     # getFisherInformationHisto is still in testing phase!!!!
-    def getFisherInformationHisto( self, sample, variableString, binning, parameter, selectionString = None, weightString = None, variables = None, nEventsThresh = 0, normalize = False ):
+    def getFisherInformationHisto( self, sample, variableString, binning, selectionString = None, weightString = None, variables = None, nEventsThresh = 0, **kwargs ):
         ''' Create a histogram showing the fisher information for each bin of the given kinematic distribution
         '''
         from array import array
         import ROOT
+
+#        # add the arguments from the ref-point 
+#        self.set_default_args( kwargs )
 
         if variables is None: variables = self.variables
     
         #remove initial selection string
         sample.setSelectionString('1')
         coeffList = self.getCoeffPlotFromDraw( sample, variableString, binning, selectionString, weightString=weightString, nEventsThresh=nEventsThresh )
-        detIList  = [ np.linalg.det( self.get_fisherInformation_matrix( coeffs, variables, **parameter )[1] ) for coeffs in coeffList ]
+        detIList  = [ np.linalg.det( self.get_fisherInformation_matrix( coeffs, variables, **kwargs )[1] ) if len(coeffs) != 0 and not all([ v == 0 for v in coeffList ]) else 0 for coeffs in coeffList]
 
-        if normalize:
-            detIListSM  = [ np.linalg.det( self.get_fisherInformation_matrix( coeffs, variables )[1] ) for coeffs in coeffList ]
-            detIList = [ detI/sum(detIListSM) for detI in detIList ]
+#        if normalizationFactor is not None:
+#            norm = normalizationFactor / sum(detIList) if sum(detIList) != 0 else 0.
+#            detIList = [ detI * norm for detI in detIList ]
 
         expo = 1. / len(variables)
         y_graph = array( 'd', [ abs(detI)**expo for detI in detIList ] )
 
-        histoName = 'histo_%s_%s'%(variableString,'_'.join(parameter.keys()))
+        paramNameList = kwargs.keys() if len(kwargs.keys())!=0 else ['SM']
+        histoName = 'histo_%s_%s'%(variableString,'_'.join( variables + ['params'] + paramNameList ))
         histo = ROOT.TH1F( histoName, histoName, binning[0], binning[1], binning[2] )
         for i in range(binning[0]):
             histo.SetBinContent(i+1, y_graph[i])
