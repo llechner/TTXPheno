@@ -22,7 +22,7 @@ from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
 from TTXPheno.Tools.DelphesReader          import DelphesReader
-from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoJet, isGoodRecoPhoton, genJetId
+from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, isIsolatedPhoton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoJet, isGoodRecoPhoton, genJetId
 
 #
 # Arguments
@@ -64,7 +64,7 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=1000 # Number of files
+    maxEvents=100 # Number of files
     sample.files=sample.files[:1]
 
 xsec = sample.xsec
@@ -316,38 +316,52 @@ def filler( event ):
     event.genMet_pt  = genMet['pt']
     event.genMet_phi = genMet['phi'] 
 
-    # gen photons
-    genPhotons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId())==22 and p.pt()>15 and search.isLast(p), gp) ]
+    # gen photons: particle-level isolated gen photons
+    genPhotons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId())==22 and p.pt()>15 and search.isLast(p) and p.status()==1, gp) ]
     genPhotons.sort( key = lambda p: -p[1].pt() )
-    genPhotons_   = [] 
+    genPhotons_   = []
+
     for first, last in genPhotons[:100]: 
         mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
-        genPhotons_.append( {var: getattr(last, var)() for var in boson_read_varnames} )
-        genPhotons_[-1]['motherPdgId'] = mother_pdgId
-
+        genPhoton_ = {var: getattr(last, var)() for var in boson_read_varnames}
+        # kinematic photon selection
+        if not isGoodGenPhoton( genPhoton_): continue
+        genPhoton_['motherPdgId'] = mother_pdgId
+        genPhoton_['status']      = last.status()
+        
+        close_particles = filter( lambda p: p!=last and deltaR2( {'phi':last.phi(), 'eta':last.eta()}, {'phi':p.phi(), 'eta':p.eta()} )<0.4**2 , search.final_state_particles_no_neutrinos )
+        genPhoton_['relIso04'] = sum( [p.pt() for p in close_particles], 0) / last.pt()
+        if isIsolatedPhoton(genPhoton_):
+            genPhotons_.append( genPhoton_ )
     
-    # find all genLeptons 
-    genLeptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0,  gp) ]
-    genLeps    = []
+    # genLeptons: prompt gen-leptons 
+    genLeptons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId()) in [11, 13] and search.isLast(p) and p.pt()>=0 and p.status()==1,  gp) ]
+    promptGenLeps    = []
+    allGenLeps    = []
     for first, last in genLeptons:
         mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
-        genLeps.append( {var: getattr(last, var)() for var in lep_varnames} )
-        genLeps[-1]['motherPdgId'] = mother_pdgId
+        genLep = {var: getattr(last, var)() for var in lep_varnames}
+        genLep['motherPdgId'] = mother_pdgId
+        allGenLeps.append( genLep )
+        if abs(genLep['motherPdgId']) in [ 11, 13, 15, 23, 24, 25 ]:
+            promptGenLeps.append(genLep )
 
     # filter gen leptons
-    genLeps =  list( filter( lambda l:isGoodGenLepton( l ), genLeps ) )
-    genLeps.sort( key = lambda p:-p['pt'] )
-    addIndex( genLeps )
+    promptGenLeps =  list( filter( lambda l:isGoodGenLepton( l ), promptGenLeps ) )
+    promptGenLeps.sort( key = lambda p:-p['pt'] )
+    addIndex( promptGenLeps )
+
+    ## removing photons in dR cone of jets and leptons (radiation photons)
+    genPhotons_ = list(filter( lambda g: min([999]+[deltaR2(g, l) for l in allGenLeps])>0.4**2, genPhotons_))
+    addIndex( genPhotons_ )
 
     # jets
     fwlite_genJets = filter( genJetId, reader.products['genJets'] )
     genJets = map( lambda t:{var: getattr(t, var)() for var in jet_read_varnames}, filter( lambda j:j.pt()>30, fwlite_genJets) )
     # filter genJets
     genJets = list( filter( lambda j:isGoodGenJet( j ), genJets ) )
-
-    # removing photons in dR cone of jets and leptons (radiation photons)
-    genPhotons_ = filter( lambda g: (min([999]+[deltaR2(g, l) for l in genLeps]) > 0.4**2 ), genPhotons_ )
-    genPhotons_ = filter( lambda g: (min([999]+[deltaR2(g, j) for j in genJets]) > 0.4**2 ), genPhotons_ )
+    # cleaning of jets with isolated photons
+    genJets = list( filter( lambda j:min([999]+[deltaR2(j, p) for p in genPhotons_ ])>0.4**2, genJets))
 
     # find b's from tops:
     b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
@@ -356,7 +370,7 @@ def filler( event ):
     for genJet in genJets:
         genJet['matchBParton'] = ( min([999]+[deltaR2(genJet, {'eta':b.eta(), 'phi':b.phi()}) for b in b_partons]) < 0.2**2 )
 
-    genJets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in genLeps if l['pt']>10]) > 0.3**2 ), genJets )
+    genJets = filter( lambda j: (min([999]+[deltaR2(j, l) for l in promptGenLeps if l['pt']>10]) > 0.3**2 ), genJets )
     genJets.sort( key = lambda p:-p['pt'] )
     addIndex( genJets )
 
@@ -370,53 +384,53 @@ def filler( event ):
     if genBj1['pt']<float('inf'): fill_vector( event, "genBj1", jet_write_varnames, genBj1) 
 
     # reco-bjet/leading lepton association
-    if len(genLeps)>0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
-        if vecSumPt( genBj0, genLeps[0], genMet ) > vecSumPt( genBj1, genLeps[0], genMet ):
+    if len(promptGenLeps)>0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
+        if vecSumPt( genBj0, promptGenLeps[0], genMet ) > vecSumPt( genBj1, promptGenLeps[0], genMet ):
             event.genBjLeadlep_index, event.genBjLeadhad_index = genBj0['index'], genBj1['index']
         else:
             event.genBjLeadlep_index, event.genBjLeadhad_index = genBj1['index'], genBj0['index']
 
     # find Z in genLep
-    (event.genLepZ_mass, genLepZ_l1_index, genLepZ_l2_index) = closestOSDLMassToMZ(genLeps)
-    genLepNonZ_indices = [ i for i in range(len(genLeps)) if i not in [genLepZ_l1_index, genLepZ_l2_index] ]
-    event.genLepZ_l1_index    = genLeps[genLepZ_l1_index]['index'] if genLepZ_l1_index>=0 else -1
-    event.genLepZ_l2_index    = genLeps[genLepZ_l2_index]['index'] if genLepZ_l2_index>=0 else -1
-    event.genLepNonZ_l1_index = genLeps[genLepNonZ_indices[0]]['index'] if len(genLepNonZ_indices)>0 else -1
-    event.genLepNonZ_l2_index = genLeps[genLepNonZ_indices[1]]['index'] if len(genLepNonZ_indices)>1 else -1
+    (event.genLepZ_mass, genLepZ_l1_index, genLepZ_l2_index) = closestOSDLMassToMZ(promptGenLeps)
+    genLepNonZ_indices = [ i for i in range(len(promptGenLeps)) if i not in [genLepZ_l1_index, genLepZ_l2_index] ]
+    event.genLepZ_l1_index    = promptGenLeps[genLepZ_l1_index]['index'] if genLepZ_l1_index>=0 else -1
+    event.genLepZ_l2_index    = promptGenLeps[genLepZ_l2_index]['index'] if genLepZ_l2_index>=0 else -1
+    event.genLepNonZ_l1_index = promptGenLeps[genLepNonZ_indices[0]]['index'] if len(genLepNonZ_indices)>0 else -1
+    event.genLepNonZ_l2_index = promptGenLeps[genLepNonZ_indices[1]]['index'] if len(genLepNonZ_indices)>1 else -1
     # store genLepZ stuff
     if event.genLepZ_mass>0:
         genLepZ_l1 = ROOT.TLorentzVector()
-        genLepZ_l1.SetPtEtaPhiM(genLeps[event.genLepZ_l1_index]['pt'], genLeps[event.genLepZ_l1_index]['eta'], genLeps[event.genLepZ_l1_index]['phi'], 0 )
+        genLepZ_l1.SetPtEtaPhiM(promptGenLeps[event.genLepZ_l1_index]['pt'], promptGenLeps[event.genLepZ_l1_index]['eta'], promptGenLeps[event.genLepZ_l1_index]['phi'], 0 )
         genLepZ_l2 = ROOT.TLorentzVector()
-        genLepZ_l2.SetPtEtaPhiM(genLeps[event.genLepZ_l2_index]['pt'], genLeps[event.genLepZ_l2_index]['eta'], genLeps[event.genLepZ_l2_index]['phi'], 0 )
+        genLepZ_l2.SetPtEtaPhiM(promptGenLeps[event.genLepZ_l2_index]['pt'], promptGenLeps[event.genLepZ_l2_index]['eta'], promptGenLeps[event.genLepZ_l2_index]['phi'], 0 )
         genLepZ = genLepZ_l1 + genLepZ_l2
         event.genLepZ_pt   = genLepZ.Pt()
         event.genLepZ_eta  = genLepZ.Eta()
         event.genLepZ_phi  = genLepZ.Phi()
-        event.genLepZ_lldPhi = deltaPhi(genLeps[event.genLepZ_l1_index]['phi'], genLeps[event.genLepZ_l2_index]['phi'])
-        event.genLepZ_lldR   = deltaR(genLeps[event.genLepZ_l1_index], genLeps[event.genLepZ_l2_index])
-        genLepMinus_index = event.genLepZ_l1_index if genLeps[event.genLepZ_l1_index]['pdgId'] > 0 else event.genLepZ_l2_index
-        event.genLepZ_cosThetaStar = cosThetaStar(event.genLepZ_mass, event.genLepZ_pt, event.genLepZ_eta, event.genLepZ_phi, genLeps[genLepMinus_index]['pt'], genLeps[genLepMinus_index]['eta'], genLeps[genLepMinus_index]['phi'] )
+        event.genLepZ_lldPhi = deltaPhi(promptGenLeps[event.genLepZ_l1_index]['phi'], promptGenLeps[event.genLepZ_l2_index]['phi'])
+        event.genLepZ_lldR   = deltaR(promptGenLeps[event.genLepZ_l1_index], promptGenLeps[event.genLepZ_l2_index])
+        genLepMinus_index = event.genLepZ_l1_index if promptGenLeps[event.genLepZ_l1_index]['pdgId'] > 0 else event.genLepZ_l2_index
+        event.genLepZ_cosThetaStar = cosThetaStar(event.genLepZ_mass, event.genLepZ_pt, event.genLepZ_eta, event.genLepZ_phi, promptGenLeps[genLepMinus_index]['pt'], promptGenLeps[genLepMinus_index]['eta'], promptGenLeps[genLepMinus_index]['phi'] )
 
     # reco-bjet/nonZ lepton association
     if event.genLepNonZ_l1_index>=0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
-        if vecSumPt( genBj0, genLeps[event.genLepNonZ_l1_index], genMet ) > vecSumPt( genBj1, genLeps[event.genLepNonZ_l1_index], genMet ):
+        if vecSumPt( genBj0, promptGenLeps[event.genLepNonZ_l1_index], genMet ) > vecSumPt( genBj1, promptGenLeps[event.genLepNonZ_l1_index], genMet ):
             event.genBjNonZlep_index, event.genBjNonZhad_index = genBj0['index'], genBj1['index']
         else:
             event.genBjNonZlep_index, event.genBjNonZhad_index = genBj1['index'], genBj0['index']
 
     #for jet in genJets:
-    #    print jet['isMuon'], jet['isElectron'], jet['isPhoton'], min([999]+[deltaR2(jet, l) for l in genLeps if l['pt']>10]), jet
+    #    print jet['isMuon'], jet['isElectron'], jet['isPhoton'], min([999]+[deltaR2(jet, l) for l in promptGenLeps if l['pt']>10]), jet
 
     # jet/lepton disambiguation -> remove jets, because gen-jets cluster all leptons
     #if args.logLevel == 'DEBUG':
-    #    for jet in filter( lambda j: not (min([999]+[deltaR2(j, l) for l in genLeps if l['pt']>10]) > 0.3**2 ), genJets ):
-    #        logger.debug( "Filtered gen %f jet %r lep %r", sqrt((min([999]+[deltaR2(jet, l) for l in genLeps if l['pt']>10]))), jet, [ (l['eta'], jet['pt']/l['pt']) for l in genLeps] )
+    #    for jet in filter( lambda j: not (min([999]+[deltaR2(j, l) for l in promptGenLeps if l['pt']>10]) > 0.3**2 ), genJets ):
+    #        logger.debug( "Filtered gen %f jet %r lep %r", sqrt((min([999]+[deltaR2(jet, l) for l in promptGenLeps if l['pt']>10]))), jet, [ (l['eta'], jet['pt']/l['pt']) for l in promptGenLeps] )
     #        assert False, ""
 
 
     fill_vector_collection( event, "genPhoton", gen_photon_varnames, genPhotons_ ) 
-    fill_vector_collection( event, "genLep", lep_all_varnames, genLeps)
+    fill_vector_collection( event, "genLep", lep_all_varnames, promptGenLeps)
     fill_vector_collection( event, "genJet", jet_write_varnames, genJets)
 
     # Reco quantities

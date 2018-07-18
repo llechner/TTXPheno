@@ -18,6 +18,15 @@ class GenSearch:
 #        self.__found = set()
 #        return self.__ancestry(l, stop_at_pdgId = stop_at_pdgId )
 
+    @property
+    def final_state_particles_no_neutrinos( self ):
+        if hasattr(self, "final_state_particles_no_neutrinos_"):
+            return self.final_state_particles_no_neutrinos_
+        else:
+            self.final_state_particles_no_neutrinos_ =  filter( lambda p: p.status()==1 and abs(p.pdgId()) not in [12,14,16], self.genParticles ) 
+            return self.final_state_particles_no_neutrinos_
+
+
     def daughters(self, p):
         return [p.daughter(i) for i in xrange( p.numberOfDaughters()) ]
 

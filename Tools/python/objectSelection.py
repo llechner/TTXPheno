@@ -13,6 +13,16 @@ def isGoodGenJet( j ):
     '''
     return j['pt'] > 30 and abs( j['eta'] ) < 2.4
 
+def isGoodGenPhoton( j ):
+    ''' jet object selection
+    '''
+    return j['pt'] > 15 and abs( j['eta'] ) < 2.1
+
+def isIsolatedPhoton( p ):
+    ''' jet object selection
+    '''
+    return p['relIso04'] < 0.4 
+
 def isGoodGenLepton( l ):
     ''' lepton object selection
     '''
@@ -31,5 +41,5 @@ def isGoodRecoJet( j ):
     return  abs( j['eta'] ) < 2.4 and j['pt'] > 30
 
 def isGoodRecoPhoton( g ):
-    return  abs( g['eta'] ) < 2.4 and g['pt'] > 40
+    return  abs( g['eta'] ) < 2.1 and g['pt'] > 15
 
