@@ -150,6 +150,8 @@ def makeLeps( event, sample, level ):
     for p in [ event.Z_l0, event.Z_l1, event.NonZ_l0, event.NonZ_l1 ]:
         addTransverseVector( p )
         addTLorentzVector( p )
+        if level == 'reco':
+            addIDeltaBeta( p )
 
     # Import additional functions/classes specified for the level of reconstruction
     if level == 'reco': from TTXPheno.Tools.objectSelection      import isGoodRecoLepton    as isGoodLepton
@@ -384,8 +386,12 @@ def getPlotList( scaleLumi, level ):
     if level == 'reco':
 
         leptonIsolationPlotList = []
-        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'l0'} )
-        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'l0'} )
+#        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'Z_l0'} )
+#        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'Z_l0'} )
+#        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'Z_l1'} )
+#        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'Z_l1'} )
+        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'NonZ_l0'} )
+        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'NonZ_l0'} )
 
         tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=False )
         fisherInfoVariables += [ None for i in tmp ]

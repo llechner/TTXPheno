@@ -52,7 +52,7 @@ def getVariableList( level ):
         read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F]")
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
-        read_variables_gen.append("genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I]")
+        read_variables_gen.append("genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I,relIso04/F]")
         read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I]")
 
     read_variables = read_variables_gen + read_variables_genLep
@@ -115,11 +115,11 @@ def makePhoton( event, sample, level ):
     if level == 'reco':
         photonList = ['pt', 'eta', 'phi', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
     else:
-        photonList = ['pt', 'eta', 'phi', 'mass', 'motherPdgId']
+        photonList = ['pt', 'eta', 'phi', 'mass', 'motherPdgId', 'relIso04']
 
     event.gammas = getCollection( event, '%sPhoton'%preTag, photonList, 'n%sPhoton'%preTag )
 
-    event.gamma0 = event.gammas[0]
+    event.gamma0 = event.gammas[0] if len(event.gammas)>0 else nanPhoton()
     event.gamma1 = event.gammas[1] if len(event.gammas)>1 else nanPhoton()
     event.gamma2 = event.gammas[2] if len(event.gammas)>2 else nanPhoton()
 
@@ -131,6 +131,17 @@ def makePhoton( event, sample, level ):
     event.gamma_vec4D     = ROOT.TLorentzVector()
     event.gamma_vec4D.SetPtEtaPhiM( event.gamma0['pt'], event.gamma0['eta'], event.gamma0['phi'], 0 )
     event.gamma_unitVec3D = event.gamma_vec4D.Vect().Unit()
+
+    # Import additional functions/classes specified for the level of reconstruction
+    if level == 'reco':      from TTXPheno.Tools.objectSelection      import isGoodRecoPhoton     as isGoodPhoton
+    else:                    from TTXPheno.Tools.objectSelection      import isGoodGenPhoton      as isGoodPhoton
+
+    event.foundGamma0    = isGoodPhoton( event.gamma0 )
+    event.foundGamma1    = isGoodPhoton( event.gamma1 )
+    event.foundGamma2    = isGoodPhoton( event.gamma2 )
+
+    event.passing_photons =  event.foundGamma0
+
 
 
 def makeLeps( event, sample, level ):
@@ -198,7 +209,7 @@ def makeObservables( event, sample, level):
 #    event.lep1chargept = event.l1['pt'] if event.l1['pdgId']>0 else -event.l1['pt']
 
     # choose your final selection
-    event.passing_checks = event.passing_leptons and event.passing_bjets
+    event.passing_checks = event.passing_leptons and event.passing_bjets and  event.passing_photons
 
 
 def getSequenceList( level, flavorCheck ):
@@ -231,7 +242,7 @@ def getPlotList( scaleLumi, level ):
       attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,400],
     ))
-    fisherInfoVariables.append(None)
+    fisherInfoVariables.append('%sPhoton_pt[0]'%preTag)
 
     
     plots.append(Plot( name = "gamma_phi",
@@ -239,7 +250,7 @@ def getPlotList( scaleLumi, level ):
       attribute = lambda event, sample: event.gamma0['phi'] if event.passing_checks else float('nan'),
       binning=[20,-pi,pi],
     ))
-    fisherInfoVariables.append(None)
+    fisherInfoVariables.append('%sPhoton_phi[0]'%preTag)
 
     
     plots.append(Plot( name = "gamma_eta",
@@ -247,7 +258,7 @@ def getPlotList( scaleLumi, level ):
       attribute = lambda event, sample: event.gamma0['eta'] if event.passing_checks else float('nan'),
       binning=[20,-3,3],
     ))
-    fisherInfoVariables.append(None)
+    fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
 
     
     plots.append(Plot( name = 'deltaR_lepg0_zoom',
@@ -269,7 +280,7 @@ def getPlotList( scaleLumi, level ):
     plots.append(Plot( name = 'deltaR_lepg2_zoom',
       texX = 'min(#DeltaR(lep, #gamma_{2}))', texY = y_label,
       attribute = lambda event, sample: event.minLeptonG2dR if event.passing_checks else float('nan'),
-      binning=[20,0,60.20,0,0.5],
+      binning=[20,0,0.5],
     ))
     fisherInfoVariables.append(None)
 
@@ -327,6 +338,13 @@ def getPlotList( scaleLumi, level ):
 
     elif level == 'gen':
 
+        plots.append(Plot( name = "gamma_relIso04",
+          texX = 'relIso04(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['relIso04'] if event.passing_checks else float('nan'),
+          binning=[20,0,4],
+        ))
+        fisherInfoVariables.append(None)
+
         plots.append(Plot( name = "gamma_motherPdgId",
           texX = 'motherPdgId(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['motherPdgId'] if event.passing_checks else float('nan'),
@@ -338,6 +356,30 @@ def getPlotList( scaleLumi, level ):
           texX = 'm(#gamma_{0}) [GeV]', texY = y_label,
           attribute = lambda event, sample: event.gamma0['mass'] if event.passing_checks else float('nan'),
           binning=[20,-1e-4,1e-4],
+        ))
+        fisherInfoVariables.append(None)
+
+
+        plots.append(Plot( name = "l0_pt_gamma0FromE",
+          texX = 'p_{T}(l_{0}) [GeV] if #gamma_{0} origin = e^{-},e^{+}', texY = y_label,
+          attribute = lambda event, sample: event.l0['pt'] if abs(event.gamma0['motherPdgId'])==11 and event.passing_checks else float('nan'),
+          binning=[20,0,100],
+        ))
+        fisherInfoVariables.append(None)
+    
+        
+        plots.append(Plot( name = "l0_pt_gamma0FromMu",
+          texX = 'p_{T}(l_{0}) [GeV] if #gamma_{0} origin = #mu^{-},#mu^{+}', texY = y_label,
+          attribute = lambda event, sample: event.l0['pt'] if abs(event.gamma0['motherPdgId'])==13 and event.passing_checks else float('nan'),
+          binning=[20,0,100],
+        ))
+        fisherInfoVariables.append(None)
+    
+        
+        plots.append(Plot( name = "l0_pt_gamma0FromW",
+          texX = 'p_{T}(l_{0}) [GeV] if #gamma_{0} origin = W^{-},W^{+}', texY = y_label,
+          attribute = lambda event, sample: event.l0['pt'] if abs(event.gamma0['motherPdgId'])==24 and event.passing_checks else float('nan'),
+          binning=[20,0,100],
         ))
         fisherInfoVariables.append(None)
 
@@ -395,39 +437,15 @@ def getPlotList( scaleLumi, level ):
       attribute = lambda event, sample: event.l0['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,300],
     ))
-    fisherInfoVariables.append(None)
+    fisherInfoVariables.append('%sLep_pt[0]'%preTag)
 
     
-    plots.append(Plot( name = "l0_pt_gamma0FromE",
-      texX = 'p_{T}(l_{0}) [GeV] if #gamma_{0} origin = e^{-},e^{+}', texY = y_label,
-      attribute = lambda event, sample: event.l0['pt'] if abs(event.gamma0['motherPdgId'])==11 and event.passing_checks else float('nan'),
-      binning=[20,0,100],
-    ))
-    fisherInfoVariables.append(None)
-
-    
-    plots.append(Plot( name = "l0_pt_gamma0FromMu",
-      texX = 'p_{T}(l_{0}) [GeV] if #gamma_{0} origin = #mu^{-},#mu^{+}', texY = y_label,
-      attribute = lambda event, sample: event.l0['pt'] if abs(event.gamma0['motherPdgId'])==13 and event.passing_checks else float('nan'),
-      binning=[20,0,100],
-    ))
-    fisherInfoVariables.append(None)
-
-    
-    plots.append(Plot( name = "l0_pt_gamma0FromW",
-      texX = 'p_{T}(l_{0}) [GeV] if #gamma_{0} origin = W^{-},W^{+}', texY = y_label,
-      attribute = lambda event, sample: event.l0['pt'] if abs(event.gamma0['motherPdgId'])==24 and event.passing_checks else float('nan'),
-      binning=[20,0,100],
-    ))
-    fisherInfoVariables.append(None)
-
-
     plots.append(Plot( name = "l0_phi",
       texX = '#phi(l_{0})', texY = y_label,
       attribute = lambda event, sample: event.l0['phi'] if event.passing_checks else float('nan'),
       binning=[20,-pi,pi],
     ))
-    fisherInfoVariables.append(None)
+    fisherInfoVariables.append('%sLep_phi[0]'%preTag)
 
     
     plots.append(Plot( name = "l0_eta",
@@ -435,7 +453,7 @@ def getPlotList( scaleLumi, level ):
       attribute = lambda event, sample: event.l0['eta'] if event.passing_checks else float('nan'),
       binning=[20,-3,3],
     ))
-    fisherInfoVariables.append(None)
+    fisherInfoVariables.append('%sLep_eta[0]'%preTag)
 
     
     plots.append(Plot( name = 'deltaPhi_bb',

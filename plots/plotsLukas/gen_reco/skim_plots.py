@@ -178,6 +178,7 @@ stackList = [ [signal] for param in params ]
 if args.backgrounds: stackList += [ bg ]
 stack = Stack( *stackList )
 
+
 def legendtext( sample ):
     splitname = sample.name.split('_')
     if splitname[1] != 'tt': return splitname[1]
@@ -289,7 +290,7 @@ def drawPlots(plots):
         '%sLeptonFlavors'%args.leptonFlavor,
         WC_directory,
         '_'.join(args.variables) if args.addFisherInformation else '',
-        '%sEventsPerBin'%str(binThreshold) if args.addFisherInformation else '',
+        '%sEventsPerBin'%str(args.binThreshold) if args.addFisherInformation else '',
         "log" if log else "lin")
 
     # plot the legend
@@ -364,15 +365,18 @@ plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_e
 
 if args.addFisherInformation:
     for i, plot in enumerate(plots):
-        if fisherInfoVariables[i] is None: continue
-
         plotListIndex = len(plot.histos)-2 if args.backgrounds else len(plot.histos)-1
         bins = plot.binning
+
+        if fisherInfoVariables[i] is None:
+            plot.histos[plotListIndex] = [ROOT.TH1F( 'histo_%i'%i, 'histo_%i'%i, bins[0], bins[1], bins[2] )]
+            continue
 
         #SM Integral + shift (*100)
 #        normFactor = plot.histos[plotListIndex-1][0].Integral()*100 #scaling factor from SM histo, why factor 100?
         var = fisherInfoVariables[i] #replace with better solution than FI_plots!!
         hist = w.getFisherInformationHisto( ttXSample, var, bins, selectionString=cutInterpreter.cutString(args.selection), weightString=ttXWeightString, variables=args.variables, nEventsThresh = args.binThreshold, **fisherInfo_WC)
-        plot.histos[plotListIndex][0] = plot.fromHisto( 'histo_%i'%i, hist ).histos
+        plot.histos[plotListIndex] = [plot.fromHisto( 'histo_%i'%i, hist ).histos]
 
 drawPlots(plots)
+
