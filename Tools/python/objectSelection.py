@@ -28,6 +28,9 @@ def isGoodGenLepton( l ):
     '''
     return l['pt'] > 10 and abs( l['eta'] ) < 2.5 and abs( int(l['pdgId']) ) in [11,13]
 
+def isGoodGenPhoton( g ):
+    return  abs( g['eta'] ) < 2.1 and g['pt'] > 15
+
 def isGoodRecoLepton( l ):
     return l['pt'] > 10 and abs( l['eta'] ) < 2.5 and abs( int(l['pdgId']) ) in [11,13]
 
