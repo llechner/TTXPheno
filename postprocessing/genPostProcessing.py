@@ -22,7 +22,7 @@ from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
 from TTXPheno.Tools.DelphesReader          import DelphesReader
-from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, isIsolatedPhoton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoJet, isGoodRecoPhoton, genJetId
+from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, isIsolatedPhoton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoLepton, isGoodRecoJet, isGoodRecoPhoton, genJetId
 
 #
 # Arguments
@@ -64,7 +64,7 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=100 # Number of files
+    maxEvents=5000 # Number of files
     sample.files=sample.files[:1]
 
 xsec = sample.xsec
@@ -190,7 +190,7 @@ if args.delphes:
     variables += [ "recoBjNonZlep_index/I", "recoBjNonZhad_index/I" ]
     variables += [ "recoBjLeadlep_index/I", "recoBjLeadhad_index/I" ]
     # reconstructed photons
-    recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I,minLeptonDR/F,minJetDR/F'
+    recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I,minLeptonDR/F,minLeptonPt/F,minJetDR/F'
     variables      += ["recoPhoton[%s]"%recoPhoton_vars]
     recoPhoton_varnames = varnames( recoPhoton_vars )
 
@@ -351,7 +351,7 @@ def filler( event ):
     promptGenLeps.sort( key = lambda p:-p['pt'] )
     addIndex( promptGenLeps )
 
-    ## removing photons in dR cone of jets and leptons (radiation photons)
+    ## removing photons in dR cone leptons (radiation photons)
     for genPhoton in genPhotons_:
         genPhoton['minLeptonDR'] =  min([999]+[deltaR(genPhoton, l) for l in allGenLeps])
     genPhotons_ = list(filter( lambda g: g['minLeptonDR']>0.4, genPhotons_))
@@ -456,15 +456,22 @@ def filler( event ):
         fill_vector( event, "recoBj1", recoJet_write_varnames, recoBj1) 
 
         # read leptons
-        recoLeps =  filter( isGoodRecoMuon, delphesReader.muons()) + filter( isGoodRecoElectron, delphesReader.electrons() )
-        recoLeps.sort( key = lambda p:-p['pt'] )
+        allRecoLeps = delphesReader.muons() + delphesReader.electrons()
+        allRecoLeps.sort( key = lambda p:-p['pt'] )
+        recoLeps =  filter( isGoodRecoLepton, allRecoLeps )
 
         # Photons
         recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
 
         # Remove radiated photons in dR cone
         for recoPhoton in recoPhotons:
-            recoPhoton['minLeptonDR'] =  min([999]+[deltaR(recoPhoton, l) for l in recoLeps])
+            recoPhoton['minLeptonDR'] = 999 
+            recoPhoton['minLeptonPt'] = -1.
+            dr_values = [deltaR(recoPhoton, l) for l in allRecoLeps]
+            recoPhoton['minLeptonDR'] = min([999]+dr_values) 
+            if len( dr_values )>0:
+                closest_lepton = dr_values.index( min(dr_values) ) 
+                recoPhoton['minLeptonPt'] = recoLeps[closest_lepton]['pt'] 
         recoPhotons = list(filter( lambda g: g['minLeptonDR']>0.4, recoPhotons))
         for recoPhoton in recoPhotons:
             recoPhoton['minJetDR'] =  min([999]+[deltaR(recoPhoton, j) for j in recoJets])
