@@ -165,7 +165,7 @@ variables     += ["genLepZ_l1_index/I", "genLepZ_l2_index/I", "genLepNonZ_l1_ind
 # W vector
 variables     += ["genW_pt/F", "genW_phi/F", "genW_eta/F", "genW_mass/F", "genW_daughterPdg/I"]
 # gamma vector
-gen_photon_vars = "pt/F,phi/F,eta/F,mass/F,motherPdgId/I"
+gen_photon_vars = "pt/F,phi/F,eta/F,mass/F,motherPdgId/I,relIso04/F,minLeptonDR/F,minJetDR/F"
 variables     += ["genPhoton[%s]"%gen_photon_vars]
 gen_photon_varnames = varnames( gen_photon_vars )
 
@@ -190,7 +190,7 @@ if args.delphes:
     variables += [ "recoBjNonZlep_index/I", "recoBjNonZhad_index/I" ]
     variables += [ "recoBjLeadlep_index/I", "recoBjLeadhad_index/I" ]
     # reconstructed photons
-    recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I'
+    recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I,minLeptonDR/F,minJetDR/F'
     variables      += ["recoPhoton[%s]"%recoPhoton_vars]
     recoPhoton_varnames = varnames( recoPhoton_vars )
 
@@ -352,7 +352,9 @@ def filler( event ):
     addIndex( promptGenLeps )
 
     ## removing photons in dR cone of jets and leptons (radiation photons)
-    genPhotons_ = list(filter( lambda g: min([999]+[deltaR2(g, l) for l in allGenLeps])>0.4**2, genPhotons_))
+    for genPhoton in genPhotons_:
+        genPhoton['minLeptonDR'] =  min([999]+[deltaR(genPhoton, l) for l in allGenLeps])
+    genPhotons_ = list(filter( lambda g: g['minLeptonDR']>0.4, genPhotons_))
     addIndex( genPhotons_ )
 
     # jets
@@ -362,6 +364,10 @@ def filler( event ):
     genJets = list( filter( lambda j:isGoodGenJet( j ), genJets ) )
     # cleaning of jets with isolated photons
     genJets = list( filter( lambda j:min([999]+[deltaR2(j, p) for p in genPhotons_ ])>0.4**2, genJets))
+
+    # store minimum DR to jets
+    for genPhoton in genPhotons_:
+        genPhoton['minJetDR'] =  min([999]+[deltaR(genPhoton, j) for j in genJets])
 
     # find b's from tops:
     b_partons = [ b for b in filter( lambda p:abs(p.pdgId())==5 and p.numberOfMothers()==1 and abs(p.mother(0).pdgId())==6,  gp) ]
@@ -453,22 +459,16 @@ def filler( event ):
         recoLeps =  filter( isGoodRecoMuon, delphesReader.muons()) + filter( isGoodRecoElectron, delphesReader.electrons() )
         recoLeps.sort( key = lambda p:-p['pt'] )
 
-#        for i_lep, lep in enumerate(recoLeps):
-#            min_DR=999
-#            min_jet=None
-#            for jet in recoJets:
-#                if deltaR2(jet, lep)<min_DR:
-#                    min_DR_jet = jet
-#                    min_DR     = deltaR2(jet, lep)
-#            if min_DR<0.4**2: 
-#                #print "Filtering lepton", lep, "because DR", sqrt(min_DR), "of jet", jet
-#                break
-
         # Photons
         recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
+
         # Remove radiated photons in dR cone
-        recoPhotons = filter( lambda g: (min([999]+[deltaR2(g, l) for l in recoLeps]) > 0.4**2 ), recoPhotons )
-        recoPhotons = filter( lambda g: (min([999]+[deltaR2(g, j) for j in recoJets]) > 0.4**2 ), recoPhotons )
+        for recoPhoton in recoPhotons:
+            recoPhoton['minLeptonDR'] =  min([999]+[deltaR(recoPhoton, l) for l in recoLeps])
+        recoPhotons = list(filter( lambda g: g['minLeptonDR']>0.4, recoPhotons))
+        for recoPhoton in recoPhotons:
+            recoPhoton['minJetDR'] =  min([999]+[deltaR(recoPhoton, j) for j in recoJets])
+        recoPhotons = list(filter( lambda g: g['minJetDR']>0.4, recoPhotons))
 
         # cross-cleaning of reco-objects
         recoLeps = filter( lambda l: (min([999]+[deltaR2(l, j) for j in recoJets if j['pt']>30]) > 0.3**2 ), recoLeps )
