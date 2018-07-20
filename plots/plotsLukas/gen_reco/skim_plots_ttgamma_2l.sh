@@ -13,24 +13,19 @@ ctG=$7
 ctGI=$8
 
 # declare samples to analyze
-#declare -a samples2=('fwlite_ttgamma_LO_order2_15weights' 'fwlite_ttgamma_LO_order2_15weights_ref')
 declare -a samples2=('fwlite_ttgamma_LO_order2_15weights_ref')
-#declare -a samples2=('fwlite_ttgamma_LO_order2_15weights')
-#declare -a samples2=('')
-
-#declare -a samples3=('fwlite_ttgamma_LO_order3_8weights')
 declare -a samples3=('')
 
 # declare selection strings to analyze
 #declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p' 'gammapt40to100-nlep2p-njet2p-nbjet1p' 'gammapt100to200-nlep2p-njet2p-nbjet1p' 'gammapt200to300-nlep2p-njet2p-nbjet1p' 'gammapt300-nlep2p-njet2p-nbjet1p')
 #declare -a selections=('GammaSel40-nlep2p-njet2p-nbjet1p' 'LepSelttgamma2-GammaSel15-njet2p-nbjet1p' 'LepSelttgamma2-GammaSel15')
-declare -a selections=('GammaSel40-GammaEta-nlep2p-njet2p-nbjet1p' 'LepSelttgamma2-GammaEta-GammaSel40')
+declare -a selections=('GammaSel40-GammaEta-nlep2p-njet2p-nbjet1p' 'LepSelttgamma2-GammaEta-GammaSel40' 'GammaSel15-GammaEta-nlep2p-njet2p-nbjet1p')
 #declare -a selections=('LepSelttgamma2-GammaSel15')
 
 # declare sample size to analyze
-declare -a samplesizes=('--small' '')
+#declare -a samplesizes=('--small' '')
 #declare -a samplesizes=('--small')
-#declare -a samplesizes=('')
+declare -a samplesizes=('')
 
 # declare reweighting
 #declare -a reweightings=('' '--reweightPtXToSM')
@@ -39,8 +34,8 @@ declare -a reweightings=('')
 
 # declare scale
 #declare -a scales=('' '--scaleLumi')
-#declare -a scales=('--scaleLumi')
-declare -a scales=('')
+declare -a scales=('--scaleLumi')
+#declare -a scales=('')
 
 #declare -a levels=('gen')
 #declare -a levels=('reco')
@@ -54,7 +49,7 @@ declare -a variables=("cpt")
 
 #declare -a binThresholds=("400" "100" "25" "0")
 #declare -a binThresholds=("100" "0")
-declare -a binThresholds=("0")
+declare -a binThresholds=("100")
 
 #declare -a fisherInfo=("--addFisherInformation" "")
 #declare -a fisherInfo=("--addFisherInformation")
@@ -63,7 +58,7 @@ declare -a fisherInfo=("")
 #declare -a backgrounds=("--backgrounds" "")
 declare -a backgrounds=("--backgrounds")
 
-version='v25'
+version='v28'
 luminosity='150'
 process='ttgamma_2l'
 

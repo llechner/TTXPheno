@@ -48,8 +48,10 @@ def getVariableList( level ):
         read_variables_gen    = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
         read_variables_genLep = [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
         read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
-        read_variables_gen.append("recoPhoton[pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I]")
+        read_variables_gen.append("recoPhoton[pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I,minLeptonPt/F,minLeptonDR/F,minJetDR/F]")
         read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F]")
+        read_variables_gen.append("genPhoton[motherPdgId/I]")
+
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
         read_variables_gen.append("genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I,relIso04/F]")
@@ -95,7 +97,7 @@ def makeJets( event, sample, level ):
 #    event.foundBj0lep = getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 and isGoodJet( event.bj0lep )
 
     # choose your selection on b-jets
-    event.passing_bjets = True #event.foundBj0
+    event.passing_bjets = event.foundBj0
 
 
 def makeMET( event, sample, level ):
@@ -113,7 +115,7 @@ def makePhoton( event, sample, level ):
     preTag = 'reco' if level == 'reco' else 'gen'
 
     if level == 'reco':
-        photonList = ['pt', 'eta', 'phi', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
+        photonList = ['pt', 'eta', 'phi', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex', 'minLeptonPt', 'minLeptonDR', 'minJetDR']
     else:
         photonList = ['pt', 'eta', 'phi', 'mass', 'motherPdgId', 'relIso04']
 
@@ -144,7 +146,7 @@ def makePhoton( event, sample, level ):
 
 
 
-def makeLeps( event, sample, level ):
+def makeLeps( event, sample, level, flavorCheck ):
     ''' Add important leptons (no full list of leptons is required for now)
     '''
     preTag = 'reco' if level == 'reco' else 'gen'
@@ -168,8 +170,10 @@ def makeLeps( event, sample, level ):
     else:               from TTXPheno.Tools.objectSelection      import isGoodGenLepton   as isGoodLepton
 
     # We may loose some events by cross-cleaning or by thresholds.
-    event.found1lep    = isGoodLepton( event.l0 )
-
+    event.found1lep    = isGoodLepton( event.l0 ) and len(event.leps) == 1
+    if flavorCheck == 'e': event.found1lep = event.found1lep and abs(event.l0['pdgId'])==11
+    elif flavorCheck == 'mu': event.found1lep = event.found1lep and abs(event.l0['pdgId'])==13
+    
     # choose your selection on leptons
     event.passing_leptons = event.found1lep
 
@@ -220,7 +224,7 @@ def getSequenceList( level, flavorCheck ):
     sequence.append( lambda event, sample: makeJets( event, sample, level ) )
     sequence.append( lambda event, sample: makeMET( event, sample, level ) )
     sequence.append( lambda event, sample: makePhoton( event, sample, level ) )
-    sequence.append( lambda event, sample: makeLeps( event, sample, level ) )
+    sequence.append( lambda event, sample: makeLeps( event, sample, level, flavorCheck ) )
     sequence.append( lambda event, sample: makeObservables( event, sample, level ) )
 
     return sequence
@@ -261,80 +265,310 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
 
     
-    plots.append(Plot( name = 'deltaR_lepg0_zoom',
+    plots.append(Plot( name = 'deltaR_lepg0',
       texX = 'min(#DeltaR(lep, #gamma_{0}))', texY = y_label,
       attribute = lambda event, sample: event.minLeptonG0dR if event.passing_checks else float('nan'),
-      binning=[20,0,0.5],
+      binning=[20,0.3,0.8],
     ))
     fisherInfoVariables.append(None)
 
 
-    plots.append(Plot( name = 'deltaR_lepg1_zoom',
+    plots.append(Plot( name = 'deltaR_lepg1',
       texX = 'min(#DeltaR(lep, #gamma_{1}))', texY = y_label,
       attribute = lambda event, sample: event.minLeptonG1dR if event.passing_checks else float('nan'),
-      binning=[20,0,0.5],
+      binning=[20,0.3,0.8],
     ))
     fisherInfoVariables.append(None)
 
 
-    plots.append(Plot( name = 'deltaR_lepg2_zoom',
+    plots.append(Plot( name = 'deltaR_lepg2',
       texX = 'min(#DeltaR(lep, #gamma_{2}))', texY = y_label,
       attribute = lambda event, sample: event.minLeptonG2dR if event.passing_checks else float('nan'),
-      binning=[20,0,0.5],
+      binning=[20,0.3,0.8],
     ))
     fisherInfoVariables.append(None)
 
 
-    plots.append(Plot( name = 'deltaR_jetg0_zoom',
+    plots.append(Plot( name = 'deltaR_jetg0',
       texX = 'min(#DeltaR(jet, #gamma_{0}))', texY = y_label,
       attribute = lambda event, sample: event.minJetG0dR if event.passing_checks else float('nan'),
-      binning=[20,0,0.5],
+      binning=[20,0.3,0.8],
     ))
     fisherInfoVariables.append(None)
 
 
-    plots.append(Plot( name = 'deltaR_jetg1_zoom',
+    plots.append(Plot( name = 'deltaR_jetg1',
       texX = 'min(#DeltaR(jet, #gamma_{1}))', texY = y_label,
       attribute = lambda event, sample: event.minJetG1dR if event.passing_checks else float('nan'),
-      binning=[20,0,0.5],
+      binning=[20,0.3,0.8],
     ))
     fisherInfoVariables.append(None)
 
 
-    plots.append(Plot( name = 'deltaR_jetg2_zoom',
+    plots.append(Plot( name = 'deltaR_jetg2',
       texX = 'min(#DeltaR(jet, #gamma_{2}))', texY = y_label,
       attribute = lambda event, sample: event.minJetG2dR if event.passing_checks else float('nan'),
-      binning=[20,0,0.5],
+      binning=[20,0.3,0.8],
     ))
     fisherInfoVariables.append(None)
 
 
     if level == 'reco':
 
-        leptonIsolationPlotList = []
-        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'l0'} )
-        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'l0'} )
+        plots.append(Plot( name = "gamma_motherPdgId",
+          texX = 'motherPdgId(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.genPhoton_motherPdgId[event.recoPhoton_genIndex[0]] if event.recoPhoton_genIndex[0] >= 0 and event.passing_checks else float('nan'),
+          binning=[52,-26,26],
+        ))
+        fisherInfoVariables.append(None)
 
-        photonIsolationPlotList = []
-        photonIsolationPlotList.append( {'particleString':'gamma0', 'eventString':'gamma0'} )
-        photonIsolationPlotList.append( {'particleString':'gamma1', 'eventString':'gamma1'} )
-        photonIsolationPlotList.append( {'particleString':'gamma2', 'eventString':'gamma2'} )
+        plots.append(Plot( name = "gamma0_isolationVar",
+          texX = 'isolationVar(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['isolationVar'] if event.passing_checks else float('nan'),
+          binning=[20,0,3],
+        ))
+        fisherInfoVariables.append(None)
 
-        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=False )
-        fisherInfoVariables += [ None for i in tmp ]
-        plots += tmp
+        plots.append(Plot( name = "gamma0_isolationVar_zoom",
+          texX = 'isolationVar(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['isolationVar'] if event.passing_checks else float('nan'),
+          binning=[20,0,0.05],
+        ))
+        fisherInfoVariables.append(None)
 
-        tmp = getPhotonIsolationPlotList( photonIsolationPlotList, y_label, zoom=False )
-        fisherInfoVariables += [ None for i in tmp ]
-        plots += tmp
+        plots.append(Plot( name = "gamma0_minLeptonPt",
+          texX = 'minLeptonPt(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['minLeptonPt'] if event.passing_checks else float('nan'),
+          binning=[20,0,300],
+        ))
+        fisherInfoVariables.append(None)
 
-        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=True )
-        fisherInfoVariables += [ None for i in tmp ]
-        plots += tmp
+        plots.append(Plot( name = "gamma0_minLeptonDR",
+          texX = 'minLeptonDR(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['minLeptonDR'] if event.passing_checks else float('nan'),
+          binning=[20,0,6],
+        ))
+        fisherInfoVariables.append(None)
 
-        tmp = getPhotonIsolationPlotList( photonIsolationPlotList, y_label, zoom=True )
-        fisherInfoVariables += [ None for i in tmp ]
-        plots += tmp
+        plots.append(Plot( name = "gamma0_minLeptonDR_zoom",
+          texX = 'minLeptonDR(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['minLeptonDR'] if event.passing_checks else float('nan'),
+          binning=[20,0,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma0_minJetDR",
+          texX = 'minJetDR(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['minJetDR'] if event.passing_checks else float('nan'),
+          binning=[20,0,6],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma0_minJetDR_zoom",
+          texX = 'minJetDR(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['minJetDR'] if event.passing_checks else float('nan'),
+          binning=[20,0,1],
+        ))
+        fisherInfoVariables.append(None)
+
+#        plots.append(Plot( name = "#gamma0_isolationVarRhoCorr",
+#          texX = 'isolationVarRhoCorr(#gamma_{0})', texY = y_label,
+#          attribute = lambda event, sample:  event.gamma0['isolationVarRhoCorr'] if event.passing_checks else float('nan'),
+#          binning=[20,0,0.05],
+#        ))
+#        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma0_sumPtCharged",
+          texX = 'sumPtCharged(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.gamma0['sumPtCharged'] if event.passing_checks else float('nan'),
+          binning=[20,0,2],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma0_sumPtNeutral",
+          texX = 'sumPtNeutral(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.gamma0['sumPtNeutral'] if event.passing_checks else float('nan'),
+          binning=[20,0,2],
+        ))
+        fisherInfoVariables.append(None)
+
+#        plots.append(Plot( name = "gamma0_sumPtChargedPU",
+#          texX = 'sumPtChargedPU(#gamma_{0})', texY = y_label,
+#          attribute = lambda event, sample:  event.gamma0['sumPtChargedPU'] if event.passing_checks else float('nan'),
+#          binning=[20,0,0.1],
+#        ))
+#        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma0_sumPt",
+          texX = 'sumPt(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.gamma0['sumPt'] if event.passing_checks else float('nan'),
+          binning=[20,0,5],
+        ))
+        fisherInfoVariables.append(None)
+
+ #       plots.append(Plot( name = "gamma0_ehadOverEem",
+ #         texX = 'ehadOverEem(#gamma_{0})', texY = y_label,
+ #         attribute = lambda event, sample:  event.gamma0['ehadOverEem'] if event.passing_checks else float('nan'),
+ #         binning=[20,0,0.1],
+ #       ))
+ #       fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma0_genIndex",
+          texX = 'genIndex(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.gamma0['genIndex'] if event.passing_checks else float('nan'),
+          binning=[6,-2,4],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma0_IDeltaBeta",
+          texX = 'I^{#Delta#beta}_{rel}(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.gamma0['IDeltaBeta'] if event.passing_checks else float('nan'),
+          binning=[20,0,0.05],
+        ))
+        fisherInfoVariables.append(None)
+
+
+        plots.append(Plot( name = "l0_isolationVar_e",
+          texX = 'isolationVar(l_{0})', texY = y_label,
+          attribute = lambda event, sample: event.l0['isolationVar'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
+          binning=[20,0,0.05],
+        ))
+        fisherInfoVariables.append(None)
+
+#        plots.append(Plot( name = "l0_isolationVarRhoCorr_e",
+#          texX = 'isolationVarRhoCorr(l_{0})', texY = y_label,
+#          attribute = lambda event, sample:  event.l0['isolationVarRhoCorr'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
+#          binning=[20,0,0.1],
+#        ))
+#        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_sumPtCharged_e",
+          texX = 'sumPtCharged(l_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.l0['sumPtCharged'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
+          binning=[20,0,2],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_sumPtNeutral_e",
+          texX = 'sumPtNeutral(l_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.l0['sumPtNeutral'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
+          binning=[20,0,2],
+        ))
+        fisherInfoVariables.append(None)
+
+#        plots.append(Plot( name = "l0_sumPtChargedPU_e",
+#          texX = 'sumPtChargedPU(l_{0})', texY = y_label,
+#          attribute = lambda event, sample:  event.l0['sumPtChargedPU'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
+#          binning=[20,0,2],
+#        ))
+#        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_sumPt_e",
+          texX = 'sumPt(l_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.l0['sumPt'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
+          binning=[20,0,5],
+        ))
+        fisherInfoVariables.append(None)
+
+#        plots.append(Plot( name = "l0_ehadOverEem_e",
+#          texX = 'ehadOverEem(l_{0})', texY = y_label,
+#          attribute = lambda event, sample:  event.l0['ehadOverEem'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
+#          binning=[20,0,0.1],
+#        ))
+#        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_IDeltaBeta_e",
+          texX = 'I^{#Delta#beta}_{rel}(l_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.l0['IDeltaBeta'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
+          binning=[20,0,0.05],
+        ))
+        fisherInfoVariables.append(None)
+
+
+        plots.append(Plot( name = "l0_isolationVar_mu",
+          texX = 'isolationVar(l_{0})', texY = y_label,
+          attribute = lambda event, sample: event.l0['isolationVar'] if abs( event.l0['pdgId'] ) == 13 and event.passing_checks else float('nan'),
+          binning=[20,0,0.05],
+        ))
+        fisherInfoVariables.append(None)
+
+#        plots.append(Plot( name = "l0_isolationVarRhoCorr_mu",
+#          texX = 'isolationVarRhoCorr(l_{0})', texY = y_label,
+#          attribute = lambda event, sample:  event.l0['isolationVarRhoCorr'] if abs( event.l0['pdgId'] ) == 13 and event.passing_checks else float('nan'),
+#          binning=[20,0,0.1],
+#        ))
+#        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_sumPtCharged_mu",
+          texX = 'sumPtCharged(l_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.l0['sumPtCharged'] if abs( event.l0['pdgId'] ) == 13 and event.passing_checks else float('nan'),
+          binning=[20,0,2],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_sumPtNeutral_mu",
+          texX = 'sumPtNeutral(l_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.l0['sumPtNeutral'] if abs( event.l0['pdgId'] ) == 13 and event.passing_checks else float('nan'),
+          binning=[20,0,2],
+        ))
+        fisherInfoVariables.append(None)
+
+#        plots.append(Plot( name = "l0_sumPtChargedPU_mu",
+#          texX = 'sumPtChargedPU(l_{0})', texY = y_label,
+#          attribute = lambda event, sample:  event.l0['sumPtChargedPU'] if abs( event.l0['pdgId'] ) == 13 and event.passing_checks else float('nan'),
+#          binning=[20,0,2],
+#        ))
+#        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_sumPt_mu",
+          texX = 'sumPt(l_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.l0['sumPt'] if abs( event.l0['pdgId'] ) == 13 and event.passing_checks else float('nan'),
+          binning=[20,0,5],
+        ))
+        fisherInfoVariables.append(None)
+
+#        plots.append(Plot( name = "l0_ehadOverEem_mu",
+#          texX = 'ehadOverEem(l_{0})', texY = y_label,
+#          attribute = lambda event, sample:  event.l0['ehadOverEem'] if abs( event.l0['pdgId'] ) == 13 and event.passing_checks else float('nan'),
+#          binning=[20,0,0.1],
+#        ))
+#        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_IDeltaBeta_mu",
+          texX = 'I^{#Delta#beta}_{rel}(l_{0})', texY = y_label,
+          attribute = lambda event, sample:  event.l0['IDeltaBeta'] if abs( event.l0['pdgId'] ) == 13 and event.passing_checks else float('nan'),
+          binning=[20,0,0.05],
+        ))
+        fisherInfoVariables.append(None)
+
+
+#        leptonIsolationPlotList = []
+#        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'l0'} )
+#        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'l0'} )
+
+#        photonIsolationPlotList = []
+#        photonIsolationPlotList.append( {'particleString':'gamma0', 'eventString':'recoPhoton[0]'} )
+#        photonIsolationPlotList.append( {'particleString':'gamma1', 'eventString':'gamma1'} )
+#        photonIsolationPlotList.append( {'particleString':'gamma2', 'eventString':'gamma2'} )
+
+#        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=False )
+#        fisherInfoVariables += [ None for i in tmp ]
+#        plots += tmp
+#        fisherInfoVariables.append(None)
+
+#        tmp = getPhotonIsolationPlotList( photonIsolationPlotList, y_label, zoom=False )
+#        fisherInfoVariables += [ None for i in tmp ]
+#        plots += tmp
+#        fisherInfoVariables.append(None)
+
+
+#        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=True )
+#        fisherInfoVariables += [ None for i in tmp ]
+#        plots += tmp
+
+#        tmp = getPhotonIsolationPlotList( photonIsolationPlotList, y_label, zoom=True )
+#        fisherInfoVariables += [ None for i in tmp ]
+#        plots += tmp
 
     elif level == 'gen':
 

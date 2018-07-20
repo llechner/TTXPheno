@@ -417,25 +417,25 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sMet_phi'%preTag)
 
     
-    if level == 'reco':
+#    if level == 'reco':
 
-        leptonIsolationPlotList = []
+#        leptonIsolationPlotList = []
 #        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'Z_l0'} )
 #        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'Z_l0'} )
 #        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'Z_l1'} )
 #        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'Z_l1'} )
-        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'NonZ_l0'} )
-        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'NonZ_l0'} )
-        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'NonZ_l1'} )
-        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'NonZ_l1'} )
+#        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'NonZ_l0'} )
+#        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'NonZ_l0'} )
+#        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'NonZ_l1'} )
+#        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'NonZ_l1'} )
 
-        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=False )
-        fisherInfoVariables += [ None for i in tmp ]
-        plots += tmp
+#        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=False )
+#        fisherInfoVariables += [ None for i in tmp ]
+#        plots += tmp
 
-        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=True )
-        fisherInfoVariables += [ None for i in tmp ]
-        plots += tmp
+#        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=True )
+#        fisherInfoVariables += [ None for i in tmp ]
+#        plots += tmp
 
 
     plots.append( Plot( name = 'l0nonZ_pt_charge',

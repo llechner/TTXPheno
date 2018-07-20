@@ -13,12 +13,7 @@ ctG=$7
 ctGI=$8
 
 # declare samples to analyze
-#declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights' 'fwlite_ttZ_ll_LO_order2_15weights_ref')
 declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights_ref')
-#declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights')
-#declare -a samples2=('')
-
-#declare -a samples3=('fwlite_ttZ_ll_LO_order3_8weights')
 declare -a samples3=('')
 
 # declare selection strings to analyze
@@ -36,30 +31,33 @@ declare -a samplesizes=('')
 declare -a reweightings=('')
 
 # declare scale
-declare -a scales=('' '--scaleLumi')
-#declare -a scales=('--scaleLumi')
+#declare -a scales=('' '--scaleLumi')
+declare -a scales=('--scaleLumi')
 #declare -a scales=('')
 
-#declare -a levels=('genLep')
 #declare -a levels=('gen')
 #declare -a levels=('reco')
-#declare -a levels=('gen' 'genLep' 'reco')
 declare -a levels=('gen' 'reco')
 
 declare -a variables=("cpt" "cpQM")
 #declare -a variables=("cpt")
 
+#declare -a flavors=('all' 'mu' 'e')
+declare -a flavors=('all')
+
 #declare -a binThresholds=("400" "100" "25" "0")
-declare -a binThresholds=("100" "0")
+#declare -a binThresholds=("100" "0")
+declare -a binThresholds=("100")
 #declare -a binThresholds=("10")
 
-declare -a fisherInfo=("--addFisherInformation" "")
-#declare -a fisherInfo=("--addFisherInformation")
+#declare -a fisherInfo=("--addFisherInformation" "")
+declare -a fisherInfo=("--addFisherInformation")
+#declare -a fisherInfo=("")
 
 #declare -a backgrounds=("--backgrounds" "")
 declare -a backgrounds=("--backgrounds")
 
-version='v25'
+version='v26'
 luminosity='150'
 process='ttZ_3l'
 

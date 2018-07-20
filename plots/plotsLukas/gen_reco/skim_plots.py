@@ -17,7 +17,7 @@ from RootTools.core.standard import *
 # TTXPheno
 from TTXPheno.Tools.user import plot_directory
 from TTXPheno.Tools.helpers import deltaPhi, getCollection, deltaR, nanJet, nanLepton, getObjDict
-from TTXPheno.Tools.WeightInfo import WeightInfo
+from TTXPheno.Tools.WeightInfo import WeightInfo, histo_to_list
 
 # Import samples
 from TTXPheno.samples.benchmarks import *
@@ -42,7 +42,7 @@ argParser.add_argument('--scaleLumi',       action='store_true', help='Scale lum
 argParser.add_argument('--reweightPtXToSM', action='store_true', help='Reweight Pt(X) to the SM for all the signals?')
 argParser.add_argument('--parameters',      action='store',     default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
-argParser.add_argument('--leptonFlavor',    action='store',     default='all', nargs='?', choices=['all', 'same', 'opposite'], help='same flavor of nonZ leptons for ttZ 4l and ttgamma 2l? No effect on other processes') 
+argParser.add_argument('--leptonFlavor',    action='store',     default='all', nargs='?', choices=['all', 'same', 'opposite', 'e', 'mu'], help='same flavor of nonZ leptons for ttZ 4l and ttgamma 2l? No effect on other processes') 
 argParser.add_argument('--variables',       action='store',     default = [], type=str, nargs='+', help = "argument variables")
 argParser.add_argument('--binThreshold',    action='store',     default=100)
 argParser.add_argument('--addFisherInformation', action='store_true', help='include Fisher Information Plot in a.u.?')
@@ -98,7 +98,7 @@ if args.parameters is not None:
     vals = list( map( float, str_vals ) )
     for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
         params.append( [{
-            'legendText': ' '.join([coeff,str_val]),
+            'legendText': ' '.join([coeff,str_val]).replace('gamma','#gamma'),
             'WC' : { coeff:val },
             'color' : colors[i_param],
             }])
@@ -172,7 +172,9 @@ else: bg = [ WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample
 #bg = [ ttSample ]
 #bg = [ WZSample ]
 
-if args.addFisherInformation: params.append( [ {'legendText':'FI SM [a.u.] (%s)'%' '.join(args.variables), 'WC':fisherInfo_WC, 'color':colors[-1]} ] )
+if args.addFisherInformation:
+    params.append( [ {'legendText':'FI SM ideal [a.u.]', 'WC':fisherInfo_WC, 'color':colors[-1]} ] )
+    if args.backgrounds: params.append( [ {'legendText':'FI SM real', 'WC':fisherInfo_WC, 'color':colors[-1]} ] )
 
 stackList = [ [signal] for param in params ]
 if args.backgrounds: stackList += [ bg ]
@@ -181,7 +183,7 @@ stack = Stack( *stackList )
 
 def legendtext( sample ):
     splitname = sample.name.split('_')
-    if splitname[1] != 'tt': return splitname[1]
+    if splitname[1] != 'tt': return splitname[1].replace('gamma','#gamma')
     else: return ' '.join(splitname[1:3])
 
 if args.backgrounds: params += [[ {'legendText':legendtext(s), 'WC':{}, 'color':colors[-1-i]} for i, s in enumerate(bg) ]]
@@ -242,30 +244,31 @@ else:
 ttXWeightString = 'ref_lumiweight1fb*%s*%s*%s'%(str(args.luminosity), str(ttXSample.event_factor), w.get_weight_string( **fisherInfo_WC ))
 
 def drawObjects( hasData = False ):
+    titleAddon = ', FI: %s'%' '.join(args.variables) if args.addFisherInformation else ''
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
     lines = [
       (0.15, 0.95, 'data' if hasData else "Simulation (%s)"%args.level),
-      (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV) Scale %3.2f'% ( float(args.luminosity), dataMCScale ) ) if hasData else (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)' % float(args.luminosity))
+      (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV) Scale %3.2f'% ( float(args.luminosity), dataMCScale ) ) if hasData else (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)%s' % (float(args.luminosity), titleAddon) )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
 def drawPlots(plots):
 
   if args.backgrounds:
+    ind = -3 if args.addFisherInformation else -1
     for plot in plots:
-      for s, signal_histo in enumerate(plot.histos[:-1]):
-        # no bg adding to fisher plot
-        if args.addFisherInformation and s == len(plot.histos)-2: continue
+      for s, signal_histo in enumerate(plot.histos[:ind]):
         for bg_histo in plot.histos[-1]:
           signal_histo[0].Add(bg_histo)
 
   for plot in plots:
     histoIndexSM = len(plot.histos)-1
-    if args.backgrounds: histoIndexSM -= 1
-    if args.addFisherInformation: histoIndexSM -= 1
+    if args.backgrounds and not args.addFisherInformation: histoIndexSM -= 1
+    elif not args.backgrounds and args.addFisherInformation: histoIndexSM -= 1
+    elif args.backgrounds and args.addFisherInformation: histoIndexSM -= 3
 
     for i_h, h in enumerate(plot.histos):
       for j_hi, hi in enumerate(h):
@@ -273,7 +276,10 @@ def drawPlots(plots):
             hi.style = styles.fillStyle(params[i_h][j_hi]['color'])
         else:
             hi.style = styles.lineStyle(params[i_h][j_hi]['color'])
-            if i_h == histoIndexSM: hi.SetLineWidth(2)
+            if i_h == histoIndexSM or (args.addFisherInformation and i_h == histoIndexSM+1): hi.SetLineWidth(2)
+            if args.addFisherInformation and args.backgrounds and i_h == histoIndexSM+2:
+                hi.SetLineStyle(2) #Fisher Info Bg
+                hi.SetLineWidth(2)
 
   for log in [False, True]:
     # Directory structure
@@ -287,7 +293,7 @@ def drawPlots(plots):
         'backgrounds' if args.backgrounds else 'signalOnly',
         subDirectory,
         args.selection if args.selection is not None else 'no_selection',
-        '%sLeptonFlavors'%args.leptonFlavor,
+        '%sLeptonFlavor'%args.leptonFlavor,
         WC_directory,
         '_'.join(args.variables) if args.addFisherInformation else '',
         '%sEventsPerBin'%str(args.binThreshold) if args.addFisherInformation else '',
@@ -313,7 +319,7 @@ def drawPlots(plots):
         plot_directory = plot_directory_,
         ratio = None,
         logX = False, logY = log, sorting = True,
-        legend = ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/3,1.,0.9), 3),
+        legend = ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/3,0.9,0.9), 3),
         drawObjects = drawObjects(),
         copyIndexPHP = True,
     )
@@ -321,25 +327,27 @@ def drawPlots(plots):
     # plot the plots
     for p, plot in enumerate(plots):
       histoIndexSM = len(plot.histos)-1
-      if args.backgrounds: histoIndexSM -= 1
+      if args.backgrounds and not args.addFisherInformation: histoIndexSM -= 1
       if args.addFisherInformation:
-        histoIndexSM -= 1
+        if args.backgrounds: histoIndexSM -= 3
+        else: histoIndexSM -= 1
         fi_Integral = plot.histos[histoIndexSM+1][0].Integral()
         fisherInfoScale = plot.histos[histoIndexSM][0].Integral() / fi_Integral if fi_Integral != 0 else 0 #scaling factor from SM histo
-        fisherInfoScale *= 100 if log else 2. #offset
+        fisherInfoScale *= 100 if log else 1.5 #offset
 
       for i_h, h in enumerate(plot.histos):
         for j_hi, hi in enumerate(h):
-          if args.addFisherInformation and i_h == histoIndexSM+1:
-            if fisherInfoVariables[p] is not None: hi.Scale(fisherInfoScale)
+          if args.addFisherInformation and (i_h == histoIndexSM+1 or (i_h == histoIndexSM+2 and args.backgrounds)):
+            if fisherInfoVariables[p] is not None: hi.Scale(fisherInfoScale) #signal
             else: hi.Scale(0) #no fisherInfo histo, only place holder
           hi.legendText = params[i_h][j_hi]['legendText']
 
       if not max( max(li.GetMaximum() for li in l) for l in plot.histos): continue # Empty plot
 
       scaleIndex = len(params)-1
-      if args.backgrounds: scaleIndex -= 1
-      if args.addFisherInformation: scaleIndex -= 1
+      if args.backgrounds and not args.addFisherInformation: scaleIndex -= 1
+      elif not args.backgrounds and args.addFisherInformation: scaleIndex -= 1
+      elif args.backgrounds and args.addFisherInformation: scaleIndex -= 3
 
       plotting.draw(plot,
 	    plot_directory = plot_directory_,
@@ -348,7 +356,7 @@ def drawPlots(plots):
 	    yRange = (0.03, "auto") if log else (0., "auto"),
 #        scaling = {i:(len(params)-1) for i in range(len(params)-1)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
         scaling = {i:(scaleIndex) for i in range(scaleIndex)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
-	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,1.,0.9), 3),
+	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,0.9,0.9), 3),
 	    drawObjects = drawObjects(),
         copyIndexPHP = True,
       )
@@ -365,18 +373,25 @@ plotting.fill(plots, read_variables = read_variables, sequence = sequence, max_e
 
 if args.addFisherInformation:
     for i, plot in enumerate(plots):
-        plotListIndex = len(plot.histos)-2 if args.backgrounds else len(plot.histos)-1
+        if fisherInfoVariables[i] is None: continue
+
+        fiHistoListIndex = len(plot.histos)-3 if args.backgrounds else len(plot.histos)-1
         bins = plot.binning
-
-        if fisherInfoVariables[i] is None:
-            plot.histos[plotListIndex] = [ROOT.TH1F( 'histo_%i'%i, 'histo_%i'%i, bins[0], bins[1], bins[2] )]
-            continue
-
-        #SM Integral + shift (*100)
-#        normFactor = plot.histos[plotListIndex-1][0].Integral()*100 #scaling factor from SM histo, why factor 100?
         var = fisherInfoVariables[i] #replace with better solution than FI_plots!!
+
         hist = w.getFisherInformationHisto( ttXSample, var, bins, selectionString=cutInterpreter.cutString(args.selection), weightString=ttXWeightString, variables=args.variables, nEventsThresh = args.binThreshold, **fisherInfo_WC)
-        plot.histos[plotListIndex] = [plot.fromHisto( 'histo_%i'%i, hist ).histos]
+        plot.histos[fiHistoListIndex] = [plot.fromHisto( 'histo_%i'%i, hist ).histos]
+
+        if args.backgrounds:
+            #get list of contents of bg histo
+            bgContentList = histo_to_list( plot.histos_added[-1][0] )
+            #get list of contents of signal histo
+            sigContentList = histo_to_list( plot.histos[fiHistoListIndex-1][0] )
+            #calculate purity for each bin
+            purityBinList = [ sig / ( sig + bgContentList[j] ) if (sig + bgContentList[j])!=0 else 0 for j, sig in enumerate( sigContentList ) ]
+            # multiply ideal fisher info histo purity
+            for l in range(bins[0]):
+                plot.histos[fiHistoListIndex+1][0].SetBinContent(l+1, plot.histos[fiHistoListIndex][0].GetBinContent(l+1) * purityBinList[l])
 
 drawPlots(plots)
 

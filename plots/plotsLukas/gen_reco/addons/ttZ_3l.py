@@ -127,7 +127,7 @@ def makeZ( event, sample, level ):
     event.Z_unitVec3D = event.Z_vec4D.Vect().Unit()
 
 
-def makeLeps( event, sample, level ):
+def makeLeps( event, sample, level, leptonFlavor ):
     ''' Add important leptons (no full list of leptons is required for now)
     '''
     preTag = 'reco' if level == 'reco' else 'gen'
@@ -166,6 +166,9 @@ def makeLeps( event, sample, level ):
     # choose your selection on leptons
     event.passing_leptons = event.found3lep and event.foundZl0 and event.foundZl1 and event.foundZ
 
+    if leptonFlavor == 'e': event.passing_leptons = event.passing_leptons and abs(event.NonZ_l0['pdgId'])==11
+    elif leptonFlavor == 'mu': event.passing_leptons = event.passing_leptons and abs(event.NonZ_l0['pdgId'])==13
+
 
 def makeObservables( event, sample, level):
     ''' Compute all relevant observables
@@ -196,7 +199,7 @@ def makeObservables( event, sample, level):
     event.passing_checks = event.passing_leptons and event.passing_bjets
 
 
-def getSequenceList( level, sameFlavor ):
+def getSequenceList( level, leptonFlavor ):
     ''' sequence functions
     '''
     sequence = []
@@ -204,7 +207,7 @@ def getSequenceList( level, sameFlavor ):
     sequence.append( lambda event, sample: makeJets( event, sample, level ) )
     sequence.append( lambda event, sample: makeMET( event, sample, level ) )
     sequence.append( lambda event, sample: makeZ( event, sample, level ) )
-    sequence.append( lambda event, sample: makeLeps( event, sample, level ) )
+    sequence.append( lambda event, sample: makeLeps( event, sample, level, leptonFlavor ) )
     sequence.append( lambda event, sample: makeObservables( event, sample, level ) )
 
     return sequence
@@ -383,23 +386,23 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sMet_phi'%preTag)
 
     
-    if level == 'reco':
+#    if level == 'reco':
 
-        leptonIsolationPlotList = []
+#        leptonIsolationPlotList = []
 #        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'Z_l0'} )
 #        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'Z_l0'} )
 #        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'Z_l1'} )
 #        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'Z_l1'} )
-        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'NonZ_l0'} )
-        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'NonZ_l0'} )
+#        leptonIsolationPlotList.append( {'pdg':11, 'particleString':'e', 'eventString':'NonZ_l0', 'index':0} )
+#        leptonIsolationPlotList.append( {'pdg':13, 'particleString':'mu', 'eventString':'NonZ_l0', 'index':0} )
 
-        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=False )
-        fisherInfoVariables += [ None for i in tmp ]
-        plots += tmp
+#        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=False )
+#        fisherInfoVariables += [ None for i in tmp ]
+#        plots += tmp
 
-        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=True )
-        fisherInfoVariables += [ None for i in tmp ]
-        plots += tmp
+#        tmp = getLeptonIsolationPlotList( leptonIsolationPlotList, y_label, zoom=True )
+#        fisherInfoVariables += [ None for i in tmp ]
+#        plots += tmp
 
 
     plots.append( Plot( name = 'W_pt',
