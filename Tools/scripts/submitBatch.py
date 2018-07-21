@@ -13,7 +13,7 @@ Will submit a batch job for each command line in the file_with_commands.
 import hashlib, time
 import os
 import re
-
+from random import randint
 
 # some defaults
 batch_job_file="batch_job"
@@ -48,6 +48,8 @@ parser.add_option("--output", dest="output",
                   help="path for batch output ")
 parser.add_option("--qos", dest="qos",
                   help="Job Title viewied in squeue", default = "" )
+parser.add_option("--randomSleep", dest="randomSleep", type=int,
+                  help="Sleep randomly max seconds", default = 0 )
 parser.add_option("--opts", dest="opts",
                   help="Give a string for any extra options", default = host_info['def_opts'] )
 parser.add_option('--dpm', dest="dpm", default=False, action='store_true', help="Use dpm?")
@@ -88,6 +90,8 @@ def make_batch_job( batch_job_file, batch_job_title, batch_output_dir , command 
 
     import subprocess
 
+    randomSleep = randint(0, options.randomSleep)
+
     if host == 'heplx':
         template =\
 """\
@@ -101,6 +105,8 @@ voms-proxy-info -all
 eval \`"scram runtime -sh"\` 
 echo CMSSW_BASE: {cmssw_base} 
 echo Executing user command  
+echo Random sleep {randomSleep}
+sleep {randomSleep}
 echo "{command}"
 {command} 
 
@@ -112,6 +118,7 @@ voms-proxy-info -all
                 batch_output_dir = batch_output_dir,
                 batch_job_title  = batch_job_title,
                 pwd              = os.getenv("PWD"),
+                randomSleep      = randomSleep,
                 proxy_cmd = proxy_cmd
               )
     elif host == 'lxplus':
