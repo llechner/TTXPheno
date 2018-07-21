@@ -104,7 +104,7 @@ fwlite_ttW_LO_order2_15weights_ref_old.nEvents          = 945000
 fwlite_ttW_LO_order2_15weights_ref_old.xsec             = 0.2043 * 0.4097 / 0.1323 #pb ttW, W->lnu, xsec_SM_NNLO * xsec_BSM_LO / xsec_SM_LO
 
 '''
-gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v10/"
+gen_dir = "/afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v13/"
 
 # reference point 15/2
 fwlite_ttZ_ll_LO_order2_15weights_ref               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights_ref" )]) 
