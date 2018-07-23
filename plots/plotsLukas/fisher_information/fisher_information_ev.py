@@ -165,7 +165,8 @@ for selection in selections:
 # Full Fisher information
 if not args.fpsScaling:
     full              = { 'plotstring':'full'}
-    full['coeff']     = w.getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction ) full['color']     = 15
+    full['coeff']     = w.getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
+    full['color']     = 15
 
 expo = 1. / len(inputvariables)
 data = [full] if not args.fpsScaling else []
@@ -257,7 +258,7 @@ def drawPlot( log = False ):
     if log: c1.SetLogy()
 
     # Plot ranges
-    ymin = 1e-6
+    ymin = 1e-10
     ymax = 1e6
     mg.GetYaxis().SetRangeUser(ymin, ymax)
     mg.GetXaxis().SetRangeUser(0, len(data)+1)

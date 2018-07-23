@@ -18,15 +18,13 @@ declare -a samples3=('')
 
 # declare selection strings to analyze
 #declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40to100-nlep1p-njet3p-nbjet1p' 'gammapt100to200-nlep1p-njet3p-nbjet1p' 'gammapt200to300-nlep1p-njet3p-nbjet1p' 'gammapt300-nlep1p-njet3p-nbjet1p')
-#declare -a selections=('GammaSel40-nlep1p-njet3p-nbjet1p' 'GammaSel15-nlepttgamma2l1p-njet3p-nbjet1p' 'GammaSel15-nlepttgamma2l1p')
-#declare -a selections=('GammaSel40-GammaEta-nlep1p-njet3p-nbjet1p' 'GammaSel40-GammaEta-nlepttgamma2l1p' 'GammaSel40-nlep1p-njet3p-nbjet1p' 'GammaEta')
-declare -a selections=('GammaSel40-GammaEta-nlep1p-njet3p-nbjet1p' 'GammaSel40-GammaEta-nlepttgamma2l1p' 'GammaSel15-GammaEta-nlep1p-njet3p-nbjet1p')
-#declare -a selections=('gammapt15-nlepttgamma2l1p')
+#declare -a selections=('gammapt40-nlep1p-njet3p-nbjet1p' 'gammapt40-nlepttgamma2l1p' 'gammapt15-nlep1p-njet3p-nbjet1p')
+declare -a selections=('gammapt15-nlepttgamma2l1p')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
-#declare -a samplesizes=('--small')
-declare -a samplesizes=('')
+declare -a samplesizes=('--small')
+#declare -a samplesizes=('')
 
 # declare reweighting
 #declare -a reweightings=('' '--reweightPtXToSM')
@@ -45,8 +43,8 @@ declare -a levels=('gen' 'reco')
 #declare -a variables=("cpt" "cpQM")
 declare -a variables=("cpt")
 
-declare -a flavors=('all' 'mu' 'e')
-#declare -a flavors=('all')
+#declare -a flavors=('all' 'mu' 'e')
+declare -a flavors=('all')
 
 #declare -a binThresholds=("400" "100" "25" "0")
 #declare -a binThresholds=("100" "0")

@@ -43,7 +43,7 @@ argParser.add_argument('--small',           action='store_true', help='Run only 
 argParser.add_argument('--parameters',      action='store',     default = [], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen', 'genLep'], help='Which level of reconstruction? reco, gen, genLep')
 argParser.add_argument('--variables' ,      action='store',     default = ['cpQM', 'cpt'], type=str, nargs='+', help = "argument plotting variables")
-argParser.add_argument('--binning',         action='store',     default = [18, -8, 28, 18, -23, 13], type=int, nargs='+', help = "argument parameters")
+argParser.add_argument('--binning',         action='store',     default = [24, -30, 18, 24, -8, 40], type=int, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 
 args = argParser.parse_args()

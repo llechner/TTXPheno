@@ -22,7 +22,7 @@ from TTXPheno.Tools.WeightInfo           import WeightInfo
 from TTXPheno.samples.benchmarks         import *
 
 # Import helpers
-from TTXPheno.Tools.plot_helpers                        import *
+from TTXPheno.Tools.plot_helpers         import *
 
 # Import process variables
 import process_variables
@@ -124,7 +124,6 @@ if args.level != 'gen':
     elif args.level == 'genLep': search_string, replacement_string = ( 'genZ', 'genLepZ' )
     for item in plotVariables2D + plotVariables3D + plotVariables4D:
         item['var'] = item['var'].replace(search_string, replacement_string)
-
 
 # Calculate coefficients for binned distribution
 # Calculate determinant using the 'variables' submatrix of FI
@@ -229,7 +228,7 @@ def drawPlot( log = False ):
     ymax = max( [ max(item['y_graph']) for item in data ] ) * 1.2  #spare area for legend
 
     if log:
-        ymin = min( [ min( [ y for y in list(item['y_graph'])+[10] if y > 1e-5 ] ) for item in data ] ) * 0.5
+        ymin = min( [ min( [ y for y in list(item['y_graph'])+[10] if y > 1e-8 ] ) for item in data ] ) * 0.5
         ymax *= 7   #spare area for legend
         c1.SetLogy()
 
