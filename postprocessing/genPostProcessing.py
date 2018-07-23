@@ -471,7 +471,7 @@ def filler( event ):
             recoPhoton['minLeptonDR'] = min([999]+dr_values) 
             if len( dr_values )>0:
                 closest_lepton = dr_values.index( min(dr_values) ) 
-                recoPhoton['minLeptonPt'] = recoLeps[closest_lepton]['pt'] 
+                recoPhoton['minLeptonPt'] = allRecoLeps[closest_lepton]['pt'] 
         recoPhotons = list(filter( lambda g: g['minLeptonDR']>0.4, recoPhotons))
         for recoPhoton in recoPhotons:
             recoPhoton['minJetDR'] =  min([999]+[deltaR(recoPhoton, j) for j in recoJets])

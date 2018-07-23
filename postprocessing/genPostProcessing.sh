@@ -1,4 +1,7 @@
 #!/bin/sh
+python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_ttW_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
+python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
+python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
 
 python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_tt_lep_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
 python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_tt_semilep_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
@@ -8,10 +11,6 @@ python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --s
 python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_Zgamma_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
 python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_ttgamma_bg_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
 python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_WZ_lep_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
-
-python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-python genPostProcessing.py --overwrite all --targetDir v13 --logLevel DEBUG --sample fwlite_ttW_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
 
 #python genPostProcessing.py --overwrite --targetDir v6 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights --addReweights --interpolationOrder 2 --delphes #SPLIT200
 #python genPostProcessing.py --overwrite --targetDir v6 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights --addReweights --interpolationOrder 2 --delphes #SPLIT200
