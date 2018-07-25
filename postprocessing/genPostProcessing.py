@@ -198,6 +198,8 @@ if args.delphes:
  
 # Lumi weight 1fb
 variables += ["lumiweight1fb/F"]
+variables += ["nSignalPhotons/I"]
+
 if args.addReweights:
     variables.append('rw_nominal/F')
     # Lumi weight 1fb / w_0
@@ -316,6 +318,23 @@ def filler( event ):
     event.genMet_pt  = genMet['pt']
     event.genMet_phi = genMet['phi'] 
 
+
+    genPhotonsSignalCheck = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId())==22 and p.pt()>10 and abs(p.eta())<2.5 and search.isLast(p) and p.status()==1, gp) ]
+    genPhotonsSignalCheck.sort( key = lambda p: -p[1].pt() )
+    signalPhotons = 0
+    # check all photons with pT>13 and abs(eta)<2.5 for close particles
+    for first, last in genPhotonsSignalCheck[:10]: 
+        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
+        # remove photons with meson mother
+        if abs(mother_pdgId) not in [1,2,3,4,5,6,11,13,15,21,23,24,25]: continue
+        # check if particles are close by
+        close_particles = filter( lambda p: p!=last and p.pt()>5 and deltaR2( {'phi':last.phi(), 'eta':last.eta()}, {'phi':p.phi(), 'eta':p.eta()} )<0.2**2 , search.final_state_particles_no_neutrinos )
+        # if not, its signal
+        if len(close_particles) == 0:
+            signalPhotons += 1
+
+    event.nSignalPhotons = signalPhotons
+
     # gen photons: particle-level isolated gen photons
     genPhotons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId())==22 and p.pt()>15 and search.isLast(p) and p.status()==1, gp) ]
     genPhotons.sort( key = lambda p: -p[1].pt() )
@@ -433,7 +452,6 @@ def filler( event ):
     #    for jet in filter( lambda j: not (min([999]+[deltaR2(j, l) for l in promptGenLeps if l['pt']>10]) > 0.3**2 ), genJets ):
     #        logger.debug( "Filtered gen %f jet %r lep %r", sqrt((min([999]+[deltaR2(jet, l) for l in promptGenLeps if l['pt']>10]))), jet, [ (l['eta'], jet['pt']/l['pt']) for l in promptGenLeps] )
     #        assert False, ""
-
 
     fill_vector_collection( event, "genPhoton", gen_photon_varnames, genPhotons_ ) 
     fill_vector_collection( event, "genLep", lep_all_varnames, promptGenLeps)
