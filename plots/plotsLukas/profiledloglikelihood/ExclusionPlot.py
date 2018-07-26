@@ -35,15 +35,17 @@ from TTXPheno.Analysis.regions import regions
 import argparse
 
 argParser = argparse.ArgumentParser(description = "Argument parser")
-argParser.add_argument('--version',         action='store',     default='v26', help='Appendix to plot directory')
+argParser.add_argument('--version',         action='store',     default='v27', help='Appendix to plot directory')
+#argParser.add_argument('--sample',          action='store',     default='fwlite_ttgamma_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--sample',          action='store',     default='fwlite_ttZ_ll_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--order',           action='store',     default=2, help='Polynomial order of weight string (e.g. 2)')
 argParser.add_argument('--selection',       action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
+#argParser.add_argument('--selection',       action='store',     default='lepSel1-njet3p-nbjet1p-gammapt40', help="Specify cut.")
 argParser.add_argument('--small',           action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--parameters',      action='store',     default = [], type=str, nargs='+', help = "argument parameters")
-argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen', 'genLep'], help='Which level of reconstruction? reco, gen, genLep')
+argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--variables' ,      action='store',     default = ['cpQM', 'cpt'], type=str, nargs='+', help = "argument plotting variables")
-argParser.add_argument('--binning',         action='store',     default = [24, -30, 18, 24, -8, 40], type=int, nargs='+', help = "argument parameters")
+argParser.add_argument('--binning',         action='store',     default = [24, -8, 40, 24, -30, 18], type=int, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 
 args = argParser.parse_args()
@@ -51,14 +53,21 @@ args = argParser.parse_args()
 if len(args.binning) != 6:
     raise ValueError('Binning must be 6 values in the form BINSX STARTX STOPX BINSY STARTY STOPY! Input: %s' %' '.join(args.binning))
 
+binningX = args.binning[:3]
+binningY = args.binning[3:]
+
+if (binningX[2] - binningX[1]) % binningX[0] != 0:
+    raise ValueError('Binning: Difference of upper and lower bound must be a multiple of the number of bins: (%s - %s) / %s != integer'%(str(binningX[2]), str(binningX[1]), str(binningX[0])) )
+
+if (binningY[2] - binningY[1]) % binningY[0] != 0:
+    raise ValueError('Binning: Difference of upper and lower bound must be a multiple of the number of bins: (%s - %s) / %s != integer'%(str(binningY[2]), str(binningY[1]), str(binningY[0])) )
+
 if len(args.variables) != 2:
     raise ValueError('Give TWO input variables in --variables! Input: %s' %' '.join(args.variables))
 
 # Import additional functions/classes specified for the level of reconstruction
 if args.level == 'reco':
     from TTXPheno.Tools.cutInterpreterReco import cutInterpreter
-elif args.level == 'genLep':
-    from TTXPheno.Tools.cutInterpreterGenLep import cutInterpreter
 else:
     from TTXPheno.Tools.cutInterpreterGen import cutInterpreter
 
@@ -66,64 +75,56 @@ else:
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 ttXSample = getattr( loadedSamples, args.sample )
-WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-ttSample = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights' )
+
+WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
+ttSample        = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights' )
 ttSemiLepSample = getattr( loadedSamples, 'fwlite_tt_semilep_LO_order2_15weights' )
-tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
-tWZSample = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
-tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
-ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
-ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
-
-# Polynomial parametrization
-# ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
-w = WeightInfo(ttXSample.reweight_pkl)
-w.set_order(int(args.order))
-
-for var in args.variables:
-    if var not in w.variables:
-        raise ValueError('Input variable not in gridpack: %s' %var)
-
-# set selection string
-selectionString = cutInterpreter.cutString(args.selection)
+tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
+tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
+tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
+ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
+ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
 
 signal = ttXSample
-bg = [ WZSample, ttSample ]
+
+if signal.name.split('_')[1] == 'ttZ':
+    bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+elif signal.name.split('_')[1] == 'ttgamma':
+    bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+else:
+    bg = [ WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]
 
 if args.small:
     for s in [signal] + bg:
-        s.reduceFiles( to = 5 )
+        s.reduceFiles( to = 20 )
 
 def checkReferencePoint( sample ):
     ''' check if sample is simulated with a reference point
     '''
     return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
 
+# set selection string
+selectionString = cutInterpreter.cutString(args.selection)
+
 # configure samples
 for s in [signal] + bg:
-    # calculate compensation factor (if sample is reduce due to small or some file weren't processed)
+
     s.event_factor = s.nEvents / float( s.chain.GetEntries() )
+    s.weightInfo = WeightInfo( s.reweight_pkl )
+    s.weightInfo.set_order( args.order )
     s.setSelectionString( selectionString )
+
     if checkReferencePoint( s ):
         s.read_variables = ["ref_lumiweight1fb/F"]
         s.read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
-        s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)*(%s)'%(str(args.luminosity), str(s.event_factor), w.get_weight_string(**{})) )
+        s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
     else:
         s.read_variables = ["lumiweight1fb/F"]
-        s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%(str(args.luminosity), str(s.event_factor)) )
+        s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
 
-# REMOVE THAT WHEN BG IMPLEMENTED!!!
-class FakeBackground:
-    ''' Just a fake background number producer. Ignores everything, returns a number.
-    '''
-    def __init__( self, name, relative_fraction):
-        self.name              = name
-        self.relative_fraction = relative_fraction
-    def setSelectionString( self, *args, **kwargs):
-        pass 
-
-# Backgrounds
-bg = [FakeBackground("bkg1",.1), FakeBackground("bkg2", .2)]
+for var in args.variables:
+    if var not in signal.weightInfo.variables:
+        raise ValueError('Input variable not in gridpack: %s' %var)
 
 # parameter point
 if len(args.parameters) < 2: args.parameters = None
@@ -135,7 +136,7 @@ if args.parameters is not None:
     vals = list( map( float, str_vals ) )
 
     for (coeff, val, str_val) in zip(coeffs, vals, str_vals):
-        if coeff not in w.variables:
+        if coeff not in signal.weightInfo.variables:
             raise ValueError('Parameter not in Gridpack: %s'%coeff)
         params[ coeff ] = val
 
@@ -143,22 +144,25 @@ if args.parameters is not None:
 observation                  = {}
 signal_jec_uncertainty       = {}
 signal_fakerate_uncertainty  = {}
+
 ttX_SM_rate                  = {}
 ttX_SM_jec_uncertainty       = {}
 ttX_SM_fakerate_uncertainty  = {}
+ttX_coeffList                = {}
+
 background_rate                 = {}
 background_jec_uncertainty      = {}
 background_fakerate_uncertainty = {}
 
-ttX_coeffList                = {}
 for i_region, region in enumerate(regions):
+    # compute signal yield for this region (this is the final code)
 
     logger.info( "At region %s", region )
 
-    # compute signal yield for this region (this is the final code)
-    ttX_coeffList[region] = w.getCoeffListFromDraw( signal, region.cutString(), weightString=signal.weightString )
     # ttX SM
-    ttX_SM_rate[region] = w.get_weight_yield( ttX_coeffList[region] )
+    ttX_coeffList[region] = signal.weightInfo.getCoeffListFromDraw( signal, selectionString = region.cutString() )
+    ttX_SM_rate[region]   = signal.weightInfo.get_weight_yield( ttX_coeffList[region] )
+
     ttX_SM_jec_uncertainty      [region] = 1.05 
     ttX_SM_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
 
@@ -166,20 +170,21 @@ for i_region, region in enumerate(regions):
     signal_jec_uncertainty      [region] = 1.05 
     signal_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
 
-    background_rate[region]                = {}
+    background_rate[region]                 = {}
     background_fakerate_uncertainty[region] = {}
     background_jec_uncertainty[region]      = {}
-    for i_background, background in enumerate(bg):
-        # compute some  background yield
-        background_rate[region][background.name] = background.relative_fraction*ttX_SM_rate[region]
 
-        # Guess the uncertainty
-        background_fakerate_uncertainty[region][background.name] =  1   + 0.03*i_region*(i_background+1) 
-        background_jec_uncertainty[region][background.name]      =  1.2 - 0.02*i_region*(i_background+1) 
+    for i_background, background in enumerate(bg):
+        # compute bg yield for this region (this is the final code)
+
+        background.setSelectionString( '&&'.join( [ selectionString, region.cutString() ] ) )
+
+        background_rate                 [region][background.name] = background.getYieldFromDraw()['val']
+        background_fakerate_uncertainty [region][background.name] = 1   + 0.03*i_region*(i_background+1) #change that
+        background_jec_uncertainty      [region][background.name] = 1.2 - 0.02*i_region*(i_background+1) #change that
 
     # Our expected observation :-)
     observation[region] = int( sum( background_rate[region].values() ) + ttX_SM_rate[region] )
-
 
 # Write temporary card file
 from TTXPheno.Tools.cardFileWriter import cardFileWriter
@@ -188,32 +193,28 @@ c = cardFileWriter.cardFileWriter()
 # Limit plot
 from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
 
-#binningX = binningY = [12, -12, 12]
-binningX = args.binning[:3] #[24, -24-6, 24-6]
-binningY = args.binning[3:] #[24, -24+16, 24+16]
-
 limit = ROOT.TH2F( 'limit', 'limit', *(binningX + binningY) )
 
 for var1 in range( binningX[1], binningX[2], ( binningX[2] - binningX[1]) / binningX[0] ):
     for var2 in range( binningY[1], binningY[2], ( binningY[2] - binningY[1]) / binningY[0] ):
-        kwargs = {}
-        kwargs[args.variables[0]] = var1
-        kwargs[args.variables[1]] = var2
+
+        kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
 
         # uncertainties
         c.reset()
-        c.addUncertainty('lumi',        'lnN')
-        c.addUncertainty('JEC',         'lnN')
-        c.addUncertainty('fake',        'lnN')
+        c.addUncertainty('lumi', 'lnN')
+        c.addUncertainty('JEC',  'lnN')
+        c.addUncertainty('fake', 'lnN')
 
         #processes = [ "signal", "ttX_SM_yield" ] + [s.name for s in bg]
         signal_rate                  = {}
         for i_region, region in enumerate(regions):
-            signal_rate[region] = w.get_weight_yield( ttX_coeffList[region], **kwargs) - ttX_SM_rate[region] 
+ 
+            signal_rate[region] = signal.weightInfo.get_weight_yield( ttX_coeffList[region], **kwargs) - ttX_SM_rate[region] 
 
             bin_name = "Region_%i" % i_region
             nice_name = region.__str__()
-            c.addBin(bin_name,['ttX_SM'] + [s.name for s in bg], nice_name)
+            c.addBin(bin_name,['ttX_SM'] + ['_'.join(s.name.split('_')[1:3]) for s in bg], nice_name)
             c.specifyObservation( bin_name, observation[region] )
 
             c.specifyFlatUncertainty( 'lumi', 1.05 )
@@ -227,29 +228,31 @@ for var1 in range( binningX[1], binningX[2], ( binningX[2] - binningX[1]) / binn
             c.specifyUncertainty( 'fake',bin_name, 'ttX_SM', ttX_SM_fakerate_uncertainty[region])
 
             for background in bg:
-                c.specifyExpectation( bin_name, background.name, background_rate[region][background.name] )
-                c.specifyUncertainty( 'JEC', bin_name, background.name, background_jec_uncertainty[region][background.name])
-                c.specifyUncertainty( 'fake',bin_name, background.name, background_fakerate_uncertainty[region][background.name])
+                c.specifyExpectation( bin_name, '_'.join(background.name.split('_')[1:3]), background_rate[region][background.name] )
+                c.specifyUncertainty( 'JEC', bin_name, '_'.join(background.name.split('_')[1:3]), background_jec_uncertainty[region][background.name])
+                c.specifyUncertainty( 'fake',bin_name, '_'.join(background.name.split('_')[1:3]), background_fakerate_uncertainty[region][background.name])
                 
-        c.writeToFile( './tmp_limit_card.txt' ) 
+        c.writeToFile( './tmp/tmp_limit_card.txt' ) 
 
         # try to adjust rmax with some margin
         exp_tot_sigmas = 0
         max_rmax = float('inf')
         for region in regions:
+
             tot_background = sum( [ background_rate[region][background.name] for background in bg ] )
-            exp_tot_sigmas += abs(signal_rate[region])/sqrt( tot_background )
+            exp_tot_sigmas += abs(signal_rate[region]) / sqrt( tot_background ) if tot_background > 0 else 0
+
             # avoid total neg. yield
-            if signal_rate[region]<0: 
-                max_r = -tot_background/signal_rate[region]
-                if max_r<max_rmax:
+            if signal_rate[region] < 0:
+                max_r = -tot_background / signal_rate[region]
+                if max_r < max_rmax:
                     max_rmax = max_r
             
-        rmax_est = 400./exp_tot_sigmas if exp_tot_sigmas>0 else 1.
+        rmax_est = 400. / exp_tot_sigmas if exp_tot_sigmas > 0 else 1.
         if max_rmax < rmax_est:
             rmax_est = 0.9*max_rmax # safety margin such that at least +10% total yield survives in the smallest SR
 
-        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp_limit_card.txt' )
+        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/tmp_limit_card.txt' )
         profiledLoglikelihoodFit.make_workspace(rmin=0, rmax=rmax_est)
         #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
         expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
@@ -257,7 +260,7 @@ for var1 in range( binningX[1], binningX[2], ( binningX[2] - binningX[1]) / binn
         limit.SetBinContent( limit.FindBin(var1, var2), expected_limit[0] )
         profiledLoglikelihoodFit.cleanup()
 
-limitPlot = Plot2D.fromHisto( '_'.join(args.variables), texX = args.variables[0], texY = args.variables[1], histos = [[limit]])
+limitPlot = Plot2D.fromHisto( '_'.join(args.variables), texX = args.variables[0], texY = args.variables[1], histos = [[limit]] )
 limitPlot.drawOption = "colz"
 ROOT.gStyle.SetPaintTextFormat("2.2f")
 
@@ -269,5 +272,5 @@ plot_directory_ = os.path.join(\
     'limit_small' if args.small else 'limit',
     WC_directory)
 
-plotting.draw2D( limitPlot, plot_directory = plot_directory_, extensions = ["png", "root", "pdf"])
+plotting.draw2D( limitPlot, plot_directory = plot_directory_, extensions = ["png"])
 
