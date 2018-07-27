@@ -22,7 +22,7 @@ from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
 from TTXPheno.Tools.DelphesReader          import DelphesReader
-from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, isIsolatedPhoton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoLepton, isGoodRecoJet, isGoodRecoPhoton, genJetId
+from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoLepton, isGoodRecoJet, isGoodRecoPhoton, genJetId
 
 #
 # Arguments
@@ -331,7 +331,8 @@ def filler( event ):
         
         close_particles = filter( lambda p: p!=last and deltaR2( {'phi':last.phi(), 'eta':last.eta()}, {'phi':p.phi(), 'eta':p.eta()} )<0.4**2 , search.final_state_particles_no_neutrinos )
         genPhoton_['relIso04'] = sum( [p.pt() for p in close_particles], 0) / last.pt()
-        if isIsolatedPhoton(genPhoton_):
+        # require isolation
+        if genPhoton_['relIso04']<0.4:
             genPhotons_.append( genPhoton_ )
     
     # genLeptons: prompt gen-leptons 
