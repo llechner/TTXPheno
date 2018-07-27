@@ -10,16 +10,6 @@ from math                                import pi, sqrt
 # RootTools
 from RootTools.core.standard             import *
 
-# TTXPheno
-from TTXPheno.Tools.helpers              import deltaPhi, getCollection, deltaR, nanJet, nanLepton, getObjDict
-
-# Import samples
-from TTXPheno.samples.benchmarks         import *
-
-# Import helpers
-from plot_helpers                        import *
-
-
 def getVariableList( level ):
    
     # List of variables where gen is replaced by reco for reco

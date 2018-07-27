@@ -18,14 +18,14 @@ declare -a samples3=('')
 
 # declare selection strings to analyze
 #declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p' 'gammapt40to100-nlep2p-njet2p-nbjet1p' 'gammapt100to200-nlep2p-njet2p-nbjet1p' 'gammapt200to300-nlep2p-njet2p-nbjet1p' 'gammapt300-nlep2p-njet2p-nbjet1p')
-#declare -a selections=('GammaSel40-nlep2p-njet2p-nbjet1p' 'LepSelttgamma2-GammaSel15-njet2p-nbjet1p' 'LepSelttgamma2-GammaSel15')
-declare -a selections=('GammaSel40-GammaEta-nlep2p-njet2p-nbjet1p' 'LepSelttgamma2-GammaEta-GammaSel40' 'GammaSel15-GammaEta-nlep2p-njet2p-nbjet1p')
-#declare -a selections=('LepSelttgamma2-GammaSel15')
+#declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p' 'LepSelttgamma2-gammapt15-njet2p-nbjet1p' 'LepSelttgamma2-gammapt15')
+#declare -a selections=('gammapt40-nlep2p-njet2p-nbjet1p' 'LepSelttgamma2-gammapt40' 'gammapt15-nlep2p-njet2p-nbjet1p')
+declare -a selections=('LepSelttgamma2-gammapt15')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
-#declare -a samplesizes=('--small')
-declare -a samplesizes=('')
+declare -a samplesizes=('--small')
+#declare -a samplesizes=('')
 
 # declare reweighting
 #declare -a reweightings=('' '--reweightPtXToSM')
@@ -41,8 +41,8 @@ declare -a scales=('--scaleLumi')
 #declare -a levels=('reco')
 declare -a levels=('gen' 'reco')
 
-declare -a flavors=('all' 'same' 'opposite')
-#declare -a flavors=('all')
+#declare -a flavors=('all' 'same' 'opposite')
+declare -a flavors=('all')
 
 #declare -a variables=("cpt" "cpQM")
 declare -a variables=("cpt")
