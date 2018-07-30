@@ -26,6 +26,7 @@ def getVariableList( level ):
     read_variables_gen = [
 #        "ref_lumiweight1fb/F",
         "lumiweight1fb/F",
+#        "nSignalPhotons/I",
         "genMet_pt/F", "genMet_phi/F",
     
         "ngenJet/I", #"genJet[pt/F,eta/F,phi/F]",
@@ -147,7 +148,9 @@ def makePhoton( event, sample, level ):
     event.foundGamma1    = isGoodPhoton( event.gamma1 )
     event.foundGamma2    = isGoodPhoton( event.gamma2 )
 
-    event.passing_photons =  event.foundGamma0
+    event.relIsoCut = event.gamma0['relIso04']<0.1
+
+    event.passing_photons =  event.foundGamma0 and event.relIsoCut
 
 def makeLeps( event, sample, level, flavorCheck ):
     ''' Add important leptons (no full list of leptons is required for now)
@@ -300,7 +303,7 @@ def getPlotList( scaleLumi, level ):
     plots.append(Plot( name = 'deltaR_lepg0',
       texX = 'min(#DeltaR(lep, #gamma_{0}))', texY = y_label,
       attribute = lambda event, sample: event.minLeptonG0dR if event.passing_checks else float('nan'),
-      binning=[20,0.3,3],
+      binning=[20,0.3,5],
     ))
     fisherInfoVariables.append(None)
 
@@ -688,45 +691,59 @@ def getPlotList( scaleLumi, level ):
 
     elif level == 'gen':
 
+        plots.append(Plot( name = "gamma_relIso04_l",
+          texX = 'relIso04(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) in [11,13] and event.passing_checks else float('nan'),
+          binning=[20,0,0.5],
+        ))
+        fisherInfoVariables.append(None)
+
         plots.append(Plot( name = "gamma_relIso04_q",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) < 5 and event.passing_checks else float('nan'),
-          binning=[50,0,0.5],
+          binning=[20,0,0.5],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_g",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) == 21 and event.passing_checks else float('nan'),
-          binning=[50,0,0.5],
+          binning=[20,0,0.5],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_all",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if event.passing_checks else float('nan'),
-          binning=[50,0,0.5],
+          binning=[20,0,0.5],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_q_zoom",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) < 5 and event.passing_checks else float('nan'),
-          binning=[50,0,0.1],
+          binning=[20,0,0.1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma_relIso04_l_zoom",
+          texX = 'relIso04(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) in [11,13] and event.passing_checks else float('nan'),
+          binning=[20,0,0.1],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_g_zoom",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) == 21 and event.passing_checks else float('nan'),
-          binning=[50,0,0.1],
+          binning=[20,0,0.1],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_all_zoom",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if event.passing_checks else float('nan'),
-          binning=[50,0,0.1],
+          binning=[20,0,0.1],
         ))
         fisherInfoVariables.append(None)
 

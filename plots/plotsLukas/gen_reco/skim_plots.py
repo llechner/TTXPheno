@@ -37,7 +37,7 @@ argParser.add_argument('--order',           action='store',     default=2, help=
 argParser.add_argument('--selection',       action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
 argParser.add_argument('--small',           action='store_true', help='Run only on a small subset of the data?') 
 argParser.add_argument('--backgrounds',     action='store_true', help='include backgrounds?')
-argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen', 'genLep'], help='Which level of reconstruction? reco, gen, genLep')
+argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--scaleLumi',       action='store_true', help='Scale lumi only?')
 argParser.add_argument('--reweightPtXToSM', action='store_true', help='Reweight Pt(X) to the SM for all the signals?')
 argParser.add_argument('--parameters',      action='store',     default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
@@ -59,13 +59,6 @@ if args.level == 'reco':
     from TTXPheno.Tools.cutInterpreterReco import cutInterpreter
     from TTXPheno.Tools.objectSelection import isGoodRecoJet as isGoodJet
     from TTXPheno.Tools.objectSelection import isGoodRecoLepton as isGoodLepton
-
-elif args.level == 'genLep':
-    from TTXPheno.Tools.cutInterpreterGenLep import cutInterpreter
-    from TTXPheno.Tools.objectSelection import isGoodGenJet as isGoodJet
-    from TTXPheno.Tools.objectSelection import isGoodGenLepton as isGoodLepton
-
-#remove Gen here for getting the reas cutInterpreter (this is just to check with old plots)
 else:
     from TTXPheno.Tools.cutInterpreterGen import cutInterpreter
     from TTXPheno.Tools.objectSelection import isGoodGenJet as isGoodJet
@@ -120,8 +113,8 @@ loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
 ttXSample = getattr( loadedSamples, args.sample )
 WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-ttSample = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights' )
-ttSemiLepSample = getattr( loadedSamples, 'fwlite_tt_semilep_LO_order2_15weights' )
+ttDiLepSample = getattr( loadedSamples, 'fwlite_tt_dilep_LO_order2_15weights' )
+ttNonHadSample = getattr( loadedSamples, 'fwlite_tt_nonhad_LO_order2_15weights' )
 tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
 tWZSample = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
 tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
@@ -129,15 +122,15 @@ ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
 ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
 
 if args.small:
-    ttXSample.reduceFiles( to = 1 )
-    WZSample.reduceFiles( to = 1 )
-    ttSample.reduceFiles( to = 1 )
-    ttSemiLepSample.reduceFiles( to = 1 )
-    tWSample.reduceFiles( to = 1 )
-    tWZSample.reduceFiles( to = 1 )
-    tZqSample.reduceFiles( to = 1 )
-    ZgammaSample.reduceFiles( to = 1 )
-    ttgammaSample.reduceFiles( to = 1 )
+    ttXSample.reduceFiles( to = 50 )
+    WZSample.reduceFiles( to = 50 )
+    ttDiLepSample.reduceFiles( to = 50 )
+    ttNonHadSample.reduceFiles( to = 50 )
+    tWSample.reduceFiles( to = 50 )
+    tWZSample.reduceFiles( to = 50 )
+    tZqSample.reduceFiles( to = 50 )
+    ZgammaSample.reduceFiles( to = 50 )
+    ttgammaSample.reduceFiles( to = 50 )
 
 # Polynomial parametrization
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
@@ -151,7 +144,7 @@ def checkReferencePoint( sample ):
     return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
 
 # configure samples
-for s in [ ttXSample, WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]:
+for s in [ ttXSample, WZSample, ttDiLepSample, ttNonHadSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]:
     # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
     s.event_factor = s.nEvents / float( s.chain.GetEntries() )
     s.setSelectionString( cutInterpreter.cutString(args.selection) )
@@ -159,18 +152,25 @@ for s in [ ttXSample, WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, 
         s.read_variables = ["ref_lumiweight1fb/F"]
         s.read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
+# overlap removal
+if args.processFile.split('_')[0] == 'ttgamma':
+    ttXSample.read_variables.append( "nSignalPhotons/I" )
+    ttXSample.addSelectionString( "nSignalPhotons>0" )
+
+ttNonHadSample.read_variables = ["nSignalPhotons/I"]
+ttNonHadSample.addSelectionString( "nSignalPhotons==0&&abs(genPhoton_motherPdgId[0])!=6" )
+
+ttDiLepSample.read_variables = ["nSignalPhotons/I"]
+ttDiLepSample.addSelectionString( "nSignalPhotons==0&&abs(genPhoton_motherPdgId[0])!=6" )
+
+
 signal = ttXSample
 if args.processFile == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
 elif args.processFile == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-#elif args.processFile == 'ttgamma_1l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-elif args.processFile == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-#elif args.processFile == 'ttgamma_2l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-elif args.processFile == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-else: bg = [ WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]
+elif args.processFile == 'ttgamma_1l': bg = [ ttNonHadSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+elif args.processFile == 'ttgamma_2l': bg = [ ttDiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+#else: bg = [ WZSample, ttNonHadSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]
 
-#bg = [ WZSample, ttSample ]
-#bg = [ ttSample ]
-#bg = [ WZSample ]
 
 if args.addFisherInformation:
     params.append( [ {'legendText':'FI SM ideal [a.u.]', 'WC':fisherInfo_WC, 'color':colors[-1]} ] )
@@ -183,6 +183,7 @@ stack = Stack( *stackList )
 
 def legendtext( sample ):
     splitname = sample.name.split('_')
+#    return splitname[1].replace('gamma','#gamma')
     if splitname[1] != 'tt': return splitname[1].replace('gamma','#gamma')
     else: return ' '.join(splitname[1:3])
 
@@ -199,7 +200,7 @@ if args.reweightPtXToSM:
 
     for i, param in enumerate( params[::-1] ):
         if i==0 and args.backgrounds: continue # no bg scaling
-        param[0]['ptX_histo'] = ttXSample.get1DHistoFromDraw(varX, [10,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param[0]['WC']))
+        param[0]['ptX_histo'] = ttXSample.get1DHistoFromDraw(varX, [50,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param[0]['WC']))
         ptX_integral = param[0]['ptX_histo'].Integral()
         if ptX_integral > 0: param[0]['ptX_histo'].Scale(1./ptX_integral)
         param[0]['ptX_reweight_histo'] = params[rwIndex][0]['ptX_histo'].Clone()
@@ -213,16 +214,19 @@ if args.reweightPtXToSM:
             bsm_rw = w.get_weight_func( **param['WC'] )
             def reweight(event, sample):
                 i_bin = histo.FindBin(getattr( event, varX ) )
-                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
             return reweight
 
         else:
             def reweightRef(event, sample):
-                return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+                return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
             def reweightNoRef(event, sample):
-                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+                return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
 
             return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 
@@ -232,10 +236,12 @@ else:
     def get_reweight( param , sample_ ):
 
         def reweightRef(event, sample):
-            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+            return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
         def reweightNoRef(event, sample):
-            return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#            return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+            return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
 
         return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 
