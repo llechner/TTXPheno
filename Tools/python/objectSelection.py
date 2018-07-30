@@ -18,11 +18,6 @@ def isGoodGenPhoton( j ):
     '''
     return j['pt'] > 15 and abs( j['eta'] ) < 2.1
 
-def isIsolatedPhoton( p ):
-    ''' jet object selection
-    '''
-    return p['relIso04'] < 0.4 
-
 def isGoodGenLepton( l ):
     ''' lepton object selection
     '''

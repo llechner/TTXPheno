@@ -115,7 +115,6 @@ fwlite_ttW_LO_order2_15weights_ref_old.xsec             = 0.3599 * 0.2043 / 0.13
 
 '''
 gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v13/"
-#gen_dir = "/afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v12/"
 
 # reference point 15/2
 fwlite_ttZ_ll_LO_order2_15weights_ref               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights_ref" )]) 
