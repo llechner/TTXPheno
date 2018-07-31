@@ -317,6 +317,35 @@ def filler( event ):
 
         event.genW_daughterPdg = lep.pdgId()
 
+
+    def printTopMothers():
+            genTopCheck = [ (search.ascend(l), l, search.ancestry( search.ascend(l) )) for l in filter( lambda p:abs(p.pdgId())==6 and search.isLast(p),  gp) ]
+
+            print genTopCheck
+            genTopCheck.sort( key = lambda p: -p[1].pt() )
+            if len(genTopCheck) > 0:
+                topPdg_ids = filter( lambda p:p!=2212, [abs(particle.pdgId()) for particle in genTopCheck[0][2]])
+                print 'TOP 1'
+                previous = first.mother(0)
+                for i, pdg in enumerate(topPdg_ids):
+                    try:
+                        print 'mother', i, previous.pdgId()
+                        previous = previous.mother(0)
+                    except Exception as val:
+                        print val
+                        break
+            if len(genTopCheck) > 1:
+                topPdg_ids = filter( lambda p:p!=2212, [abs(particle.pdgId()) for particle in genTopCheck[1][2]])
+                print 'TOP 2'
+                previous = first.mother(0)
+                for i, pdg in enumerate(topPdg_ids):
+                    try:
+                        print 'mother', i, previous.pdgId()
+                        previous = previous.mother(0)
+                    except Exception as val:
+                        print val
+                        break
+
     # MET
     genMet = {'pt':reader.products['genMET'][0].pt(), 'phi':reader.products['genMET'][0].phi()}
     event.genMet_pt  = genMet['pt']
@@ -324,20 +353,25 @@ def filler( event ):
 
 
 #    for ttgamma and tt events, categorize events:
-#        a1) ttgamma vertex, gamma from t/g, isolated, must be in ttgamma sample  = ttgamma signal (photonSignal == 1)
+#        a1) ttgamma vertex, gamma from t/g, isolated, must be in ttgamma sample   = ttgamma signal (photonSignal == 1)
 #            -> gamma isolated
 #            -> gamma with only tops/gluons in ancestry
-#        a2) ttgamma, gamma from ISR, must be in ttgamma sample                   = tt ISR bg (photonISR == 1)
+#        a2) ttgamma, gamma from ISR, must be in ttgamma sample                    = tt ISR bg (photonISR == 1)
 #            -> gamma isolated
 #            -> gamma with no top in ancestry
 #            -> gamma with only gluons and light quarks in ancestry
 #            -> direct gamma mother != gluon!!! (this is a1)
-#        b) tt + isolated gamma from W, l, tau, must be in tt sample              = ttgamma (W,l,tau) bg (photonLep == 1)
+#        b) tt + isolated gamma from W, l, tau, must be in tt sample               = ttgamma (W,l,tau) bg (photonLep == 1)
 #            -> gamma isolated
 #            -> gamma with direct abs mother being 11, 13, 15 or 24 
-#        c) tt + non isolated gamma from anything including mesons                = tt bg (ttBg == 1)
+#        c1) tt + non isolated gamma from anything including mesons                = tt bg (ttBg == 1)
 #            -> gamma non isolated or meson in ancestry
-#        d) tt + gamma fake                                                       = ttgamma fake (photonFake == 1)
+#        c2) tt + isolated gamma from bottom quark originating from the top decay  = tt bg (ttBg == 1)
+#            -> gamma non isolated or meson in ancestry
+#            ATTENTION: gammas from bottoms with off-shell tops where the
+#                       top decay is done by pythia are currently labeled as ISR!
+#                       However this case is currently not simulated in any sample 
+#        d) tt + gamma fake                                                        = ttgamma fake (photonFake == 1)
 #            -> everything else does not contain a photon
 #            -> if it still passes selection: it is a photon fake
 
@@ -347,7 +381,7 @@ def filler( event ):
     photonSignal = 0    #a1
     photonISR = 0       #a2
     photonLep = 0       #b
-    ttBg = 0            #c
+    ttBg = 0            #c1 + c2
     photonFake = 0      #d
 
 
@@ -359,9 +393,23 @@ def filler( event ):
         # check if particles are close by
         close_particles = filter( lambda p: p!=last and p.pt()>5 and deltaR2( {'phi':last.phi(), 'eta':last.eta()}, {'phi':p.phi(), 'eta':p.eta()} )<0.2**2 , search.final_state_particles_no_neutrinos )
     
+#        print 'mothers pdg', pdg_ids
+#        print 'close', [p.pdgId() for p in close_particles]
+#        print 'first mother pdg', first.mother(0).pdgId()
+
+#        if len(pdg_ids) < 999:
+#            previous = first.mother(0)
+#            for i, pdg in enumerate(pdg_ids):
+#                try:
+#                    print 'mother', i, previous.pdgId()
+#                    previous = previous.mother(0)
+#                except Exception as val:
+#                    print val
+#                    break
+
         # deside the categories
         if max(pdg_ids)>100 or len(close_particles) != 0:
-            #photon with meson in ancestry or non isolated -> cat c)
+            #photon with meson in ancestry or non isolated -> cat c1)
             ttBg = 1
         elif abs(first.mother(0).pdgId()) in [11,13,15,24]:
             #isolated photon with W, l or tau direct mother -> cat b)
@@ -369,13 +417,32 @@ def filler( event ):
         elif all( [ p in [ 6, 21 ] for p in pdg_ids ] ) or abs(first.mother(0).pdgId()) == 21:
             #isolated photon with photon from top or gluon -> cat a1)
             photonSignal = 1
-        elif all( [ p in [ 1, 2, 3, 4, 5, 21 ] for p in pdg_ids ] ):
+#            printTopMothers()
+
+        elif all( [ p in [ 1, 2, 3, 4, 5, 21 ] for p in pdg_ids ] ) and not 6 in pdg_ids:
             #isolated photon with photon ancestry only containing light quarks or gluons (ISR) -> cat a1)
             photonISR = 1
+#            printTopMothers()
 
-    if sum( [ photonSignal, photonISR, photonLep, ttBg ] ) == 0:
+        else:
+            #isolated gammas from bottoms originating from the top decay -> cat c2) 
+            ttBg = 1
+#            printTopMothers()
+
+    else:
         # if events with photonFake == 1 pass selection: fake gamma -> cat d)
         photonFake = 1
+
+    #signal sample ttgamma: require photonSignal==1 (it is exclusive, not necessary to require others == 0
+    #bg sample: 
+
+#    print 'signalPhoton', photonSignal
+#    print 'isrPhoton   ', photonISR
+#    print 'lepPhoton   ', photonLep
+#    print 'nonIsoPhoton', ttBg
+#    print 'fakePhoton  ', photonFake
+#    print
+#    print
 
     event.signalPhoton = photonSignal
     event.isrPhoton    = photonISR

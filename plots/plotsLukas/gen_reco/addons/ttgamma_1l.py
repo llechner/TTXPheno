@@ -143,7 +143,8 @@ def makePhoton( event, sample, level ):
     event.foundGamma1    = isGoodPhoton( event.gamma1 )
     event.foundGamma2    = isGoodPhoton( event.gamma2 )
 
-    event.relIsoCut = event.gamma0['relIso04']<0.1
+#    event.relIsoCut = event.gamma0['relIso04']<0.1
+    event.relIsoCut = event.gamma0['relIso04']<0.4
 
     event.passing_photons =  event.foundGamma0 and event.relIsoCut
 

@@ -38,34 +38,34 @@ test.xsec = 200
 fwlite_ttZ_ll_LO_order3_8weights               = FWLiteSample.fromDAS("fwlite_ttZ_ll_LO_order3_8weights", "/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttZ0j_order3_8weights-7a5fde3f5bf89006ee3acec926ca87d8/USER", "phys03", dbFile = dbFile)
 fwlite_ttZ_ll_LO_order3_8weights.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/07052018/ttZ/order3/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttZ_ll_LO_order3_8weights.nEvents       = 995000
-fwlite_ttZ_ll_LO_order3_8weights.xsec          = 0.0915 #pb ttZ, Z->ll, ttZ NLO Daniel
+fwlite_ttZ_ll_LO_order3_8weights.xsec          = 0.05363 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
 
 fwlite_ttW_LO_order3_8weights                  = FWLiteSample.fromDAS("fwlite_ttW_LO_order3_8weights", "/ttW0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttW0j_order3_8weights-593ea75549b4c51667dffc93040bbda1/USER", "phys03", dbFile = dbFile)
 fwlite_ttW_LO_order3_8weights.reweight_pkl     = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/07052018/ttW/order3/ttW0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttW_LO_order3_8weights.nEvents          = 1000000
-fwlite_ttW_LO_order3_8weights.xsec             = 0.2043 #pb ttW, W->lnu, ttW NLO Daniel
+fwlite_ttW_LO_order3_8weights.xsec             = 0.1134 * 0.2043 / 0.1336 #pb ttW, ttW gridpack * ttW NLO Daniel / ttW LO run.py UFO *BR
 
 fwlite_ttgamma_LO_order3_8weights              = FWLiteSample.fromDAS("fwlite_ttgamma_LO_order3_8weights", "/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttgamma0j_order3_8weights-10fcfa1a1c01204983ea66975abf2caf/USER", "phys03", dbFile = dbFile)
 fwlite_ttgamma_LO_order3_8weights.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/07052018/ttgamma/order3/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttgamma_LO_order3_8weights.nEvents      = 1000000
-fwlite_ttgamma_LO_order3_8weights.xsec         = 3.697 #pb ttgamma NLO Daniel
+fwlite_ttgamma_LO_order3_8weights.xsec         = 2.176 * 3.697 / 2.302 #pb ttgamma gridpack * ttZ NLO Daniel / ttgamma LO run.py UFO
 
 
 # no reference point samples 15/2
 fwlite_ttZ_ll_LO_order2_15weights               = FWLiteSample.fromDAS("fwlite_ttZ_ll_LO_order2_15weights", "/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttZ0j_order2_15weights_18052018-7a5fde3f5bf89006ee3acec926ca87d8/USER", "phys03", dbFile = dbFile)
 fwlite_ttZ_ll_LO_order2_15weights.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttZ_ll_LO_order2_15weights.nEvents	    = 975000
-fwlite_ttZ_ll_LO_order2_15weights.xsec          = 0.0915 #pb ttZ, Z->ll, ttZ NLO Daniel
+fwlite_ttZ_ll_LO_order2_15weights.xsec          = 0.05363 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
 
 fwlite_ttW_LO_order2_15weights                  = FWLiteSample.fromDAS("fwlite_ttW_LO_order2_15weights", "/ttW0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttW0j_order2_15weights_18052018-593ea75549b4c51667dffc93040bbda1/USER", "phys03", dbFile = dbFile)
 fwlite_ttW_LO_order2_15weights.reweight_pkl     = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018/ttW/order2/ttW0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttW_LO_order2_15weights.nEvents          = 1000000
-fwlite_ttW_LO_order2_15weights.xsec             = 0.2043 #pb ttW, W->lnu, ttW NLO Daniel
+fwlite_ttW_LO_order2_15weights.xsec             = 0.1134 * 0.2043 / 0.1336 #pb ttW, ttW gridpack * ttW NLO Daniel / ttW LO run.py UFO *BR
 
 fwlite_ttgamma_LO_order2_15weights              = FWLiteSample.fromDAS("fwlite_ttgamma_LO_order2_15weights", "/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttgamma0j_order2_15weights_18052018-10fcfa1a1c01204983ea66975abf2caf/USER", "phys03", dbFile = dbFile)
 fwlite_ttgamma_LO_order2_15weights.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttgamma_LO_order2_15weights.nEvents	    = 990000
-fwlite_ttgamma_LO_order2_15weights.xsec         = 3.697 #pb ttgamma NLO Daniel
+fwlite_ttgamma_LO_order2_15weights.xsec         = 2.176 * 3.697 / 2.302 #pb ttgamma gridpack * ttZ NLO Daniel / ttgamma LO run.py UFO
 
 
 # reference point samples 15/2
@@ -131,21 +131,21 @@ fwlite_ttgamma_bg_LO_order2_15weights.xsec             = 2.179 * 3.697 / 2.302 #
 fwlite_tt_dilep_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_tt_dilep_LO_order2_15weights_ref", "/tt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-bg_lep_dim6top_05June18-399ed716eb7225402bb4416ff36fe4d6/USER", "phys03", dbFile = dbFile)
 fwlite_tt_dilep_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/05062018_ref/tt/order2/tt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_tt_dilep_LO_order2_15weights_ref.nEvents      = 1000000 #? not checked!
-fwlite_tt_dilep_LO_order2_15weights_ref.xsec         = 735.1 * 831.76 / 485.8 #pb tt, tt dilep xsec BSM LO * tt NLO Daniel / tt LO run.py UFO
-#xsec prob wrong
+fwlite_tt_dilep_LO_order2_15weights_ref.xsec         = 174.6 * 831.76 / 485.8 #pb tt, tt dilep xsec BSM LO * tt NLO Daniel / tt LO run.py UFO
+#check
 
 #hadronic and leptonic decays
 fwlite_tt_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_tt_LO_order2_15weights_ref", "/tt_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-bg_dim6top_04June18-db4155f01c4c21dc10125760597b536e/USER", "phys03", dbFile = dbFile)
 fwlite_tt_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/04062018/tt/order2/tt_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_tt_LO_order2_15weights_ref.nEvents      = 1000000 #? not checked!
-fwlite_tt_LO_order2_15weights_ref.xsec         = 1610 * 831.76 / 485.8 #pb tt, tt dilep xsec BSM LO * tt NLO Daniel / tt LO run.py UFO
-#xsec prob wrong
+fwlite_tt_LO_order2_15weights_ref.xsec         = 1591 * 831.76 / 485.8 #pb tt, tt dilep xsec BSM LO * tt NLO Daniel / tt LO run.py UFO
+#check
 
 fwlite_WZ_LO_order2_15weights                  = FWLiteSample.fromDAS("fwlite_WZ_LO_order2_15weights", "/WZ_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-bg_dim6top_04June18-a4eb1cf113188459e4c517c4aa52c31c/USER", "phys03", dbFile = dbFile)
 fwlite_WZ_LO_order2_15weights.reweight_pkl     = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/04062018/WZ/order2/WZ_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_WZ_LO_order2_15weights.nEvents          = 1000000 #? not checked!
 fwlite_WZ_LO_order2_15weights.xsec             = 47.13 #pb WZ, xsec NLO Daniel
-#xsec prob wrong
+#check?
 
 TTGJets_Summer16                                = FWLiteSample.fromDAS("TTGJets_Summer16", "/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM", dbFile = dbFile)
 
