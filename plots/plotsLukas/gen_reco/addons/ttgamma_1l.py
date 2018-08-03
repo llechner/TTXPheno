@@ -51,7 +51,7 @@ def getVariableList( level ):
         read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
         read_variables_gen.append("recoPhoton[pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I,minLeptonPt/F,minLeptonDR/F,minJetDR/F]")
         read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F]")
-        read_variables_gen.append("genPhoton[motherPdgId/I]")
+        read_variables_gen.append("genPhoton[motherPdgId/I,relIso04/F]")
 
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
@@ -62,6 +62,7 @@ def getVariableList( level ):
     read_variables = list( set( read_variables ) ) # remove double entries
 #    read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
+    print 'processFile', read_variables
     return read_variables
 
 
@@ -143,10 +144,7 @@ def makePhoton( event, sample, level ):
     event.foundGamma1    = isGoodPhoton( event.gamma1 )
     event.foundGamma2    = isGoodPhoton( event.gamma2 )
 
-#    event.relIsoCut = event.gamma0['relIso04']<0.1
-    event.relIsoCut = event.gamma0['relIso04']<0.4
-
-    event.passing_photons =  event.foundGamma0 and event.relIsoCut
+    event.passing_photons =  event.foundGamma0
 
 
 

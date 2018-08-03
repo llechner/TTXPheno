@@ -51,7 +51,7 @@ def getVariableList( level ):
         read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
         read_variables_gen.append("recoPhoton[pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I,minLeptonPt/F,minLeptonDR/F,minJetDR/F]")
         read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F]")
-        read_variables_gen.append("genPhoton[motherPdgId/I]")
+        read_variables_gen.append("genPhoton[motherPdgId/I,relIso04/F]")
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
         read_variables_gen.append("genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I,relIso04/F,minLeptonDR/F,minJetDR/F]")
@@ -148,10 +148,7 @@ def makePhoton( event, sample, level ):
     event.foundGamma1    = isGoodPhoton( event.gamma1 )
     event.foundGamma2    = isGoodPhoton( event.gamma2 )
 
-#    event.relIsoCut = event.gamma0['relIso04']<0.1
-    event.relIsoCut = event.gamma0['relIso04']<0.4
-
-    event.passing_photons =  event.foundGamma0 and event.relIsoCut
+    event.passing_photons =  event.foundGamma0
 
 def makeLeps( event, sample, level, flavorCheck ):
     ''' Add important leptons (no full list of leptons is required for now)

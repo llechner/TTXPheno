@@ -39,8 +39,8 @@ declare -a scales=('--scaleLumi')
 #declare -a levels=('reco')
 declare -a levels=('gen' 'reco')
 
-declare -a variables=("cpt" "cpQM")
-#declare -a variables=("cpt")
+#declare -a variables=("cpt" "cpQM")
+declare -a variables=("cpt")
 
 #declare -a flavors=('all' 'mu' 'e')
 declare -a flavors=('all')
@@ -51,13 +51,13 @@ declare -a binThresholds=("100")
 #declare -a binThresholds=("10")
 
 #declare -a fisherInfo=("--addFisherInformation" "")
-declare -a fisherInfo=("--addFisherInformation")
-#declare -a fisherInfo=("")
+#declare -a fisherInfo=("--addFisherInformation")
+declare -a fisherInfo=("")
 
 #declare -a backgrounds=("--backgrounds" "")
 declare -a backgrounds=("--backgrounds")
 
-version='v26'
+version='v32'
 luminosity='150'
 process='ttZ_3l'
 
