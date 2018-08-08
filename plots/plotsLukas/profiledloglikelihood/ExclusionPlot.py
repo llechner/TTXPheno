@@ -8,6 +8,8 @@ import ROOT
 import imp
 import pickle
 
+import numpy as np
+
 from math import sqrt
 # turn off graphics
 ROOT.gROOT.SetBatch( True )
@@ -29,13 +31,14 @@ from TTXPheno.Tools.user import plot_directory
 from TTXPheno.Tools.WeightInfo import WeightInfo
 
 # Load the analysis regions
-from TTXPheno.Analysis.regions import regions
+from TTXPheno.Analysis.regions import ttZRegions as regions
+#from TTXPheno.Analysis.regions import ttgammaRegions as regions
 
 # Arguments
 import argparse
 
 argParser = argparse.ArgumentParser(description = "Argument parser")
-argParser.add_argument('--version',         action='store',     default='v7', help='Appendix to plot directory')
+argParser.add_argument('--version',         action='store',     default='test', help='Appendix to plot directory')
 argParser.add_argument('--process',         action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttgamma_1l', 'ttgamma_2l'], help="which process to calculate?")
 argParser.add_argument('--sample',          action='store',     default='fwlite_ttZ_ll_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--order',           action='store',     default=2, help='Polynomial order of weight string (e.g. 2)')
@@ -43,7 +46,7 @@ argParser.add_argument('--selection',       action='store',     default='lepSel3
 argParser.add_argument('--small',           action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--variables' ,      action='store',     default = ['cpQM', 'cpt'], type=str, nargs='+', help = "argument plotting variables")
-argParser.add_argument('--binning',         action='store',     default = [12, -8, 40, 12, -30, 18], type=int, nargs='+', help = "argument parameters")
+argParser.add_argument('--binning',         action='store',     default = [24, -8, 40, 24, -30, 18], type=int, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 
 args = argParser.parse_args()
@@ -51,14 +54,11 @@ args = argParser.parse_args()
 if len(args.binning) != 6:
     raise ValueError('Binning must be 6 values in the form BINSX STARTX STOPX BINSY STARTY STOPY! Input: %s' %' '.join(args.binning))
 
-binningX = args.binning[:3]
-binningY = args.binning[3:]
+#if (binningX[2] - binningX[1]) % binningX[0] != 0:
+#    raise ValueError('Binning: Difference of upper and lower bound must be a multiple of the number of bins: (%s - %s) / %s != integer'%(str(binningX[2]), str(binningX[1]), str(binningX[0])) )
 
-if (binningX[2] - binningX[1]) % binningX[0] != 0:
-    raise ValueError('Binning: Difference of upper and lower bound must be a multiple of the number of bins: (%s - %s) / %s != integer'%(str(binningX[2]), str(binningX[1]), str(binningX[0])) )
-
-if (binningY[2] - binningY[1]) % binningY[0] != 0:
-    raise ValueError('Binning: Difference of upper and lower bound must be a multiple of the number of bins: (%s - %s) / %s != integer'%(str(binningY[2]), str(binningY[1]), str(binningY[0])) )
+#if (binningY[2] - binningY[1]) % binningY[0] != 0:
+#    raise ValueError('Binning: Difference of upper and lower bound must be a multiple of the number of bins: (%s - %s) / %s != integer'%(str(binningY[2]), str(binningY[1]), str(binningY[0])) )
 
 if len(args.variables) != 2:
     raise ValueError('Give TWO input variables in --variables! Input: %s' %' '.join(args.variables))
@@ -91,8 +91,12 @@ if args.process.split('_')[0] == 'ttgamma':
     ttgammaIsrSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
     ttgammaIsrSample.name = 'fwlite_ttgamma_ISR_LO_order2_15weights_ref'
 
-if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-elif args.process == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+elif args.process.split('_')[0] == 'ttZ':
+    ttZIsrSample  = copy.deepcopy( ttXSample ) #Z not from t/gluons
+    ttZIsrSample.name = 'fwlite_ttZ_ISR_LO_order2_15weights_ref'
+
+if args.process == 'ttZ_3l': bg = [ ttZIsrSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
+elif args.process == 'ttZ_4l': bg = [ ttZIsrSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
 elif args.process == 'ttgamma_1l': bg = [ ttSample, ttgammaIsrSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 elif args.process == 'ttgamma_2l': bg = [ ttSample, ttgammaIsrSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 
@@ -118,21 +122,23 @@ for s in [ttXSample] + bg:
 
     if checkReferencePoint( s ):
 #        s.read_variables = ["ref_lumiweight1fb/F", VectorTreeVariable.fromString('p[C/F]', nMax=2000) ]
-        s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+#        s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+        s.setWeightString( '(%s)*1000/(%s)/p_C[0]*(%s)*(%s)'%( str(s.xsec), str(s.nEvents), str(args.luminosity), str(s.event_factor) ) )
     else:
 #        s.read_variables = ["lumiweight1fb/F"]
-        s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+#        s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+        s.setWeightString( '(%s)*1000/(%s)*(%s)*(%s)'%( str(s.xsec), str(s.nEvents), str(args.luminosity), str(s.event_factor) ) )
 
-catPhoton_variables = [ "signalPhoton/I", "isrPhoton/I", "lepPhoton/I", "nonIsoPhoton/I", "fakePhoton/I"]
 # overlap removal and signal selection
 if args.process.split('_')[0] == 'ttgamma':
-#    ttXSample.read_variables        += catPhoton_variables
-#    ttgammaIsrSample.read_variables += catPhoton_variables
-#    ttSample.read_variables         += catPhoton_variables
-
-    ttXSample.addSelectionString(        "signalPhoton==1"                 ) #cat a1 <- the one and only signal
-    ttgammaIsrSample.addSelectionString( "isrPhoton==1"                    ) #cat a2
+    ttXSample.addSelectionString(        "(signalPhoton==1)"               ) #cat a1 <- the one and only signal
+    ttgammaIsrSample.addSelectionString( "(isrPhoton==1)"                  ) #cat a2
     ttSample.addSelectionString(         "(signalPhoton!=1&&isrPhoton!=1)" ) #cat b,c,d
+
+elif args.process.split('_')[0] == 'ttZ':
+    ttXSample.addSelectionString(    "(signalZ==1)"               ) 
+    ttZIsrSample.addSelectionString( "(signalZ==0)"                    ) 
+
 
 for var in args.variables:
     if var not in ttXSample.weightInfo.variables:
@@ -188,10 +194,39 @@ c = cardFileWriter.cardFileWriter()
 # Limit plot
 from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
 
-limit = ROOT.TH2F( 'limit', 'limit', *(binningX + binningY) )
+binningX = args.binning[:3]
+binningY = args.binning[3:]
 
-for var1 in range( binningX[1], binningX[2], ( binningX[2] - binningX[1]) / binningX[0] ):
-    for var2 in range( binningY[1], binningY[2], ( binningY[2] - binningY[1]) / binningY[0] ):
+limit = ROOT.TH2F( 'limit', 'limit', *(binningX + binningY) )
+limit.GetZaxis().SetTitle("L")
+limit.GetZaxis().SetTitleOffset(0.6)
+
+#for var1 in range( binningX[1], binningX[2], ( binningX[2] - binningX[1]) / binningX[0] ):
+#    for var2 in range( binningY[1], binningY[2], ( binningY[2] - binningY[1]) / binningY[0] ):
+
+xRange = np.linspace( binningX[1], binningX[2], binningX[0], endpoint=False)
+yRange = np.linspace( binningY[1], binningY[2], binningY[0], endpoint=False)
+
+xRange = [ el+ 0.5*(xRange[1]-xRange[0]) for el in xRange ]
+yRange = [ el+ 0.5*(yRange[1]-yRange[0]) for el in yRange ]
+
+i=0
+
+for var1 in xRange:
+    for var2 in yRange:
+
+        print
+        print
+        print
+        print
+        print
+        print 'cycle ' + str(i)
+        print
+        print
+        print
+        print
+        print
+        i+=1
 
         kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
 
@@ -249,23 +284,40 @@ for var1 in range( binningX[1], binningX[2], ( binningX[2] - binningX[1]) / binn
         if max_rmax < rmax_est:
             rmax_est = 0.9*max_rmax # safety margin such that at least +10% total yield survives in the smallest SR
 
-        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
-        profiledLoglikelihoodFit.make_workspace(rmin=0, rmax=rmax_est)
-        #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
-        expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
-        logger.info( "Expected Limit: %f", expected_limit[0] )
-        limit.SetBinContent( limit.FindBin(var1, var2), expected_limit[0] )
-        profiledLoglikelihoodFit.cleanup()
+#        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
+#        profiledLoglikelihoodFit.make_workspace(rmin=0, rmax=rmax_est)
+#        #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
+#        expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
+#        logger.info( "Expected Limit: %f", expected_limit[0] )
+#        limit.SetBinContent( limit.FindBin(var1, var2), expected_limit[0] )
+#        profiledLoglikelihoodFit.cleanup()
+#        del profiledLoglikelihoodFit
 
 limitPlot = Plot2D.fromHisto( '_'.join(args.variables), texX = args.variables[0], texY = args.variables[1], histos = [[limit]] )
 limitPlot.drawOption = "colz"
 ROOT.gStyle.SetPaintTextFormat("2.2f")
 
+def drawObjects( hasData = False ):
+    tex = ROOT.TLatex()
+    tex.SetNDC()
+    tex.SetTextSize(0.04)
+    tex.SetTextAlign(11) # align right
+    lines = [
+      (0.15, 0.95, "Simulation (gen)"),
+      (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)' %float(args.luminosity) )
+    ]
+    return [tex.DrawLatex(*l) for l in lines]
+
 plot_directory_ = os.path.join(\
     plot_directory,
     '%s_%s'%(args.level, args.version),
     ttXSample.name,
-    'limit_small' if args.small else 'limit')
+    'backgrounds',
+    'limit_small' if args.small else 'limit',
+    args.selection)
 
-plotting.draw2D( limitPlot, plot_directory = plot_directory_, extensions = ["png"])
+plotting.draw2D( limitPlot,
+                 plot_directory = plot_directory_,
+                 drawObjects = drawObjects(),
+                 extensions = ["png"])
 
