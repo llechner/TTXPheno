@@ -39,6 +39,8 @@ def getVariableList( level ):
         "genBj1_pt/F", "genBj1_phi/F", "genBj1_eta/F",
 
         "genBjLeadlep_index/I", "genBjLeadhad_index/I",
+
+        "genZ_mass/F",
      ]
      
     # List of variables where genLep is replaced by reco for reco
@@ -242,6 +244,20 @@ def getPlotList( scaleLumi, level ):
 
     plots = []
     fisherInfoVariables = []
+
+    plots.append(Plot( name = 'Z_mass',
+      texX = 'm(ll)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_mass'%preTag ) if event.passing_checks else float('nan'),
+      binning=[50,0,200],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = "l0_PdgId",
+      texX = 'motherPdgId(l_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l0['pdgId'] if event.passing_checks else float('nan'),
+      binning=[52,-26,26],
+    ))
+    fisherInfoVariables.append(None)
     
     plots.append(Plot( name = "gamma_pt",
       texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label,

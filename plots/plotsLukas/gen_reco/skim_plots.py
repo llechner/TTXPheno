@@ -31,13 +31,10 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',        action='store',     default='INFO', nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
 argParser.add_argument('--version',         action='store',     default='v4', help='Appendix to plot directory') 
-#argParser.add_argument('--processFile',     action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttW_2l', 'ttgamma_1l', 'ttgamma_2l'], help='Which process? ttZ, ttW, ttgamma') 
-argParser.add_argument('--processFile',     action='store',     default='ttgamma_1l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttW_2l', 'ttgamma_1l', 'ttgamma_2l', 'ttgamma_1l_small', 'ttgamma_2l_small'], help='Which process? ttZ, ttW, ttgamma') 
-#argParser.add_argument('--sample',          action='store',     default='fwlite_ttZ_ll_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
-argParser.add_argument('--sample',          action='store',     default='fwlite_ttgamma_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
+argParser.add_argument('--processFile',     action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttW_2l', 'ttgamma_1l', 'ttgamma_2l', 'ttgamma_1l_small', 'ttgamma_2l_small'], help='Which process? ttZ, ttW, ttgamma') 
+argParser.add_argument('--sample',          action='store',     default='fwlite_ttZ_ll_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--order',           action='store',     default=2, help='Polynomial order of weight string (e.g. 2)')
-#argParser.add_argument('--selection',       action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
-argParser.add_argument('--selection',       action='store',     default='lepSel1-gammapt40-njet3p-nbjet1p', help="Specify cut.")
+argParser.add_argument('--selection',       action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
 argParser.add_argument('--small',           action='store_true', help='Run only on a small subset of the data?') 
 argParser.add_argument('--backgrounds',     action='store_true', help='include backgrounds?')
 argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
@@ -127,8 +124,6 @@ tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
 ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
 ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
 ttSample = getattr( loadedSamples, ttSampleName )
-#ttDiLepSample = getattr( loadedSamples, 'fwlite_tt_dilep_LO_order2_15weights' )
-#ttNonHadSample = getattr( loadedSamples, 'fwlite_tt_nonhad_LO_order2_15weights' )
 
 # details of the categories are written in the postprocessing script
 if args.processFile.split('_')[0] == 'ttgamma':
@@ -148,13 +143,14 @@ if args.processFile.split('_')[0] == 'ttgamma':
     # ttSample #select tt events with non-isolated gamma or gamma from bottom (cat c1 + c2)
     # signal: ttgamma events with isolated gamma from gluon or top (cat a1)
 
-if args.processFile == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-elif args.processFile == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+elif args.processFile.split('_')[0] == 'ttZ':
+    ttZISRSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
+    ttZISRSample.name = 'fwlite_ttZ_(non-t)_LO_order2_15weights_ref'
+
+if args.processFile == 'ttZ_3l': bg = [ ttZISRSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
+elif args.processFile == 'ttZ_4l': bg = [ ttZISRSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
 elif args.processFile == 'ttgamma_1l': bg = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample, ttSample, ttgammaFakeSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 elif args.processFile == 'ttgamma_2l': bg = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample, ttSample, ttgammaFakeSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-#elif args.processFile == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-#elif args.processFile == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-#else: bg = [ WZSample, ttNonHadSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]
 
 # Polynomial parametrization
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
@@ -172,6 +168,7 @@ if args.small:
     for s in [ttXSample] + bg:
         s.reduceFiles( to = 10 )
 
+
 # configure samples
 for s in [ttXSample] + bg:
     # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
@@ -181,8 +178,10 @@ for s in [ttXSample] + bg:
         s.read_variables = ["ref_lumiweight1fb/F", VectorTreeVariable.fromString('p[C/F]', nMax=2000)]
 
 catPhoton_variables = [ "signalPhoton/I", "isrPhoton/I", "lepPhoton/I", "nonIsoPhoton/I", "fakePhoton/I"]
-# overlap removal + signal categorization
+catZ_variables = [ "signalZ/I" ]
+
 if args.processFile.split('_')[0] == 'ttgamma':
+    # overlap removal + signal categorization for ttgamma
 
     ttXSample.read_variables         += catPhoton_variables
     ttgammaIsrSample.read_variables  += catPhoton_variables
@@ -191,15 +190,22 @@ if args.processFile.split('_')[0] == 'ttgamma':
     ttgammabSample.read_variables     = catPhoton_variables
     ttgammaFakeSample.read_variables  = catPhoton_variables
 
-#    ttXSample.addSelectionString(         "signalPhoton==1" ) #cat a1 <- the one and only signal
-    ttXSample.addSelectionString(         "(signalPhoton==1||(signalPhoton==0&&nonIsoPhoton==0&&abs(genPhoton_motherPdgId[0])==6))" ) #cat a1 <- the one and only signal # remove the mother cut after new postprocessing!
-#    ttgammaIsrSample.addSelectionString(  "isrPhoton==1"    ) #cat a2
-    ttgammaIsrSample.addSelectionString(  "isrPhoton==1&&abs(genPhoton_motherPdgId[0])!=21"    ) #cat a2 # remove the mother cut after new postprocessing!
-    ttgammaLepSample.addSelectionString(  "lepPhoton==1"    ) #cat b
+    ttXSample.addSelectionString(         "signalPhoton==1" ) #cat a1 <- the one and only signal
+    ttgammaIsrSample.addSelectionString(  "isrPhoton==1&&abs(genPhoton_motherPdgId[0])!=21"    ) #cat a2
+    ttgammaLepSample.addSelectionString(  "lepPhoton==1&&abs(genPhoton_motherPdgId[0])!=6"    ) #cat b
     ttSample.addSelectionString(          "nonIsoPhoton==1" ) #cat c1
-#    ttgammabSample.addSelectionString(    "bottomPhoton==1" ) #cat c2
-    ttgammabSample.addSelectionString(    "bottomPhoton==1&&abs(genPhoton_motherPdgId[0])!=6" ) #cat c2 # remove the mother cut after new postprocessing!
+    ttgammabSample.addSelectionString(    "jetPhoton==1" ) #cat c2
     ttgammaFakeSample.addSelectionString( "fakePhoton==1"   ) #cat d
+
+elif args.processFile.split('_')[0] == 'ttZ':
+    # signal categorization for ttZ
+
+    ttXSample.read_variables += catZ_variables
+    ttZISRSample.read_variables += catZ_variables
+
+    ttXSample.addSelectionString( "signalZ==1" ) #Z from gluon or top
+    ttZISRSample.addSelectionString( "signalZ==0" ) #Z from ISR or else
+
 
 if args.addFisherInformation:
     params.append( [ {'legendText':'FI SM ideal [a.u.]', 'WC':fisherInfo_WC, 'color':colors[-1]} ] )
@@ -211,8 +217,7 @@ stack = Stack( *stackList )
 
 def legendtext( sample ):
     splitname = sample.name.split('_')
-#    return splitname[1].replace('gamma','#gamma')
-    if splitname[1] not in ['tt','ttgamma']: return splitname[1].replace('gamma','#gamma')
+    if splitname[1] not in ['tt','ttgamma','ttZ']: return splitname[1].replace('gamma','#gamma')
     else: return ' '.join(splitname[1:3]).replace('gamma','#gamma').replace('tau','#tau')
 
 if args.backgrounds: params += [[ {'legendText':legendtext(s), 'WC':{}, 'color':colors[-1-i]} for i, s in enumerate(bg) ]]
@@ -242,19 +247,19 @@ if args.reweightPtXToSM:
             bsm_rw = w.get_weight_func( **param['WC'] )
             def reweight(event, sample):
                 i_bin = histo.FindBin(getattr( event, varX ) )
-#                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
-                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
+                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
             return reweight
 
         else:
             def reweightRef(event, sample):
-#                return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
-                return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
+                return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
             def reweightNoRef(event, sample):
-#                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
-                return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
+                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
 
             return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 
@@ -264,12 +269,12 @@ else:
     def get_reweight( param , sample_ ):
 
         def reweightRef(event, sample):
-#            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
-            return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
+            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#            return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
         def reweightNoRef(event, sample):
-#            return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
-            return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
+            return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#            return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
 
         return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 

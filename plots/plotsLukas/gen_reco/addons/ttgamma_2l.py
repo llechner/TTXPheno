@@ -39,6 +39,8 @@ def getVariableList( level ):
         "genBj1_pt/F", "genBj1_phi/F", "genBj1_eta/F",
 
         "genBjLeadlep_index/I", "genBjLeadhad_index/I",
+
+        "genZ_mass/F",
      ]
      
     # List of variables where genLep is replaced by reco for reco
@@ -214,8 +216,8 @@ def makeObservables( event, sample, level):
     event.lep0chargept = event.l0['pt'] if event.l0['pdgId']>0 else -event.l0['pt']
     event.lep1chargept = event.l1['pt'] if event.l1['pdgId']>0 else -event.l1['pt']
 
-    event.mll = (event.l0['vec4D'] + event.l1['vec4D']).Mag()
-    event.mllgamma = (event.l0['vec4D'] + event.l1['vec4D'] + event.gamma_vec4D).Mag()
+    event.mll = (event.l0['vec4D'].Vect() + event.l1['vec4D'].Vect()).Mag()
+    event.mllgamma = (event.l0['vec4D'].Vect() + event.l1['vec4D'].Vect() + event.gamma_vec4D.Vect()).Mag()
 
     # choose your final selection
     event.passing_checks = event.passing_leptons and event.passing_bjets and event.passing_photons
@@ -245,6 +247,43 @@ def getPlotList( scaleLumi, level ):
     plots = []
     fisherInfoVariables = []
     
+    plots.append(Plot( name = 'Z_mass',
+      texX = 'm(ll)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_mass'%preTag ) if event.passing_checks else float('nan'),
+      binning=[50,0,200],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = "mll",
+      texX = 'm(ll) [GeV]', texY = y_label,
+      attribute = lambda event, sample: event.mll if event.passing_checks else float('nan'),
+      binning=[20,0,200],
+    ))
+    fisherInfoVariables.append(None)
+
+    
+    plots.append(Plot( name = "mllgamma",
+      texX = 'm(ll#gamma) [GeV]', texY = y_label,
+      attribute = lambda event, sample: event.mllgamma if event.passing_checks else float('nan'),
+      binning=[20,0,200],
+    ))
+    fisherInfoVariables.append(None)
+
+
+    plots.append(Plot( name = "l0_PdgId",
+      texX = 'motherPdgId(l_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l0['pdgId'] if event.passing_checks else float('nan'),
+      binning=[52,-26,26],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = "l1_PdgId",
+      texX = 'motherPdgId(l_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l1['pdgId'] if event.passing_checks else float('nan'),
+      binning=[52,-26,26],
+    ))
+    fisherInfoVariables.append(None)
+
     plots.append(Plot( name = "gamma_pt",
       texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label,
       attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
@@ -907,22 +946,6 @@ def getPlotList( scaleLumi, level ):
       binning=[20,-3,3],
     ))
     fisherInfoVariables.append('%sLep_eta[1]'%preTag)
-
-    
-    plots.append(Plot( name = "mll",
-      texX = 'm(ll) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.mll if event.passing_checks else float('nan'),
-      binning=[20,0,200],
-    ))
-    fisherInfoVariables.append(None)
-
-    
-    plots.append(Plot( name = "mllgamma",
-      texX = 'm(ll#gamma) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.mllgamma if event.passing_checks else float('nan'),
-      binning=[20,0,200],
-    ))
-    fisherInfoVariables.append(None)
 
     
     plots.append(Plot( name = 'deltaPhi_bb',

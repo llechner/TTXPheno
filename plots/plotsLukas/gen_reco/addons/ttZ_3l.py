@@ -224,6 +224,44 @@ def getPlotList( scaleLumi, level ):
     plots = []
     fisherInfoVariables = []
     
+    # for gen use genLepZ_lldPhi
+    plots.append( Plot( name = 'Z_deltaPhi_ll',
+      texX = '#Delta#phi(ll)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_lldPhi'%tag ) if event.passing_checks else float('nan'),
+      binning=[20,0,pi],
+    ) )
+    fisherInfoVariables.append('%sZ_lldPhi'%tag)
+
+    plots.append( Plot( name = 'Z_deltaPhi_ll_zoom',
+      texX = '#Delta#phi(ll)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_lldPhi'%tag ) if event.passing_checks else float('nan'),
+      binning=[20,0,pi/2.],
+    ) )
+    fisherInfoVariables.append('%sZ_lldPhi'%tag)
+
+
+    # for gen use genLepZ_lldR
+    plots.append( Plot( name = 'Z_deltaR_ll',
+      texX = '#DeltaR(ll)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_lldR'%tag ) if event.passing_checks else float('nan'),
+      binning=[20,0,4],
+    ) )
+    fisherInfoVariables.append('%sZ_lldR'%tag)
+        
+    plots.append( Plot( name = 'Z_deltaR_ll_zoom',
+      texX = '#DeltaR(ll)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_lldR'%tag ) if event.passing_checks else float('nan'),
+      binning=[20,0,2],
+    ) )
+    fisherInfoVariables.append('%sZ_lldR'%tag)
+        
+    plots.append(Plot( name = "lnonZ_PdgId",
+      texX = 'motherPdgId(l_{0})', texY = y_label,
+      attribute = lambda event, sample: event.NonZ_l0['pdgId'] if event.passing_checks else float('nan'),
+      binning=[52,-26,26],
+    ))
+    fisherInfoVariables.append(None)
+
     plots.append( Plot( name = "Z_pt",
       texX = 'p_{T}(Z) [GeV]', texY = y_label,
       attribute = lambda event, sample: getattr( event, '%sZ_pt'%level ) if event.passing_checks else float('nan'),
@@ -343,6 +381,13 @@ def getPlotList( scaleLumi, level ):
     ) )
     fisherInfoVariables.append(None)
     
+    plots.append( Plot( name = 'deltaPhi_bb_zoom',
+      texX = '#Delta#phi(bb)', texY = y_label,
+      attribute = lambda event, sample: event.bbdPhi if event.passing_checks else float('nan'),
+      binning=[20,0,pi/2.],
+    ) )
+    fisherInfoVariables.append(None)
+    
 
     plots.append( Plot( name = 'deltaR_bb',
       texX = '#DeltaR(bb)', texY = y_label,
@@ -351,25 +396,14 @@ def getPlotList( scaleLumi, level ):
     ) )
     fisherInfoVariables.append(None)
 
+    plots.append( Plot( name = 'deltaR_bb_zoom',
+      texX = '#DeltaR(bb)', texY = y_label,
+      attribute = lambda event, sample: event.bbdR if event.passing_checks else float('nan'),
+      binning=[20,0,3],
+    ) )
+    fisherInfoVariables.append(None)
+
     
-    # for gen use genLepZ_lldPhi
-    plots.append( Plot( name = 'Z_deltaPhi_ll',
-      texX = '#Delta#phi(ll)', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sZ_lldPhi'%tag ) if event.passing_checks else float('nan'),
-      binning=[20,0,pi],
-    ) )
-    fisherInfoVariables.append('%sZ_lldPhi'%tag)
-
-
-    # for gen use genLepZ_lldR
-    plots.append( Plot( name = 'Z_deltaR_ll',
-      texX = '#DeltaR(ll)', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sZ_lldR'%tag ) if event.passing_checks else float('nan'),
-      binning=[20,0,4],
-    ) )
-    fisherInfoVariables.append('%sZ_lldR'%tag)
-        
-
     plots.append( Plot( name = 'Met_pt',
       texX = 'E_{T}^{miss} [GeV]', texY = y_label,
       attribute = lambda event, sample: event.MET['pt'] if event.passing_checks else float('nan'),
