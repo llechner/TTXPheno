@@ -92,10 +92,10 @@ fwlite_ttgamma_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb 
 
 # something wrong with the cross-section?
 # gridpack with run card from Tom Cornelis
-#fwlite_ttgamma1l_TC_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_ttgamma1l_TC_LO_order2_15weights_ref", "", "phys03", dbFile = dbFile)
-#fwlite_ttgamma1l_TC_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/31072018_TC/ttgamma1l/order2/ttgamma1l_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-#fwlite_ttgamma1l_TC_LO_order2_15weights_ref.nEvents      = 1000000
-#fwlite_ttgamma1l_TC_LO_order2_15weights_ref.xsec         = 0.5019 * 3.697 / 2.302 #pb ttgamma1l (TC) gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+fwlite_ttgamma1l_TC_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_ttgamma1l_TC_LO_order2_15weights_ref", "/ttgamma1l_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttTC_dim6top_31July18-7211d47a05942de63b96d242b817a8bb/USER", "phys03", dbFile = dbFile)
+fwlite_ttgamma1l_TC_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/31072018_TC/ttgamma1l/order2/ttgamma1l_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgamma1l_TC_LO_order2_15weights_ref.nEvents      = 1000000
+fwlite_ttgamma1l_TC_LO_order2_15weights_ref.xsec         = 0.5019 * 3.697 / 2.302 #pb ttgamma1l (TC) gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 
 #fwlite_ttgamma2l_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_ttgamma2l_LO_order2_15weights_ref", "", "phys03", dbFile = dbFile)
 #fwlite_ttgamma2l_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/31072018/ttgamma2l/order2/ttgamma2l_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
@@ -103,10 +103,10 @@ fwlite_ttgamma_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb 
 #fwlite_ttgamma2l_LO_order2_15weights_ref.xsec         = 0.7916 * 3.697 / 2.302 #pb ttgamma2l gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 
 # gridpack with run card from Tom Cornelis
-#fwlite_ttgamma2l_TC_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_ttgamma2l_TC_LO_order2_15weights_ref", "", "phys03", dbFile = dbFile)
-#fwlite_ttgamma2l_TC_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/31072018_TC/ttgamma2l/order2/ttgamma2l_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-#fwlite_ttgamma2l_TC_LO_order2_15weights_ref.nEvents      = 1000000
-#fwlite_ttgamma2l_TC_LO_order2_15weights_ref.xsec         = 0.7052 * 3.697 / 2.302 #pb ttgamma2l (TC) gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+fwlite_ttgamma2l_TC_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_ttgamma2l_TC_LO_order2_15weights_ref", "/ttgamma2l_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttTC_dim6top_31July18-0a43f57f51d88147b253bdf1fa82c508/USER", "phys03", dbFile = dbFile)
+fwlite_ttgamma2l_TC_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/31072018_TC/ttgamma2l/order2/ttgamma2l_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgamma2l_TC_LO_order2_15weights_ref.nEvents      = 1000000
+fwlite_ttgamma2l_TC_LO_order2_15weights_ref.xsec         = 0.7052 * 3.697 / 2.302 #pb ttgamma2l (TC) gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 
 # background samples no WC no ref point
 #leptonic decays W > lnu, Z > ll, t > Wb
@@ -142,7 +142,7 @@ fwlite_tt_nonhad_LO_order2_15weights.xsec             = 300.7 * 831.76 / 485.8 #
 fwlite_WZ_lep_LO_order2_15weights                  = FWLiteSample.fromDAS("fwlite_WZ_lep_LO_order2_15weights", "/WZ_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-bg_dim6top_06July18-6dade6042d6868e7bb87de85663e8a54/USER", "phys03", dbFile = dbFile)
 fwlite_WZ_lep_LO_order2_15weights.reweight_pkl     = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/06072018/WZ/order2/WZ_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_WZ_lep_LO_order2_15weights.nEvents          = 1000000 
-fwlite_WZ_lep_LO_order2_15weights.xsec             = 47.13*(3*0.108)*(3*0.0336) #pb WZ NLO Daniel * BR(Wlep) * BR(Zlep)
+fwlite_WZ_lep_LO_order2_15weights.xsec             = 4.666 #WZTo3LNu_amcatnlo #47.13*(3*0.108)*(3*0.0336) #pb WZ NLO Daniel * BR(Wlep) * BR(Zlep)
 
 fwlite_tZq_LO_order2_15weights                  = FWLiteSample.fromDAS("fwlite_tZq_LO_order2_15weights", "/tZq_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-bg_lep_dim6top_06July18-622c407898c13833e0c43092e83c38c5/USER", "phys03", dbFile = dbFile)
 fwlite_tZq_LO_order2_15weights.reweight_pkl     = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/06072018/tZq/order2/tZq_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
