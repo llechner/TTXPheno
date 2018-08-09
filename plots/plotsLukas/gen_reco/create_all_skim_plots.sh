@@ -11,7 +11,7 @@ ctGI=1
 
 #Run all skim plot scripts
 
-./skim_plots_ttgamma_1l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} ${ctG} ${ctGI}
+#./skim_plots_ttgamma_1l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} ${ctG} ${ctGI}
 ./skim_plots_ttgamma_2l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} ${ctG} ${ctGI}
 #./skim_plots_ttZ_3l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} ${ctG} ${ctGI}
 #./skim_plots_ttZ_4l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} ${ctG} ${ctGI}

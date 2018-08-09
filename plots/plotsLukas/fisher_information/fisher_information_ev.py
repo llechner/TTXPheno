@@ -96,14 +96,24 @@ def get_reweight_function():
 
     def reweight( event, sample ):
         return event.ref_lumiweight1fb * float(args.luminosity) * event_factor
+#        return sample.xsec * 1000 / sample.nEvents / event.p_C[0] * float(args.luminosity) * event_factor
 
     return reweight
 
 
 selection_string = cutInterpreter.cutString( args.selection )
 
+# overlap removal + signal categorization
+if args.process == 'ttgamma':
+    selection_addon = "(signalPhoton==1)"
+    selection_string += '&&' + selection_addon
+elif args.process == 'ttZ':
+    selection_addon = "(signalZ==1)"
+    selection_string += '&&' + selection_addon
+
 # Make sure that weightString contains the same as weightFunction!!!
 weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity) , str(event_factor) )
+#weightString = '%s*1000/%s*%s*%s/p_C[0]' %( str(sample.xsec), str(sample.nEvents), str(args.luminosity), str(event_factor) )
 weightFunction = get_reweight_function()
 
 # split selection string step by step
@@ -121,11 +131,20 @@ plotVariables3D = getattr( process_variables, args.process )['3D']
 plotVariables4D = getattr( process_variables, args.process )['4D']
 
 if args.level != 'gen':
-    if args.level == 'reco': search_string, replacement_string = ( 'gen', 'reco' )
+    if args.level == 'reco':
+        search_stringGen, replacement_stringGen = ( 'gen', 'reco' )
     # Take care if that is really everything you have to replace!!!
-    elif args.level == 'genLep': search_string, replacement_string = ( 'genZ', 'genLepZ' )
     for item in plotVariables2D + plotVariables3D + plotVariables4D:
-        item['var'] = item['var'].replace(search_string, replacement_string)
+        item['var'] = item['var'].replace('genLepZ_lld','recoZ_lld')
+        item['var'] = item['var'].replace('genLepNonZ','recoNonZ')
+        item['var'] = item['var'].replace(search_stringGen, replacement_stringGen)
+
+#if args.level != 'gen':
+#    if args.level == 'reco': search_string, replacement_string = ( 'gen', 'reco' )
+#    # Take care if that is really everything you have to replace!!!
+#    elif args.level == 'genLep': search_string, replacement_string = ( 'genZ', 'genLepZ' )
+#    for item in plotVariables2D + plotVariables3D + plotVariables4D:
+#        item['var'] = item['var'].replace(search_string, replacement_string)
 
 # Calculate coefficients for binned distribution
 # Calculate determinant using the 'variables' submatrix of FI
@@ -159,13 +178,13 @@ for var in plotVariables4D:
 # Calculate coefficients unbinned (event loop)
 # Calculate determinant using the 'variables' submatrix of FI
 for selection in selections:
-    selection['coeff'] = w.getCoeffListFromEvents( sample, selectionString = cutInterpreter.cutString(selection['selection']), weightFunction = weightFunction )
+    selection['coeff'] = w.getCoeffListFromEvents( sample, selectionString = cutInterpreter.cutString(selection['selection']) + '&&' + selection_addon, weightFunction = weightFunction )
     selection['color']       = 46
 
 # Full Fisher information
 if not args.fpsScaling:
     full              = { 'plotstring':'full'}
-    full['coeff']     = w.getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
+    full['coeff']     = w.getCoeffListFromEvents( sample, selectionString = selection_addon, weightFunction = weightFunction )
     full['color']     = 15
 
 expo = 1. / len(inputvariables)
