@@ -7,8 +7,11 @@ import sys, copy
 import ROOT
 import imp
 import pickle
+import gc
 
 import numpy as np
+
+from multiprocessing import Pool
 
 from math import sqrt
 # turn off graphics
@@ -91,12 +94,14 @@ if args.process.split('_')[0] == 'ttgamma':
     ttgammaIsrSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
     ttgammaIsrSample.name = 'fwlite_ttgamma_ISR_LO_order2_15weights_ref'
 
-elif args.process.split('_')[0] == 'ttZ':
-    ttZIsrSample  = copy.deepcopy( ttXSample ) #Z not from t/gluons
-    ttZIsrSample.name = 'fwlite_ttZ_ISR_LO_order2_15weights_ref'
+#elif args.process.split('_')[0] == 'ttZ':
+#    ttZIsrSample  = copy.deepcopy( ttXSample ) #Z not from t/gluons
+#    ttZIsrSample.name = 'fwlite_ttZ_ISR_LO_order2_15weights_ref'
 
-if args.process == 'ttZ_3l': bg = [ ttZIsrSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
-elif args.process == 'ttZ_4l': bg = [ ttZIsrSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
+if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+elif args.process == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+#if args.process == 'ttZ_3l': bg = [ ttZIsrSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
+#elif args.process == 'ttZ_4l': bg = [ ttZIsrSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
 elif args.process == 'ttgamma_1l': bg = [ ttSample, ttgammaIsrSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 elif args.process == 'ttgamma_2l': bg = [ ttSample, ttgammaIsrSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 
@@ -122,12 +127,12 @@ for s in [ttXSample] + bg:
 
     if checkReferencePoint( s ):
 #        s.read_variables = ["ref_lumiweight1fb/F", VectorTreeVariable.fromString('p[C/F]', nMax=2000) ]
-#        s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
-        s.setWeightString( '(%s)*1000/(%s)/p_C[0]*(%s)*(%s)'%( str(s.xsec), str(s.nEvents), str(args.luminosity), str(s.event_factor) ) )
+        s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+#        s.setWeightString( '(%s)*1000/(%s)/p_C[0]*(%s)*(%s)'%( str(s.xsec), str(s.nEvents), str(args.luminosity), str(s.event_factor) ) )
     else:
 #        s.read_variables = ["lumiweight1fb/F"]
-#        s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
-        s.setWeightString( '(%s)*1000/(%s)*(%s)*(%s)'%( str(s.xsec), str(s.nEvents), str(args.luminosity), str(s.event_factor) ) )
+        s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+#        s.setWeightString( '(%s)*1000/(%s)*(%s)*(%s)'%( str(s.xsec), str(s.nEvents), str(args.luminosity), str(s.event_factor) ) )
 
 # overlap removal and signal selection
 if args.process.split('_')[0] == 'ttgamma':
@@ -135,9 +140,9 @@ if args.process.split('_')[0] == 'ttgamma':
     ttgammaIsrSample.addSelectionString( "(isrPhoton==1)"                  ) #cat a2
     ttSample.addSelectionString(         "(signalPhoton!=1&&isrPhoton!=1)" ) #cat b,c,d
 
-elif args.process.split('_')[0] == 'ttZ':
-    ttXSample.addSelectionString(    "(signalZ==1)"               ) 
-    ttZIsrSample.addSelectionString( "(signalZ==0)"                    ) 
+#elif args.process.split('_')[0] == 'ttZ':
+#    ttXSample.addSelectionString(    "(signalZ==1)"               ) 
+#    ttZIsrSample.addSelectionString( "(signalZ==0)"                    ) 
 
 
 for var in args.variables:
@@ -191,43 +196,10 @@ for i_region, region in enumerate(regions):
 from TTXPheno.Tools.cardFileWriter import cardFileWriter
 c = cardFileWriter.cardFileWriter()
 
-# Limit plot
-from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
+def calculation( variables ):
+#def calculation( var1, var2 ):
 
-binningX = args.binning[:3]
-binningY = args.binning[3:]
-
-limit = ROOT.TH2F( 'limit', 'limit', *(binningX + binningY) )
-limit.GetZaxis().SetTitle("L")
-limit.GetZaxis().SetTitleOffset(0.6)
-
-#for var1 in range( binningX[1], binningX[2], ( binningX[2] - binningX[1]) / binningX[0] ):
-#    for var2 in range( binningY[1], binningY[2], ( binningY[2] - binningY[1]) / binningY[0] ):
-
-xRange = np.linspace( binningX[1], binningX[2], binningX[0], endpoint=False)
-yRange = np.linspace( binningY[1], binningY[2], binningY[0], endpoint=False)
-
-xRange = [ el+ 0.5*(xRange[1]-xRange[0]) for el in xRange ]
-yRange = [ el+ 0.5*(yRange[1]-yRange[0]) for el in yRange ]
-
-i=0
-
-for var1 in xRange:
-    for var2 in yRange:
-
-        print
-        print
-        print
-        print
-        print
-        print 'cycle ' + str(i)
-        print
-        print
-        print
-        print
-        print
-        i+=1
-
+        var1, var2 = variables
         kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
 
         # uncertainties
@@ -262,7 +234,7 @@ for var1 in xRange:
                 c.specifyUncertainty( 'JEC', bin_name, '_'.join(background.name.split('_')[1:3]), background_jec_uncertainty[region][background.name])
                 c.specifyUncertainty( 'fake',bin_name, '_'.join(background.name.split('_')[1:3]), background_fakerate_uncertainty[region][background.name])
                 
-        nameList = ttXSample.name.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, args.selection, 'small' if args.small else 'full' ]
+        nameList = ttXSample.name.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, args.selection, 'small' if args.small else 'full', var1, var2,  ]
         cardname = '%s_limit_card'%'_'.join( map( str, nameList ) )
         c.writeToFile( './tmp/%s.txt'%cardname )
 
@@ -284,14 +256,54 @@ for var1 in xRange:
         if max_rmax < rmax_est:
             rmax_est = 0.9*max_rmax # safety margin such that at least +10% total yield survives in the smallest SR
 
-#        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
-#        profiledLoglikelihoodFit.make_workspace(rmin=0, rmax=rmax_est)
-#        #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
-#        expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
-#        logger.info( "Expected Limit: %f", expected_limit[0] )
-#        limit.SetBinContent( limit.FindBin(var1, var2), expected_limit[0] )
-#        profiledLoglikelihoodFit.cleanup()
-#        del profiledLoglikelihoodFit
+        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
+        profiledLoglikelihoodFit.make_workspace(rmin=0, rmax=rmax_est)
+        #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
+        expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
+        logger.info( "Expected Limit: %f", expected_limit[0] )
+        profiledLoglikelihoodFit.cleanup()
+        del profiledLoglikelihoodFit
+        ROOT.gDirectory.Clear()
+
+        return var1, var2, expected_limit[0]
+
+
+
+# Limit plot
+from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
+
+binningX = args.binning[:3]
+binningY = args.binning[3:]
+
+xRange = np.linspace( binningX[1], binningX[2], binningX[0], endpoint=False)
+yRange = np.linspace( binningY[1], binningY[2], binningY[0], endpoint=False)
+
+xRange = [ el+ 0.5*(xRange[1]-xRange[0]) for el in xRange ]
+yRange = [ el+ 0.5*(yRange[1]-yRange[0]) for el in yRange ]
+
+results = []
+for varX in xRange:
+    # do not run all calc in one pool, memory leak!!!
+    pool = Pool( processes = 8 )
+    results += pool.map( calculation, [ (varX, varY) for varY in yRange ] )
+    del pool
+
+limit = ROOT.TH2F( 'limit', 'limit', *(binningX + binningY) )
+limit.GetZaxis().SetTitle("-2 #Delta ln(L)")
+#limit.GetZaxis().SetTitleOffset(0.8)
+limit.GetZaxis().SetLabelSize(0.045)
+limit.GetZaxis().SetTitleSize(0.045)
+
+#scale to SM
+results = [ (el[0], el[1], np.log(el[2])) for el in results ]
+results.sort( key = lambda res: -res[2] )
+maxResult = results[0][2] 
+#results.sort( key = lambda res: (res[0],res[1],-res[2]) )
+#use the point closesed to the SM as reference
+#maxResult = results[1][2] #do not use SM point (pole at 0,0)
+
+for x,y,result in results:
+    limit.SetBinContent( limit.FindBin(x, y), -2*(result - maxResult) )
 
 limitPlot = Plot2D.fromHisto( '_'.join(args.variables), texX = args.variables[0], texY = args.variables[1], histos = [[limit]] )
 limitPlot.drawOption = "colz"
@@ -317,6 +329,7 @@ plot_directory_ = os.path.join(\
     args.selection)
 
 plotting.draw2D( limitPlot,
+                 logZ=False,
                  plot_directory = plot_directory_,
                  drawObjects = drawObjects(),
                  extensions = ["png"])

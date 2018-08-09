@@ -18,3 +18,5 @@ def getRegions2D(varOne, varOneThresholds, varTwo, varTwoThresholds):
 
 ## 3l signal regions
 regions = getRegions2D("genZ_pt", [0,100,200,400], "genZ_cosThetaStar", [-1,-0.6, 0.6, 1]) + [Region("genZ_pt", (400, -1))]
+ttZRegions = getRegions2D("genZ_pt", [0,100,200,400], "genZ_cosThetaStar", [-1,-0.6, 0.6, 1]) + [Region("genZ_pt", (400, -1))]
+ttgammaRegions = getRegions2D("genPhoton_pt[0]", [0,100,200,400], "abs(genPhoton_eta[0])", [0,1,2,3])# + [Region("genZ_pt", (400, -1))]
