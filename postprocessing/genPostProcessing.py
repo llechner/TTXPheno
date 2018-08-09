@@ -198,11 +198,14 @@ if args.delphes:
  
 # Lumi weight 1fb
 variables += ["lumiweight1fb/F"]
+
+variables += ["signalZ/I"] #ttZ Signal
+
 variables += ["signalPhoton/I"] #cat a1
 variables += ["isrPhoton/I"] #cat a2
 variables += ["lepPhoton/I"] #cat b
 variables += ["nonIsoPhoton/I"] #cat c1
-variables += ["bottomPhoton/I"] #cat c2
+variables += ["jetPhoton/I"] #cat c2
 variables += ["fakePhoton/I"] #cat d
 
 if args.addReweights:
@@ -287,7 +290,11 @@ def filler( event ):
     else:
         genZ = None
     
+    zSignal = 0    #ttZ with Z from gluon or top
     if genZ is not None:
+
+        if abs(search.ascend(genZ).mother(0).pdgId()) in [ 6, 21 ]:
+            zSignal = 1    #ttZ with Z from gluon or top
 
         d1, d2 = genZ.daughter(0), genZ.daughter(1)
         if d1.pdgId()>0: 
@@ -296,6 +303,8 @@ def filler( event ):
             lm, lp = d2, d1
         event.genZ_daughterPdg = lm.pdgId()
         event.genZ_cosThetaStar = cosThetaStar(genZ.mass(), genZ.pt(), genZ.eta(), genZ.phi(), lm.pt(), lm.eta(), lm.phi())
+
+    event.signalZ = zSignal
 
     # generated W's
     genWs = filter( lambda p:abs(p.pdgId())==24 and search.isLast(p), gp)
