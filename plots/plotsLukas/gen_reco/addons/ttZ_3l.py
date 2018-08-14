@@ -293,6 +293,13 @@ def getPlotList( scaleLumi, level ):
     ) )
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
 
+    plots.append( Plot( name = "Z_cosThetaStar_bin",
+      texX = 'cos(#theta*)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
+      binning=[5,-1.2,1.2],
+    ) )
+    fisherInfoVariables.append('%sZ_cosThetaStar'%level)
+
     
     plots.append( Plot( name = "Z_mass",
       texX = 'm(ll) [GeV]', texY = y_label,

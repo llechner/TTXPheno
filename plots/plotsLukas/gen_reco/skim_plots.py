@@ -49,7 +49,7 @@ argParser.add_argument('--addFisherInformation', action='store_true', help='incl
 
 args = argParser.parse_args()
 
-args.processFile = args.processFile.replace('_small','')
+#args.processFile = args.processFile.replace('_small','')
 
 if len(args.parameters) < 2: args.parameters = None
 
@@ -151,6 +151,7 @@ if args.processFile == 'ttZ_3l': bg = [ ttZISRSample, WZSample, tWZSample, tZqSa
 elif args.processFile == 'ttZ_4l': bg = [ ttZISRSample, WZSample, tWZSample, tZqSample, ttgammaSample ]
 elif args.processFile == 'ttgamma_1l': bg = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample, ttSample, ttgammaFakeSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 elif args.processFile == 'ttgamma_2l': bg = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample, ttSample, ttgammaFakeSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+else: bg = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample, ttSample, ttgammaFakeSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 
 # Polynomial parametrization
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!

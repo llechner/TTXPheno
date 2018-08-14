@@ -219,7 +219,7 @@ def makeObservables( event, sample, level ):
     event.mll = (event.l0['vec4D'] + event.l1['vec4D']).M()
     event.mllgamma = (event.l0['vec4D'] + event.l1['vec4D'] + event.gamma_vec4D).M()
 
-    #cut the Z window in same flavor lepton region
+    #cut the Z window in same flavor lepton region   
     event.offZ = (abs(event.mll - 91.2) > 15 and abs(event.mllgamma - 91.2) > 15) or event.mll is float('nan') or event.mllgamma is float('nan') or abs(event.l0['pdgId']) != abs(event.l1['pdgId'])
     event.mllCut = event.mll > 40
 
@@ -251,6 +251,14 @@ def getPlotList( scaleLumi, level ):
     plots = []
     fisherInfoVariables = []
     
+    plots.append(Plot( name = "gamma_pt",
+      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label,
+      attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
+      binning=[20,0,400],
+    ))
+    fisherInfoVariables.append('%sPhoton_pt[0]'%preTag)
+
+
     plots.append(Plot( name = "mll",
       texX = 'm(ll) [GeV]', texY = y_label,
       attribute = lambda event, sample: event.mll if event.passing_checks else float('nan'),
@@ -266,6 +274,8 @@ def getPlotList( scaleLumi, level ):
     ))
     fisherInfoVariables.append(None)
 
+    return plots, fisherInfoVariables
+
 
     plots.append(Plot( name = "l0_PdgId",
       texX = 'motherPdgId(l_{0})', texY = y_label,
@@ -280,14 +290,6 @@ def getPlotList( scaleLumi, level ):
       binning=[52,-26,26],
     ))
     fisherInfoVariables.append(None)
-
-    plots.append(Plot( name = "gamma_pt",
-      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
-      binning=[20,0,400],
-    ))
-    fisherInfoVariables.append('%sPhoton_pt[0]'%preTag)
-
 
     plots.append(Plot( name = "gamma_phi",
       texX = '#phi(#gamma_{0})', texY = y_label,

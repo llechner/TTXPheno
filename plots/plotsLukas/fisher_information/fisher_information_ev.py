@@ -102,14 +102,15 @@ def get_reweight_function():
 
 
 selection_string = cutInterpreter.cutString( args.selection )
+selection_addon = "(1)"
 
 # overlap removal + signal categorization
 if args.process == 'ttgamma':
     selection_addon = "(signalPhoton==1)"
     selection_string += '&&' + selection_addon
-elif args.process == 'ttZ':
-    selection_addon = "(signalZ==1)"
-    selection_string += '&&' + selection_addon
+#elif args.process == 'ttZ':
+#    selection_addon = "(signalZ==1)"
+#    selection_string += '&&' + selection_addon
 
 # Make sure that weightString contains the same as weightFunction!!!
 weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity) , str(event_factor) )

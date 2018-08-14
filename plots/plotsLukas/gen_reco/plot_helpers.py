@@ -15,7 +15,9 @@ def addTransverseVector( p_dict ):
 def addTLorentzVector( p_dict ):
     ''' add a TLorentz 4D Vector for further calculations
     '''
-    p_dict['vec4D'] = ROOT.TLorentzVector( p_dict['pt']*cos(p_dict['phi']), p_dict['pt']*sin(p_dict['phi']),  p_dict['pt']*sinh(p_dict['eta']), 0 )
+    p_dict['vec4D'] = ROOT.TLorentzVector()
+    p_dict['vec4D'].SetPtEtaPhiM( p_dict['pt'], p_dict['eta'], p_dict['phi'], 0 )
+#    p_dict['vec4D'] = ROOT.TLorentzVector( p_dict['pt']*cos(p_dict['phi']), p_dict['pt']*sin(p_dict['phi']),  p_dict['pt']*sinh(p_dict['eta']), 0 )
 
 def UnitVectorT2( phi ):
     ''' 2D Unit Vector

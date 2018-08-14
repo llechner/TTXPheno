@@ -9,8 +9,8 @@ ctW=$3
 ctWI=$4
 ctZ=$5
 ctZI=$6
-ctG=$7
-ctGI=$8
+#ctG=$7
+#ctGI=$8
 
 # declare samples to analyze
 declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights_ref')
@@ -19,7 +19,7 @@ declare -a samples3=('')
 # declare selection strings to analyze
 #declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0to100' 'lepSel3-onZ-njet3p-nbjet1p-Zpt100to200' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200to300' 'lepSel3-onZ-njet3p-nbjet1p-Zpt300to400' 'lepSel3-onZ-njet3p-nbjet1p-Zpt400')
 #declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200')
-declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt200')
+declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -40,7 +40,7 @@ declare -a scales=('--scaleLumi')
 #declare -a levels=('reco')
 declare -a levels=('gen' 'reco')
 
-#declare -a variables=("ctW" "ctZ")
+#declare -a variables=("ctZ")
 declare -a variables=("cpt" "cpQM")
 #declare -a variables=("cpQM")
 
@@ -53,8 +53,8 @@ declare -a flavors=('all')
 declare -a binThresholds=("100")
 #declare -a binThresholds=("10")
 
-#declare -a fisherInfo=("--addFisherInformation" "")
-declare -a fisherInfo=("--addFisherInformation")
+declare -a fisherInfo=("--addFisherInformation" "")
+#declare -a fisherInfo=("--addFisherInformation")
 #declare -a fisherInfo=("")
 
 #declare -a backgrounds=("--backgrounds" "")
@@ -107,8 +107,8 @@ do
                                      continue
                                   fi
 
-#                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
-                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
+#                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
 
                                done
 
@@ -120,7 +120,7 @@ do
                                      continue
                                   fi
 
-                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
 
                                done
                             done

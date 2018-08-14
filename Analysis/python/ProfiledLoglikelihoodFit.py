@@ -254,7 +254,8 @@ class ProfiledLoglikelihoodFit:
         self.bModel.SetSnapshot( self.poi )
         getattr(self.ws, 'import')(self.bModel)
 
-        self.ws.writeToFile(self.modelname+'.root', True);
+        self.ws.writeToFile('tmp/'+self.modelname+'.root', True);
+#        self.ws.writeToFile(self.modelname+'.root', True);
 
     def calculate_limit( self, calculator = "asymptotic"):
 
