@@ -119,10 +119,10 @@ fwlite_ttgamma_LO_order2_15weights_ref.nEvents      = 970000
 fwlite_ttgamma_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 #check
 
-#fwlite_ttgammaLarge_LO_order2_15weights_ref              = Sample.fromDirectory("fwlite_ttgammaLarge_LO_order2_15weights_ref", texName = "ttgamma",  directory = [os.path.join( gen_dir, "fwlite_ttgammaLarge_LO_order2_15weights_ref" )])
-#fwlite_ttgammaLarge_LO_order2_15weights_ref.reweight_pkl = gridpack_dir + "18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-#fwlite_ttgammaLarge_LO_order2_15weights_ref.nEvents      = 10000000
-#fwlite_ttgammaLarge_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+fwlite_ttgammaLarge_LO_order2_15weights_ref              = Sample.fromDirectory("fwlite_ttgammaLarge_LO_order2_15weights_ref", texName = "ttgamma",  directory = [os.path.join( gen_dir, "fwlite_ttgammaLarge_LO_order2_15weights_ref" )])
+fwlite_ttgammaLarge_LO_order2_15weights_ref.reweight_pkl = gridpack_dir + "18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgammaLarge_LO_order2_15weights_ref.nEvents      = 10000000
+fwlite_ttgammaLarge_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 #check
 
 """
@@ -145,7 +145,7 @@ fwlite_ttgamma2l_TC_LO_order2_15weights_ref.xsec         = 0.7052 * 3.697 / 2.30
 
 fwlite_ttZ_ll_LO_order2_15weights_ref_delphes       = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights_ref_delphes",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights_ref", "delphes" )], treeName = "Delphes") 
 fwlite_ttgamma_LO_order2_15weights_ref_delphes      = Sample.fromDirectory("fwlite_ttgamma_LO_order2_15weights_ref_delphes", texName = "ttgamma",  directory = [os.path.join( gen_dir, "fwlite_ttgamma_LO_order2_15weights_ref", "delphes" )], treeName = "Delphes")
-#fwlite_ttgammaLarge_LO_order2_15weights_ref_delphes      = Sample.fromDirectory("fwlite_ttgammaLarge_LO_order2_15weights_ref_delphes", texName = "ttgamma",  directory = [os.path.join( gen_dir, "fwlite_ttgammaLarge_LO_order2_15weights_ref", "delphes" )], treeName = "Delphes")
+fwlite_ttgammaLarge_LO_order2_15weights_ref_delphes      = Sample.fromDirectory("fwlite_ttgammaLarge_LO_order2_15weights_ref_delphes", texName = "ttgamma",  directory = [os.path.join( gen_dir, "fwlite_ttgammaLarge_LO_order2_15weights_ref", "delphes" )], treeName = "Delphes")
 #fwlite_ttgamma1l_TC_LO_order2_15weights_ref_delphes      = Sample.fromDirectory("fwlite_ttgamma1l_TC_LO_order2_15weights_ref_delphes", texName = "ttgamma1l",  directory = [os.path.join( gen_dir, "fwlite_ttgamma1l_TC_LO_order2_15weights_ref", "delphes" )], treeName = "Delphes")
 #fwlite_ttgamma2l_TC_LO_order2_15weights_ref_delphes      = Sample.fromDirectory("fwlite_ttgamma2l_TC_LO_order2_15weights_ref_delphes", texName = "ttgamma2l",  directory = [os.path.join( gen_dir, "fwlite_ttgamma2l_TC_LO_order2_15weights_ref", "delphes" )], treeName = "Delphes")
 
@@ -169,15 +169,15 @@ fwlite_tt_nonhad_LO_order2_15weights.nEvents       = 1000000
 fwlite_tt_nonhad_LO_order2_15weights.xsec          = 300.7 * 831.76 / 485.8 #tt nonhad gridpack * tt NLO Daniel / tt LO run.py UFO
 #check
 
-#fwlite_tt_full_LO_order2_15weights               = Sample.fromDirectory("fwlite_tt_full_LO_order2_15weights",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_full_LO_order2_15weights" )]) 
-#fwlite_tt_full_LO_order2_15weights.reweight_pkl  = gridpack_dir + "06072018/tt_semilep/order2/tt_semilep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-#fwlite_tt_full_LO_order2_15weights.nEvents       = 10000000 
-#fwlite_tt_full_LO_order2_15weights.xsec          = 494.9 * 831.76 / 485.8 #tt full gridpack * tt NLO Daniel / tt LO run.py UFO
+fwlite_tt_full_LO_order2_15weights               = Sample.fromDirectory("fwlite_tt_full_LO_order2_15weights",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_full_LO_order2_15weights" )]) 
+fwlite_tt_full_LO_order2_15weights.reweight_pkl  = gridpack_dir + "06072018/tt_semilep/order2/tt_semilep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_tt_full_LO_order2_15weights.nEvents       = 10000000 
+fwlite_tt_full_LO_order2_15weights.xsec          = 494.9 * 831.76 / 485.8 #tt full gridpack * tt NLO Daniel / tt LO run.py UFO
 #check
 
 fwlite_tt_dilep_LO_order2_15weights_delphes     = Sample.fromDirectory("fwlite_tt_dilep_LO_order2_15weights_ref_delphes",  texName = "ttdilep",      directory = [os.path.join( gen_dir, "fwlite_tt_dilep_LO_order2_15weights", "delphes" )], treeName = "Delphes") 
 fwlite_tt_nonhad_LO_order2_15weights_delphes    = Sample.fromDirectory("fwlite_tt_nonhad_LO_order2_15weights_ref_delphes", texName = "ttnonhad",     directory = [os.path.join( gen_dir, "fwlite_tt_nonhad_LO_order2_15weights", "delphes" )], treeName = "Delphes") 
-#fwlite_tt_full_LO_order2_15weights_delphes      = Sample.fromDirectory("fwlite_tt_full_LO_order2_15weights_ref_delphes",   texName = "tt",           directory = [os.path.join( gen_dir, "fwlite_tt_full_LO_order2_15weights", "delphes" )], treeName = "Delphes") 
+fwlite_tt_full_LO_order2_15weights_delphes      = Sample.fromDirectory("fwlite_tt_full_LO_order2_15weights_ref_delphes",   texName = "tt",           directory = [os.path.join( gen_dir, "fwlite_tt_full_LO_order2_15weights", "delphes" )], treeName = "Delphes") 
 
 
 fwlite_tZq_LO_order2_15weights               = Sample.fromDirectory("fwlite_tZq_LO_order2_15weights",  texName = "tZq",      directory = [os.path.join( gen_dir, "fwlite_tZq_LO_order2_15weights" )]) 

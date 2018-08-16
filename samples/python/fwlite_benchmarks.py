@@ -84,10 +84,10 @@ fwlite_ttgamma_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechn
 fwlite_ttgamma_LO_order2_15weights_ref.nEvents      = 970000
 fwlite_ttgamma_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 
-#fwlite_ttgammaLarge_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_ttgammaLarge_LO_order2_15weights_ref", "/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttgamma_dim6top_13Aug18-1ec53e9e153e4c10ba0f5a8b04e170ac/USER", "phys03", dbFile = dbFile)
-#fwlite_ttgammaLarge_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-#fwlite_ttgammaLarge_LO_order2_15weights_ref.nEvents      = 10000000
-#fwlite_ttgammaLarge_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+fwlite_ttgammaLarge_LO_order2_15weights_ref              = FWLiteSample.fromDAS("fwlite_ttgammaLarge_LO_order2_15weights_ref", "/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttgamma_dim6top_13Aug18-1ec53e9e153e4c10ba0f5a8b04e170ac/USER", "phys03", dbFile = dbFile)
+fwlite_ttgammaLarge_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgammaLarge_LO_order2_15weights_ref.nEvents      = 10000000
+fwlite_ttgammaLarge_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 
 # something wrong with the cross-section?
 # gridpack with run card from Tom Cornelis
