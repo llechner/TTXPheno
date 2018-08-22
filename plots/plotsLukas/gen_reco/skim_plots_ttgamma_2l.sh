@@ -30,8 +30,9 @@ declare -a samples3=('')
 #declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.4-met40' 'lepSel2-gammapt100-njet2p-nbjet1p-relIso0to0.4-met40' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40' 'lepSel2-gammapt100-njet2p-nbjet1p-relIso0to0.12-met40' 'lepSel2-gammapt200-njet2p-nbjet1p-relIso0to0.12-met40' 'lepSel2-gammapt200-njet2p-nbjet1p-relIso0to0.12' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.4-met40-Zoff' 'lepSel2-gammapt100-njet2p-nbjet1p-relIso0to0.4-met40-Zoff' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt100-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt200-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt200-njet2p-nbjet1p-relIso0to0.12-Zoff' )
 
 #declare -a selections=('lepSel2-gammapt20-Zoff' 'lepSel2-gammapt20-njet2p-Zoff' 'lepSel2-gammapt20-njet1-nbjet1-Zoff' 'lepSel2-gammapt20-njet2p-nbjet1p-Zoff')
-declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-Zoff' )
+#declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-Zoff' )
 #declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt100-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt200-njet2p-nbjet1p-relIso0to0.12-met40-Zoff')
+declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -44,16 +45,16 @@ declare -a samplesizes=('')
 declare -a reweightings=('')
 
 # declare scale
-declare -a scales=('' '--scaleLumi')
-#declare -a scales=('--scaleLumi')
+#declare -a scales=('' '--scaleLumi')
+declare -a scales=('--scaleLumi')
 #declare -a scales=('')
 
 #declare -a levels=('gen')
-#declare -a levels=('reco')
-declare -a levels=('gen' 'reco')
+declare -a levels=('reco')
+#declare -a levels=('gen' 'reco')
 
-declare -a flavors=('all' 'same' 'opposite')
-#declare -a flavors=('all')
+#declare -a flavors=('all' 'same' 'opposite')
+declare -a flavors=('all')
 
 #declare -a variables=("cpt" "cpQM")
 declare -a variables=("cpt")
@@ -70,7 +71,7 @@ declare -a fisherInfo=("")
 declare -a backgrounds=("--backgrounds")
 
 #version='TTXPheno'
-version='ZwindowTest'
+version='v2'
 #version='2lcheck'
 luminosity='150'
 process='ttgamma_2l'

@@ -334,7 +334,7 @@ class ProfiledLoglikelihoodFit:
         '''Make likelihood test '''
         # read PDF and data
         pdf =  self.ws.pdf("model")
-        data = self.ws.data("data")
+        data = self.ws.data("data_%i"%self.seed)
 
         # Here we only test hypothesis
         self.poi.first().setVal(1)

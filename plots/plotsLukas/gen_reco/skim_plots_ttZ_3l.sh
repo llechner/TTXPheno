@@ -19,7 +19,9 @@ declare -a samples3=('')
 # declare selection strings to analyze
 #declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0to100' 'lepSel3-onZ-njet3p-nbjet1p-Zpt100to200' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200to300' 'lepSel3-onZ-njet3p-nbjet1p-Zpt300to400' 'lepSel3-onZ-njet3p-nbjet1p-Zpt400')
 #declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200')
-declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
+declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200')
+#declare -a selections=('lepSel3-onZ-njet3p-Zpt0' 'lepSel3-onZ-nbjet1p-Zpt0' 'lepSel3-onZ-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200')
+#declare -a selections=('lepSel3-onZ-njet3p-Zpt0' 'lepSel3-onZ-nbjet1p-Zpt0' 'lepSel3-onZ-Zpt0')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -37,31 +39,33 @@ declare -a scales=('--scaleLumi')
 #declare -a scales=('')
 
 #declare -a levels=('gen')
-#declare -a levels=('reco')
-declare -a levels=('gen' 'reco')
+declare -a levels=('reco')
+#declare -a levels=('gen' 'reco')
 
 #declare -a variables=("ctZ")
 declare -a variables=("cpt" "cpQM")
-#declare -a variables=("cpQM")
+#declare -a variables=("cpt")
 
 #declare -a flavors=('all' 'mu' 'e')
 #declare -a flavors=('mu' 'e')
 declare -a flavors=('all')
+#declare -a flavors=('all' 'eee' 'mumumu' 'mumue' 'muee')
 
 #declare -a binThresholds=("400" "100" "25" "0")
 #declare -a binThresholds=("100" "0")
 declare -a binThresholds=("100")
 #declare -a binThresholds=("10")
 
-declare -a fisherInfo=("--addFisherInformation" "")
-#declare -a fisherInfo=("--addFisherInformation")
+#declare -a fisherInfo=("--addFisherInformation" "")
+declare -a fisherInfo=("--addFisherInformation")
 #declare -a fisherInfo=("")
 
 #declare -a backgrounds=("--backgrounds" "")
 declare -a backgrounds=("--backgrounds")
 
-version='TTXPheno_08082018'
+version='v1'
 luminosity='150'
+#luminosity='36'
 process='ttZ_3l'
 
 # define program to run by python
@@ -87,6 +91,9 @@ do
             for level in "${levels[@]}"
             do
 
+               for flavor in "${flavors[@]}"
+               do
+
                   for variable in "${variables[@]}"
                   do
 
@@ -107,8 +114,8 @@ do
                                      continue
                                   fi
 
-#                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
-                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
+#                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}  --leptonFlavor ${flavor}"
 
                                done
 
@@ -120,13 +127,14 @@ do
                                      continue
                                   fi
 
-                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}"
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable}  --leptonFlavor ${flavor}"
 
                                done
                             done
                         done
                      done
                   done
+               done
             done
          done
       done

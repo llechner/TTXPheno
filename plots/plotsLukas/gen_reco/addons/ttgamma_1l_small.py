@@ -252,6 +252,14 @@ def getPlotList( scaleLumi, level ):
     ))
     fisherInfoVariables.append('%sPhoton_pt[0]'%preTag)
 
+    plots.append(Plot( name = "gamma_eta",
+      texX = '#eta(#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.gamma0['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-3,3],
+    ))
+    fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
+
+    
     return plots, fisherInfoVariables
     
     plots.append(Plot( name = 'Z_mass',
@@ -274,14 +282,6 @@ def getPlotList( scaleLumi, level ):
       binning=[20,-pi,pi],
     ))
     fisherInfoVariables.append('%sPhoton_phi[0]'%preTag)
-
-    
-    plots.append(Plot( name = "gamma_eta",
-      texX = '#eta(#gamma_{0})', texY = y_label,
-      attribute = lambda event, sample: event.gamma0['eta'] if event.passing_checks else float('nan'),
-      binning=[20,-3,3],
-    ))
-    fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
 
     
     plots.append(Plot( name = 'minLeptonDR',
