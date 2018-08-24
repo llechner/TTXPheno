@@ -31,7 +31,7 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',        action='store',     default='INFO', nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
 argParser.add_argument('--version',         action='store',     default='test', help='Appendix to plot directory') 
-argParser.add_argument('--processFile',     action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttW_2l', 'ttgamma_1l', 'ttgamma_2l', 'ttZ_3l_small', 'ttgamma_1l_small', 'ttgamma_2l_small'], help='Which process? ttZ, ttW, ttgamma') 
+argParser.add_argument('--processFile',     action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttW_2l', 'ttgamma_1l', 'ttgamma_2l', 'ttZ_3l_small', 'ttgamma_1l_small', 'ttgamma_2l_small', 'ttZ_3l_paper', 'ttgamma_1l_paper', 'ttgamma_2l_paper'], help='Which process? ttZ, ttW, ttgamma') 
 argParser.add_argument('--sample',          action='store',     default='fwlite_ttZ_ll_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--order',           action='store',     default=2, help='Polynomial order of weight string (e.g. 2)')
 argParser.add_argument('--selection',       action='store',     default='lepSel3-njet3p-nbjet1p-onZ-Zpt0-mll12', help="Specify cut.")
@@ -87,7 +87,7 @@ subDirectory = '_'.join( subDirectory )
 # Format WC input parameters
 colors = [ ROOT.kRed+1, ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue ]
 colorsBg = [ ROOT.kAzure-3, ROOT.kGreen-2, ROOT.kCyan-9, ROOT.kRed+2, ROOT.kGray+2, ROOT.kYellow-7, ROOT.kViolet+6, ROOT.kBlue+2 ]
-colorsNonInfo = [ ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+1 ]
+colorsNonInfo = [ ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+3, ROOT.kBlack]
 
 params = []
 if args.parameters is not None:
@@ -156,9 +156,9 @@ if 'ttZ' in args.processFile.split('_'):
     # be careful if you set nonInfo to empty list, especially with the FI plot
     nonInfo = [ ttZISRSample ]
 elif 'ttgamma' in args.processFile.split('_'):
-    bg = [ ttSample, ttgammaFakeSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+    bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
     # be careful if you set nonInfo to empty list, especially with the FI plot
-    nonInfo = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample ]
+    nonInfo = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample, ttgammaFakeSample ]
 
 # Polynomial parametrization
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
@@ -316,8 +316,8 @@ def drawObjects( hasData = False ):
     tex.SetTextAlign(11) # align right
     tex.SetTextFont(42)
     lines = [
-      (0.15, 0.95, 'data' if hasData else args.processFile.replace('_', ' ')),
-      (0.45, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
+      (0.15, 0.95, 'data' if hasData else ' '.join(args.processFile.split('_')[:2])),
+      (0.6, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
@@ -329,7 +329,7 @@ def drawPlots(plots):
     for plot in plots:
       for nonInfo_histo in plot.histos[indexNonInfo]:
         for s, signal_histos in enumerate(plot.histos[:indexNonInfo]):
-          signal_histos[-1].Add(nonInfo_histo)
+          signal_histos[0].Add(nonInfo_histo)
 
   # add bg to signal and nonInfo Signal for stacked plot
   if args.backgrounds and len(bgParams) != 0:
@@ -337,7 +337,7 @@ def drawPlots(plots):
     for plot in plots:
       for bg_histo in plot.histos[indexBg]:
         for s, signal_histos in enumerate(plot.histos[:indexBg]):
-            signal_histos[-1].Add(bg_histo)
+            signal_histos[0].Add(bg_histo)
 
   for plot in plots:
 
@@ -354,7 +354,8 @@ def drawPlots(plots):
         elif i_h == histoIndexNonInfo:
             # fill style for nonInfo Signal
             hi.style = styles.fillStyle(allParams[i_h][j_hi]['color'])
-            hi.SetFillStyle(3544 - 40*(j_hi%2))
+            hi.SetFillStyle(3544)
+            hi.SetFillColor(ROOT.kWhite)
             ROOT.gStyle.SetHatchesLineWidth(2)
         else:
             # fill style for signal and WC

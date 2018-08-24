@@ -45,9 +45,9 @@ argParser.add_argument('--small',           action='store_true', help='Run only 
 argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 #argParser.add_argument('--variables' ,      action='store',     default = ['cpQM', 'cpt'], type=str, nargs=2, help = "argument plotting variables")
 argParser.add_argument('--variables' ,      action='store',     default = ['ctZ', 'ctZI'], type=str, nargs=2, help = "argument plotting variables")
-#argParser.add_argument('--binning',         action='store',     default = [24, -8, 40, 24, -30, 18], type=int, nargs=6, help = "argument parameters")
-#argParser.add_argument('--binning',         action='store',     default = [2, -8, 40, 2, -30, 18], type=int, nargs=6, help = "argument parameters")
-argParser.add_argument('--binning',         action='store',     default = [1, -2, 2, 1, -2, 2], type=int, nargs=6, help = "argument parameters")
+#argParser.add_argument('--binning',         action='store',     default = [24, -8, 40, 24, -30, 18], type=float, nargs=6, help = "argument parameters")
+#argParser.add_argument('--binning',         action='store',     default = [2, -8, 40, 2, -30, 18], type=float, nargs=6, help = "argument parameters")
+argParser.add_argument('--binning',         action='store',     default = [1, -2, 2, 1, -2, 2], type=float, nargs=6, help = "argument parameters")
 argParser.add_argument('--zRange',          action='store',     default = [None, None], type=int, nargs=2, help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 argParser.add_argument('--contours',        action='store_true', help='draw 1sigma and 2sigma contour line?')
@@ -83,7 +83,7 @@ sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
 ttZSample       = getattr( loadedSamples, 'fwlite_ttZ_ll_LO_order2_15weights_ref' )
-ttgamma1lSample = getattr( loadedSamples, 'fwlite_ttgamma_LO_order2_15weights_ref')
+ttgamma1lSample = getattr( loadedSamples, 'fwlite_ttgammaLarge_LO_order2_15weights_ref')
 ttgamma2lSample = copy.deepcopy( ttgamma1lSample )
 
 WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
@@ -303,7 +303,7 @@ def calculateNLL( variables ):
         #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
         nll = profiledLoglikelihoodFit.likelihoodTest()
         logger.info( "NLL: %f", nll)
-        profiledLoglikelihoodFit.cleanup()
+        profiledLoglikelihoodFit.cleanup(removeFiles=True)
         del profiledLoglikelihoodFit
         ROOT.gDirectory.Clear()
 
@@ -319,13 +319,13 @@ binningX = args.binning[:3]
 binningY = args.binning[3:]
 
 if binningX[0] > 1:
-    xRange = np.linspace( binningX[1], binningX[2], binningX[0], endpoint=False)
+    xRange = np.linspace( binningX[1], binningX[2], int(binningX[0]), endpoint=False)
     xRange = [ el + 0.5 * ( xRange[1] - xRange[0] ) for el in xRange ]
 else:
     xRange = [ 0.5 * ( binningX[1] + binningX[2] ) ]
 
 if binningY[0] > 1:
-    yRange = np.linspace( binningY[1], binningY[2], binningY[0], endpoint=False)
+    yRange = np.linspace( binningY[1], binningY[2], int(binningY[0]), endpoint=False)
     yRange = [ el + 0.5 * ( yRange[1] - yRange[0] ) for el in yRange ]
 else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
@@ -341,7 +341,7 @@ for varX in xRange:
     del pool
 
 filename = '_'.join( ['nll', 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
-with open(filename, 'w') as f:
+with open('tmp/'+filename, 'w') as f:
     for item in results:
         f.write( "%s\n" % ','.join( map( str, list(item) ) ) )
 
@@ -414,31 +414,23 @@ if args.contours:
         for cont in conts:
             cont.SetLineColor(ROOT.kOrange+7)
             cont.SetLineWidth(2)
-            cont.SetLineStyle(7)
+#            cont.SetLineStyle(7)
             cont.Draw("same")
     for conts in [cont_p1]:
         for cont in conts:
             cont.SetLineColor(ROOT.kSpring-1)
             cont.SetLineWidth(2)
-            cont.SetLineStyle(7)
+#            cont.SetLineStyle(7)
             cont.Draw("same")
 
 
-hist.GetZaxis().SetTitle("-2 #Delta ln(L)")
-hist.GetZaxis().SetLabelSize(0.04)
-hist.GetZaxis().SetTitleSize(0.05)
-
-hist.GetXaxis().SetLabelSize(0.04)
-hist.GetXaxis().SetTitleSize(0.05)
-
-hist.GetYaxis().SetLabelSize(0.04)
-hist.GetYaxis().SetTitleSize(0.05)
+hist.GetZaxis().SetTitle("-2 #Delta ln L")
 
 if not None in args.zRange:
     hist.GetZaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
 
-hist.GetXaxis().SetTitle(args.variables[0])
-hist.GetYaxis().SetTitle(args.variables[1])
+hist.GetXaxis().SetTitle('C_{' + args.variables[0].replace('c','').replace('p','#phi') + '}')
+hist.GetYaxis().SetTitle('C_{' + args.variables[1].replace('c','').replace('p','#phi') + '}')
 
 hist.GetXaxis().SetTitleFont(42)
 hist.GetYaxis().SetTitleFont(42)
@@ -447,20 +439,20 @@ hist.GetXaxis().SetLabelFont(42)
 hist.GetYaxis().SetLabelFont(42)
 hist.GetZaxis().SetLabelFont(42)
 
-hist.GetXaxis().SetTitleSize(0.05)
-hist.GetYaxis().SetTitleSize(0.05)
-hist.GetZaxis().SetTitleSize(0.05)
+hist.GetXaxis().SetTitleSize(0.04)
+hist.GetYaxis().SetTitleSize(0.04)
+hist.GetZaxis().SetTitleSize(0.04)
 hist.GetXaxis().SetLabelSize(0.04)
 hist.GetYaxis().SetLabelSize(0.04)
 hist.GetZaxis().SetLabelSize(0.04)
 
 latex1 = ROOT.TLatex()
 latex1.SetNDC()
-latex1.SetTextSize(0.045)
+latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, 'ttZ (3l) + tt#gamma (1l) + tt#gamma (2l)')
+latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l')
 latex1.DrawLatex(0.45, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
 
 plot_directory_ = os.path.join(\
