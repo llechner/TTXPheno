@@ -6,6 +6,8 @@ import ROOT
 import os
 from math import *
 
+import random
+
 # resources
 # http://people.na.infn.it/~lista/Statistics/slides/10%20-%20roostats.pdf
 # https://twiki.cern.ch/twiki/bin/view/RooStats/RooStatsTutorialsJune2013#Exercise_2_Profile_Likelihood_Ca
@@ -81,6 +83,7 @@ class ProfiledLoglikelihoodFit:
         self.modelname                   = os.path.splitext(os.path.basename(self.filename))[0]
         self.nuisance_names              = []
         self.nuisance_uncertainty_values = {}
+        self.seed                        = random.randint(0,1000000)
 
         # read card filefile
         with open( filename, 'r' ) as file:
@@ -136,7 +139,7 @@ class ProfiledLoglikelihoodFit:
         logger.info( "Nuisances: %i (%s)", self.nNuisances, ",".join( self.nuisance_names ) )
 
     def make_workspace( self, rmin=0, rmax=10.):
-        self.ws = ROOT.RooWorkspace("workspace")
+        self.ws = ROOT.RooWorkspace("workspace_%i"%self.seed)
         ROOT.SetOwnership( self.ws, False )
 
         # set all observations
@@ -228,7 +231,7 @@ class ProfiledLoglikelihoodFit:
         self.ws.Print()
       
         # Import data 
-        self.data = ROOT.RooDataSet("data", "data", self.observables)
+        self.data = ROOT.RooDataSet("data_%i"%self.seed, "data_%i"%self.seed, self.observables)
         ROOT.SetOwnership( self.data, False )
         self.data.add( self.observables )
         # import dataset into workspace
@@ -251,7 +254,8 @@ class ProfiledLoglikelihoodFit:
         self.bModel.SetSnapshot( self.poi )
         getattr(self.ws, 'import')(self.bModel)
 
-        self.ws.writeToFile(self.modelname+'.root', True);
+        self.ws.writeToFile('tmp/'+self.modelname+'.root', True);
+#        self.ws.writeToFile(self.modelname+'.root', True);
 
     def calculate_limit( self, calculator = "asymptotic"):
 
@@ -295,7 +299,7 @@ class ProfiledLoglikelihoodFit:
 
         # make Brazilian flag plot
         c1 = ROOT.TCanvas() 
-        plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","HypoTest Scan Result",r)
+        plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot_%i"%self.seed,"HypoTest Scan Result_%i"%self.seed,r)
         plot.Draw("goff") 
         c1.SetLogy()
         directory = os.path.join( plot_directory, "limits", self.modelname )
@@ -303,9 +307,6 @@ class ProfiledLoglikelihoodFit:
             os.makedirs( directory )
         c1.Print( os.path.join( directory, calculator+"_HTI_Result_Plot.png") )
 
-        plot.IsA().Destructor( plot )
-        del plot
- 
         # Plots of test statistic 
         n = r.ArraySize()
         if (n> 0 and r.GetResult(0).GetNullDistribution() ):
@@ -319,6 +320,10 @@ class ProfiledLoglikelihoodFit:
               pl.Draw("goff")
               c1.Print(os.path.join( directory, calculator + "teststat_%i.png"%i) )
 
+
+        plot.IsA().Destructor( plot )
+        del plot
+
         return {i:r.GetExpectedUpperLimit(i) for i in range(-2,3)}
 
     def cleanup( self ):
@@ -329,7 +334,7 @@ class ProfiledLoglikelihoodFit:
         '''Make likelihood test '''
         # read PDF and data
         pdf =  self.ws.pdf("model")
-        data = self.ws.data("data")
+        data = self.ws.data("data_%i"%self.seed)
 
         # Here we only test hypothesis
         self.poi.first().setVal(1)

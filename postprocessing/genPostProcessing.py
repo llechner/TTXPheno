@@ -64,7 +64,7 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=5000 # Number of files
+    maxEvents=100 # Number of files
     sample.files=sample.files[:1]
 
 xsec = sample.xsec
@@ -199,6 +199,15 @@ if args.delphes:
 # Lumi weight 1fb
 variables += ["lumiweight1fb/F"]
 
+variables += ["signalZ/I"] #ttZ Signal
+
+variables += ["signalPhoton/I"] #cat a1
+variables += ["isrPhoton/I"] #cat a2
+variables += ["lepPhoton/I"] #cat b
+variables += ["nonIsoPhoton/I"] #cat c1
+variables += ["jetPhoton/I"] #cat c2
+variables += ["fakePhoton/I"] #cat d
+
 if args.addReweights:
     variables.append('rw_nominal/F')
     # Lumi weight 1fb / w_0
@@ -281,7 +290,11 @@ def filler( event ):
     else:
         genZ = None
     
+    zSignal = 0    #ttZ with Z from gluon or top
     if genZ is not None:
+
+        if abs(search.ascend(genZ).mother(0).pdgId()) in [ 6, 21 ]:
+            zSignal = 1    #ttZ with Z from gluon or top
 
         d1, d2 = genZ.daughter(0), genZ.daughter(1)
         if d1.pdgId()>0: 
@@ -290,6 +303,8 @@ def filler( event ):
             lm, lp = d2, d1
         event.genZ_daughterPdg = lm.pdgId()
         event.genZ_cosThetaStar = cosThetaStar(genZ.mass(), genZ.pt(), genZ.eta(), genZ.phi(), lm.pt(), lm.eta(), lm.phi())
+
+    event.signalZ = zSignal
 
     # generated W's
     genWs = filter( lambda p:abs(p.pdgId())==24 and search.isLast(p), gp)
@@ -312,27 +327,134 @@ def filler( event ):
 
         event.genW_daughterPdg = lep.pdgId()
 
+
+    def printTopMothers():
+            genTopCheck = [ (search.ascend(l), l, search.ancestry( search.ascend(l) )) for l in filter( lambda p:abs(p.pdgId())==6,  gp) ]
+
+#            print genTopCheck
+            genTopCheck.sort( key = lambda p: -p[1].pt() )
+            if len(genTopCheck) > 0:
+                topPdg_ids = filter( lambda p:p!=2212, [abs(particle.pdgId()) for particle in genTopCheck[0][2]])
+                print 'TOP 1'
+                print topPdg_ids
+                previous = genTopCheck[0][0].mother(1)
+                print 'first', genTopCheck[0][0].pdgId()
+                for i, pdg in enumerate(topPdg_ids):
+                    try:
+                        print 'mother', i, previous.pdgId()
+                        print 'mothers', i, [p.pdgId() for p in search.ancestry( previous )]
+                        previous = previous.mother(0)
+                    except Exception as val:
+                        print val
+                        break
+            if len(genTopCheck) > 1:
+                topPdg_ids = filter( lambda p:p!=2212, [abs(particle.pdgId()) for particle in genTopCheck[1][2]])
+                print 'TOP 2'
+                print topPdg_ids
+                previous = genTopCheck[1][0].mother(1)
+                print 'first', genTopCheck[1][0].pdgId()
+                for i, pdg in enumerate(topPdg_ids):
+                    try:
+                        print 'mother', i, previous.pdgId()
+                        print 'mothers', i, [p.pdgId() for p in search.ancestry( previous )]
+                        previous = previous.mother(0)
+                    except Exception as val:
+                        print val
+                        break
+
     # MET
     genMet = {'pt':reader.products['genMET'][0].pt(), 'phi':reader.products['genMET'][0].phi()}
     event.genMet_pt  = genMet['pt']
     event.genMet_phi = genMet['phi'] 
 
 
-    # ancestry should stop if mother is a proton (2212) or a gluon (21)
-    genPhotonsSignalCheck = [ (search.ascend(l), l, search.ancestry(search.ascend(l), [2212,21])) for l in filter( lambda p:abs(p.pdgId())==22 and p.pt()>10 and abs(p.eta())<2.5 and search.isLast(p) and p.status()==1, gp) ]
+#    for ttgamma and tt events, categorize events:
+#        a1) ttgamma vertex, gamma from t/g, isolated, must be in ttgamma sample   = ttgamma signal (photonSignal == 1)
+#            -> gamma isolated
+#            -> gamma with only tops/gluons in ancestry
+#        a2) ttgamma, gamma from ISR, must be in ttgamma sample                    = tt ISR bg (photonISR == 1)
+#            -> gamma isolated
+#            -> gamma with no top in ancestry
+#            -> gamma with only gluons and light quarks in ancestry
+#            -> direct gamma mother != gluon!!! (this is a1)
+#        b) tt + isolated gamma from W, l, tau, must be in tt sample               = ttgamma (W,l,tau) bg (photonLep == 1)
+#            -> gamma isolated
+#            -> gamma with direct abs mother being 11, 13, 15 or 24 
+#        c1) tt + non isolated gamma from anything including mesons                = tt bg (ttBg == 1)
+#            -> gamma non isolated or meson in ancestry
+#        c2) tt + isolated gamma from bottom quark (from t decay) or jets (from W) = tt bottom bg (ttBg == 1)
+#            -> gamma isolated from b or j (from t/W decay)
+#            ATTENTION: gammas from bottoms with off-shell tops where the
+#                       top decay is done by pythia are currently labeled as ISR!
+#                       However this case is currently not simulated in any sample 
+#        d) tt + gamma fake                                                        = ttgamma fake (photonFake == 1)
+#            -> everything else does not contain a photon
+#            -> if it still passes selection: it is a photon fake
+
+    genPhotonsSignalCheck = [ (search.ascend(l), l, search.ancestry( search.ascend(l) )) for l in filter( lambda p:abs(p.pdgId())==22 and p.pt()>10 and abs(p.eta())<2.5 and search.isLast(p) and p.status()==1, gp) ]
     genPhotonsSignalCheck.sort( key = lambda p: -p[1].pt() )
-    signalPhotons = 0
-    # check all photons with pT>13 and abs(eta)<2.5 for close particles
-    for first, last, ancestry in genPhotonsSignalCheck[:10]: 
-        # remove photons with meson mother
-        if len(ancestry) != 0 and not all(abs(motherPdgId) in [1,2,3,4,5,6,11,13,15,21,22,23,24,25,2212] for motherPdgId in [p.pdgId() for p in ancestry]): continue
+
+    photonSignal = 0    #a1
+    photonISR = 0       #a2
+    photonLep = 0       #b
+    ttBg = 0            #c1
+    photonJets = 0      #c2
+    photonFake = 0      #d
+
+
+    if len( genPhotonsSignalCheck ) > 0:     
+        # check hardest photon with pT>13 and abs(eta)<2.5
+        first, last, ancestry = genPhotonsSignalCheck[0]
+        # get abs pdgIDs of ancestry
+        pdg_ids = filter( lambda p:p!=2212, [abs(particle.pdgId()) for particle in ancestry])
         # check if particles are close by
         close_particles = filter( lambda p: p!=last and p.pt()>5 and deltaR2( {'phi':last.phi(), 'eta':last.eta()}, {'phi':p.phi(), 'eta':p.eta()} )<0.2**2 , search.final_state_particles_no_neutrinos )
-        # if not, its signal
-        if len(close_particles) == 0:
-            signalPhotons += 1
+    
+#        print 'mothers pdg', pdg_ids
+#        print 'close', [p.pdgId() for p in close_particles]
+#        print 'first mother pdg', first.mother(0).pdgId()
 
-    event.nSignalPhotons = signalPhotons
+#        if len(pdg_ids) < 999:
+#            previous = first.mother(0)
+#            for i, pdg in enumerate(pdg_ids):
+#                try:
+#                    print 'mother', i, previous.pdgId()
+#                    previous = previous.mother(0)
+#                except Exception as val:
+#                    print val
+#                    break
+
+        # deside the categories
+        if max(pdg_ids)>100 or len(close_particles) != 0:
+            #photon with meson in ancestry or non isolated -> cat c1)
+            ttBg = 1
+        elif abs(first.mother(0).pdgId()) in [ 11, 13, 15, 24 ]:
+            #isolated photon with W, l or tau direct mother -> cat b)
+            photonLep = 1
+#        elif all( [ p in [ 6, 21 ] for p in pdg_ids ] ) or abs(first.mother(0).pdgId()) == 21: # not working for photons from top, as the gluons can come from light quarks
+        elif abs(first.mother(0).pdgId()) in [ 6, 21 ]:
+            #isolated photon with photon from top or gluon -> cat a1)
+            photonSignal = 1
+#            printTopMothers()
+        elif all( [ p in [ 1, 2, 3, 4, 5, 21 ] for p in pdg_ids ] ):
+            #isolated photon with photon ancestry only containing light quarks or gluons (ISR) -> cat a1)
+            photonISR = 1
+        else:
+            #isolated gammas from bottoms originating from the top decay or jets from W -> cat c2) 
+            photonJets = 1
+
+    else:
+        # if events with photonFake == 1 pass selection: fake gamma -> cat d)
+        photonFake = 1
+
+    # if all flags are 0, it is an isolated gamma from a process I havn't thought of!
+    # should not be there! - check!
+    event.signalPhoton = photonSignal
+    event.isrPhoton    = photonISR
+    event.lepPhoton    = photonLep
+    event.nonIsoPhoton = ttBg
+    event.jetPhoton    = photonJets
+    event.fakePhoton   = photonFake
 
     # gen photons: particle-level isolated gen photons
     genPhotons = [ (search.ascend(l), l) for l in filter( lambda p:abs(p.pdgId())==22 and p.pt()>15 and search.isLast(p) and p.status()==1, gp) ]
@@ -340,7 +462,7 @@ def filler( event ):
     genPhotons_   = []
 
     for first, last in genPhotons[:100]: 
-        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
+        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else 999
         genPhoton_ = {var: getattr(last, var)() for var in boson_read_varnames}
         # kinematic photon selection
         if not isGoodGenPhoton( genPhoton_): continue
@@ -358,7 +480,7 @@ def filler( event ):
     promptGenLeps    = []
     allGenLeps    = []
     for first, last in genLeptons:
-        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else -1
+        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else 999
         genLep = {var: getattr(last, var)() for var in lep_varnames}
         genLep['motherPdgId'] = mother_pdgId
         allGenLeps.append( genLep )
@@ -453,6 +575,10 @@ def filler( event ):
     #        logger.debug( "Filtered gen %f jet %r lep %r", sqrt((min([999]+[deltaR2(jet, l) for l in promptGenLeps if l['pt']>10]))), jet, [ (l['eta'], jet['pt']/l['pt']) for l in promptGenLeps] )
     #        assert False, ""
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> ee12ddfae314c92b5d6ecb2659fd38bc35571cf6
     fill_vector_collection( event, "genPhoton", gen_photon_varnames, genPhotons_ ) 
     fill_vector_collection( event, "genLep", lep_all_varnames, promptGenLeps)
     fill_vector_collection( event, "genJet", jet_write_varnames, genJets)

@@ -30,24 +30,27 @@ import argparse
 
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',        action='store',     default='INFO', nargs='?', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], help="Log level for logging")
-argParser.add_argument('--version',         action='store',     default='v7', help='Appendix to plot directory') 
-argParser.add_argument('--processFile',     action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttW_2l', 'ttgamma_1l', 'ttgamma_2l'], help='Which process? ttZ, ttW, ttgamma') 
+argParser.add_argument('--version',         action='store',     default='test', help='Appendix to plot directory') 
+argParser.add_argument('--processFile',     action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttW_2l', 'ttgamma_1l', 'ttgamma_2l', 'ttZ_3l_small', 'ttgamma_1l_small', 'ttgamma_2l_small'], help='Which process? ttZ, ttW, ttgamma') 
 argParser.add_argument('--sample',          action='store',     default='fwlite_ttZ_ll_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
 argParser.add_argument('--order',           action='store',     default=2, help='Polynomial order of weight string (e.g. 2)')
-argParser.add_argument('--selection',       action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
+argParser.add_argument('--selection',       action='store',     default='lepSel3-njet3p-nbjet1p-onZ-Zpt0-mll12', help="Specify cut.")
 argParser.add_argument('--small',           action='store_true', help='Run only on a small subset of the data?') 
 argParser.add_argument('--backgrounds',     action='store_true', help='include backgrounds?')
-argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen', 'genLep'], help='Which level of reconstruction? reco, gen, genLep')
+#argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
+argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--scaleLumi',       action='store_true', help='Scale lumi only?')
 argParser.add_argument('--reweightPtXToSM', action='store_true', help='Reweight Pt(X) to the SM for all the signals?')
-argParser.add_argument('--parameters',      action='store',     default = ['ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
+argParser.add_argument('--parameters',      action='store',     default = ['cpt', '3', 'cpQM', '3', 'ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
-argParser.add_argument('--leptonFlavor',    action='store',     default='all', nargs='?', choices=['all', 'same', 'opposite', 'e', 'mu'], help='same flavor of nonZ leptons for ttZ 4l and ttgamma 2l? No effect on other processes') 
-argParser.add_argument('--variables',       action='store',     default = [], type=str, nargs='+', help = "argument variables")
+argParser.add_argument('--leptonFlavor',    action='store',     default='all', nargs='?', choices=['all', 'same', 'opposite', 'e', 'mu', 'eee', 'mumumu', 'mumue', 'muee'], help='same flavor of nonZ leptons for ttZ 4l and ttgamma 2l? No effect on other processes') 
+argParser.add_argument('--variables',       action='store',     default = ['cpt'], type=str, nargs='+', help = "argument variables")
 argParser.add_argument('--binThreshold',    action='store',     default=100)
 argParser.add_argument('--addFisherInformation', action='store_true', help='include Fisher Information Plot in a.u.?')
 
 args = argParser.parse_args()
+
+#args.processFile = args.processFile.replace('_small','')
 
 if len(args.parameters) < 2: args.parameters = None
 
@@ -59,13 +62,6 @@ if args.level == 'reco':
     from TTXPheno.Tools.cutInterpreterReco import cutInterpreter
     from TTXPheno.Tools.objectSelection import isGoodRecoJet as isGoodJet
     from TTXPheno.Tools.objectSelection import isGoodRecoLepton as isGoodLepton
-
-elif args.level == 'genLep':
-    from TTXPheno.Tools.cutInterpreterGenLep import cutInterpreter
-    from TTXPheno.Tools.objectSelection import isGoodGenJet as isGoodJet
-    from TTXPheno.Tools.objectSelection import isGoodGenLepton as isGoodLepton
-
-#remove Gen here for getting the reas cutInterpreter (this is just to check with old plots)
 else:
     from TTXPheno.Tools.cutInterpreterGen import cutInterpreter
     from TTXPheno.Tools.objectSelection import isGoodGenJet as isGoodJet
@@ -89,7 +85,9 @@ if args.small: subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
 # Format WC input parameters
-colors = [ ROOT.kOrange, ROOT.kOrange+10, ROOT.kCyan+1, ROOT.kGreen+1, ROOT.kBlue,ROOT.kBlue-2, ROOT.kRed, ROOT.kRed+2, ROOT.kViolet+2, ROOT.kYellow+2, ROOT.kRed-7, ROOT.kPink-7, ROOT.kPink-3, ROOT.kGreen+4, ROOT.kGray+2 ]
+colors = [ ROOT.kRed+1, ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue ]
+colorsBg = [ ROOT.kAzure-3, ROOT.kGreen-2, ROOT.kCyan-9, ROOT.kRed+2, ROOT.kGray+2, ROOT.kYellow-7, ROOT.kViolet+6, ROOT.kBlue+2 ]
+colorsNonInfo = [ ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+1 ]
 
 params = []
 if args.parameters is not None:
@@ -118,26 +116,49 @@ sequence = process.getSequenceList( args.level, args.leptonFlavor )
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
+#if args.processFile == 'ttgamma_1l': ttSampleName = 'fwlite_tt_nonhad_LO_order2_15weights'
+#else:                                ttSampleName = 'fwlite_tt_dilep_LO_order2_15weights'
+
 ttXSample = getattr( loadedSamples, args.sample )
 WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-ttSample = getattr( loadedSamples, 'fwlite_tt_lep_LO_order2_15weights' )
-ttSemiLepSample = getattr( loadedSamples, 'fwlite_tt_semilep_LO_order2_15weights' )
 tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
 tWZSample = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
 tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
 ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
 ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
+ttgammaSample.name = 'fwlite_ttgamma__LO_order2_15weights_ref'
+ttSample = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights' )
 
-if args.small:
-    ttXSample.reduceFiles( to = 1 )
-    WZSample.reduceFiles( to = 1 )
-    ttSample.reduceFiles( to = 1 )
-    ttSemiLepSample.reduceFiles( to = 1 )
-    tWSample.reduceFiles( to = 1 )
-    tWZSample.reduceFiles( to = 1 )
-    tZqSample.reduceFiles( to = 1 )
-    ZgammaSample.reduceFiles( to = 1 )
-    ttgammaSample.reduceFiles( to = 1 )
+# details of the categories are written in the postprocessing script
+if args.processFile.split('_')[0] == 'ttgamma':
+
+    ttgammaIsrSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
+    ttgammaIsrSample.name = 'fwlite_ttgamma_ISR_LO_order2_15weights_ref'
+
+    ttgammaLepSample  = copy.deepcopy( ttSample ) #getattr( loadedSamples, ttSampleName ) #select tt events with isolated gamma from W, l, tau (cat b)
+    ttgammaLepSample.name = 'fwlite_ttgamma_(W,l,tau)_LO_order2_15weights'
+
+    ttgammabSample  = copy.deepcopy( ttSample ) #getattr( loadedSamples, ttSampleName ) #select tt events with isolated gamma from W, l, tau (cat b)
+    ttgammabSample.name = 'fwlite_ttgamma_(b,j)_LO_order2_15weights'
+
+    ttgammaFakeSample = copy.deepcopy( ttSample ) #getattr( loadedSamples, ttSampleName ) #select tt events with no gamma -> if in the plots: fake gamma (cat d)
+    ttgammaFakeSample.name = 'fwlite_ttgamma_fake_LO_order2_15weights'
+
+    # ttSample #select tt events with non-isolated gamma or gamma from bottom (cat c1 + c2)
+    # signal: ttgamma events with isolated gamma from gluon or top (cat a1)
+
+elif args.processFile.split('_')[0] == 'ttZ':
+    ttZISRSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
+    ttZISRSample.name = 'fwlite_ttZ_(non-info)_LO_order2_15weights_ref'
+
+if 'ttZ' in args.processFile.split('_'):
+    bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+    # be careful if you set nonInfo to empty list, especially with the FI plot
+    nonInfo = [ ttZISRSample ]
+elif 'ttgamma' in args.processFile.split('_'):
+    bg = [ ttSample, ttgammaFakeSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+    # be careful if you set nonInfo to empty list, especially with the FI plot
+    nonInfo = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample ]
 
 # Polynomial parametrization
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
@@ -150,43 +171,76 @@ def checkReferencePoint( sample ):
     '''
     return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
 
+# somehow this has to be done first, not in the next loop
+if args.small:
+    for s in [ttXSample] + bg + nonInfo:
+        s.reduceFiles( to = 10 )
+
+
 # configure samples
-for s in [ ttXSample, WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]:
+for s in [ttXSample] + bg + nonInfo:
     # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
     s.event_factor = s.nEvents / float( s.chain.GetEntries() )
     s.setSelectionString( cutInterpreter.cutString(args.selection) )
     if checkReferencePoint( s ):
-        s.read_variables = ["ref_lumiweight1fb/F"]
-        s.read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
+        s.read_variables = ["ref_lumiweight1fb/F", VectorTreeVariable.fromString('p[C/F]', nMax=2000)]
 
-signal = ttXSample
-if args.processFile == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-elif args.processFile == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-#elif args.processFile == 'ttgamma_1l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-elif args.processFile == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-#elif args.processFile == 'ttgamma_2l': bg = [ ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-elif args.processFile == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-else: bg = [ WZSample, ttSample, ttSemiLepSample, tWSample, tWZSample, tZqSample, ZgammaSample, ttgammaSample ]
+catPhoton_variables = [ "signalPhoton/I", "isrPhoton/I", "lepPhoton/I", "nonIsoPhoton/I", "fakePhoton/I"]
+catZ_variables = [ "signalZ/I" ]
 
-#bg = [ WZSample, ttSample ]
-#bg = [ ttSample ]
-#bg = [ WZSample ]
+if args.processFile.split('_')[0] == 'ttgamma':
+    # overlap removal + signal categorization for ttgamma
 
-if args.addFisherInformation:
-    params.append( [ {'legendText':'FI SM ideal [a.u.]', 'WC':fisherInfo_WC, 'color':colors[-1]} ] )
-    if args.backgrounds: params.append( [ {'legendText':'FI SM real', 'WC':fisherInfo_WC, 'color':colors[-1]} ] )
+    ttXSample.read_variables         += catPhoton_variables
+    ttgammaIsrSample.read_variables  += catPhoton_variables
+    ttgammaLepSample.read_variables   = catPhoton_variables
+    ttSample.read_variables           = catPhoton_variables
+    ttgammabSample.read_variables     = catPhoton_variables
+    ttgammaFakeSample.read_variables  = catPhoton_variables
 
-stackList = [ [signal] for param in params ]
-if args.backgrounds: stackList += [ bg ]
-stack = Stack( *stackList )
+    ttXSample.addSelectionString(         "signalPhoton==1" ) #cat a1 <- the one and only signal
+    ttgammaIsrSample.addSelectionString(  "isrPhoton==1&&abs(genPhoton_motherPdgId[0])!=21"    ) #cat a2
+    ttgammaLepSample.addSelectionString(  "lepPhoton==1&&abs(genPhoton_motherPdgId[0])!=6"    ) #cat b
+    ttSample.addSelectionString(          "nonIsoPhoton==1" ) #cat c1
+    ttgammabSample.addSelectionString(    "jetPhoton==1" ) #cat c2
+    ttgammaFakeSample.addSelectionString( "fakePhoton==1"   ) #cat d
+
+elif args.processFile.split('_')[0] == 'ttZ':
+    # signal categorization for ttZ
+
+    ttXSample.read_variables += catZ_variables
+    ttZISRSample.read_variables += catZ_variables
+
+    ttXSample.addSelectionString( "signalZ==1" ) #Z from gluon or top
+    ttZISRSample.addSelectionString( "signalZ==0" ) #Z from ISR or else
+
 
 
 def legendtext( sample ):
     splitname = sample.name.split('_')
-    if splitname[1] != 'tt': return splitname[1].replace('gamma','#gamma')
-    else: return ' '.join(splitname[1:3])
+    if splitname[1] not in ['tt','ttgamma','ttZ']: return splitname[1].replace('gamma','#gamma')
+    else: return ' '.join(splitname[1:3]).replace('gamma','#gamma').replace('tau','#tau')
 
-if args.backgrounds: params += [[ {'legendText':legendtext(s), 'WC':{}, 'color':colors[-1-i]} for i, s in enumerate(bg) ]]
+#first: draw all WC + SM as line
+stackList = [ [ttXSample] for param in params ]
+#second: draw all non-info signal red
+stackList += [ nonInfo ]
+nonInfoParams = [[ {'legendText':legendtext(s), 'WC':{}, 'color':colorsNonInfo[i]} for i, s in enumerate(nonInfo) ]]
+#third: draw all bg filled
+bgParams = []
+if args.backgrounds:
+    stackList += [ bg ]
+    bgParams = [[ {'legendText':legendtext(s), 'WC':{}, 'color':colorsBg[i]} for i, s in enumerate(bg) ]]
+
+fisherParams = []
+if args.addFisherInformation:
+    fisherParams = [[ {'legendText':'FI SM ideal [a.u.]', 'WC':fisherInfo_WC, 'color':ROOT.kGray+2} ]]
+    if args.backgrounds: fisherParams.append( [{'legendText':'FI SM real', 'WC':fisherInfo_WC, 'color':ROOT.kGray+2}] )
+    #forth: draw FI as line
+    stackList += [ [ttXSample] for param in fisherParams ]
+#    allParams += fisherParams
+
+stack = Stack( *stackList )
 
 # reweighting of pTZ
 if args.reweightPtXToSM:
@@ -195,16 +249,22 @@ if args.reweightPtXToSM:
     elif 'ttW' in args.processFile: varX = "%sW_pt"%args.level
     elif 'ttgamma' in args.processFile: varX = "%sPhoton_pt"%args.level
 
-    rwIndex = -2 if args.backgrounds else -1
+#    rwIndex = -2 if args.backgrounds else -1
 
     for i, param in enumerate( params[::-1] ):
-        if i==0 and args.backgrounds: continue # no bg scaling
-        param[0]['ptX_histo'] = ttXSample.get1DHistoFromDraw(varX, [10,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param[0]['WC']))
+#        if i==0 and args.backgrounds: continue # no bg scaling
+        param[0]['ptX_histo'] = ttXSample.get1DHistoFromDraw(varX, [50,0,500], selectionString = cutInterpreter.cutString(args.selection), weightString = w.get_weight_string(**param[0]['WC']))
         ptX_integral = param[0]['ptX_histo'].Integral()
         if ptX_integral > 0: param[0]['ptX_histo'].Scale(1./ptX_integral)
-        param[0]['ptX_reweight_histo'] = params[rwIndex][0]['ptX_histo'].Clone()
+        param[0]['ptX_reweight_histo'] = params[-1][0]['ptX_histo'].Clone()
         param[0]['ptX_reweight_histo'].Divide(param[0]['ptX_histo'])
         logger.info( 'Made reweighting histogram for ptX and param-point %r with integral %f', param[0], param[0]['ptX_reweight_histo'].Integral())
+
+
+allParams = params + nonInfoParams + bgParams + fisherParams
+
+# reweighting of pTZ
+if args.reweightPtXToSM:
 
     def get_reweight( param, sample_, isSignal=True ):
 
@@ -214,32 +274,37 @@ if args.reweightPtXToSM:
             def reweight(event, sample):
                 i_bin = histo.FindBin(getattr( event, varX ) )
                 return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
             return reweight
 
         else:
             def reweightRef(event, sample):
                 return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
             def reweightNoRef(event, sample):
                 return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#                return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
 
             return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 
-    weight = [ [ get_reweight( params[i][j], sample_, i != len(stack)-1 if args.backgrounds else True ) for j, sample_ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
+    weight = [ [ get_reweight( allParams[i][j], sample_, i < len(params) ) for j, sample_ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
 
 else:
     def get_reweight( param , sample_ ):
 
         def reweightRef(event, sample):
             return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#            return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
         def reweightNoRef(event, sample):
             return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+#            return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
 
         return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 
-    weight = [ [ get_reweight( params[i][j], sample_ ) for j, sample_ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
+    weight = [ [ get_reweight( allParams[i][j], sample_ ) for j, sample_ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
 
 ttXWeightString = 'ref_lumiweight1fb*%s*%s*%s'%(str(args.luminosity), str(ttXSample.event_factor), w.get_weight_string( **fisherInfo_WC ))
 
@@ -249,38 +314,60 @@ def drawObjects( hasData = False ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
+    tex.SetTextFont(42)
     lines = [
-      (0.15, 0.95, 'data' if hasData else "Simulation (%s)"%args.level),
-      (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV) Scale %3.2f'% ( float(args.luminosity), dataMCScale ) ) if hasData else (0.45, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)%s' % (float(args.luminosity), titleAddon) )
+      (0.15, 0.95, 'data' if hasData else args.processFile.replace('_', ' ')),
+      (0.45, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
 def drawPlots(plots):
 
-  if args.backgrounds:
-    ind = -3 if args.addFisherInformation else -1
+  # add nonInfo Signal to signal for stacked plot
+  if len(nonInfoParams) != 0:
+    indexNonInfo = len(params)
     for plot in plots:
-      for s, signal_histo in enumerate(plot.histos[:ind]):
-        for bg_histo in plot.histos[-1]:
-          signal_histo[0].Add(bg_histo)
+      for nonInfo_histo in plot.histos[indexNonInfo]:
+        for s, signal_histos in enumerate(plot.histos[:indexNonInfo]):
+          signal_histos[-1].Add(nonInfo_histo)
+
+  # add bg to signal and nonInfo Signal for stacked plot
+  if args.backgrounds and len(bgParams) != 0:
+    indexBg = len(params) + len(nonInfoParams)
+    for plot in plots:
+      for bg_histo in plot.histos[indexBg]:
+        for s, signal_histos in enumerate(plot.histos[:indexBg]):
+            signal_histos[-1].Add(bg_histo)
 
   for plot in plots:
-    histoIndexSM = len(plot.histos)-1
-    if args.backgrounds and not args.addFisherInformation: histoIndexSM -= 1
-    elif not args.backgrounds and args.addFisherInformation: histoIndexSM -= 1
-    elif args.backgrounds and args.addFisherInformation: histoIndexSM -= 3
+
+    histoIndexSM      = len(params) - 1
+    histoIndexNonInfo = len(params) if len(nonInfoParams) != 0 else None
+    histoIndexBg      = len(params) + len(nonInfoParams) if len(bgParams) != 0 else None
 
     for i_h, h in enumerate(plot.histos):
       for j_hi, hi in enumerate(h):
-        if i_h == len(plot.histos)-1 and args.backgrounds:
-            hi.style = styles.fillStyle(params[i_h][j_hi]['color'])
+
+        if i_h == histoIndexBg:
+            # fill style for bg
+            hi.style = styles.fillStyle(allParams[i_h][j_hi]['color'])
+        elif i_h == histoIndexNonInfo:
+            # fill style for nonInfo Signal
+            hi.style = styles.fillStyle(allParams[i_h][j_hi]['color'])
+            hi.SetFillStyle(3544 - 40*(j_hi%2))
+            ROOT.gStyle.SetHatchesLineWidth(2)
         else:
-            hi.style = styles.lineStyle(params[i_h][j_hi]['color'])
-            if i_h == histoIndexSM or (args.addFisherInformation and i_h == histoIndexSM+1): hi.SetLineWidth(2)
-            if args.addFisherInformation and args.backgrounds and i_h == histoIndexSM+2:
+            # fill style for signal and WC
+            hi.style = styles.lineStyle(allParams[i_h][j_hi]['color'])
+            hi.SetLineWidth(2)
+            if i_h == histoIndexSM:
+                hi.SetLineWidth(3)
+            elif (args.addFisherInformation and i_h == histoIndexBg+1):
+                hi.SetLineWidth(2)
+            elif args.addFisherInformation and args.backgrounds and i_h == histoIndexBg+2:
                 hi.SetLineStyle(2) #Fisher Info Bg
                 hi.SetLineWidth(2)
-
+        
   for log in [False, True]:
     # Directory structure
     WC_directory = '_'.join(args.parameters).rstrip('0').replace('-','m').replace('.','p') if args.parameters is not None else 'SM'
@@ -303,9 +390,9 @@ def drawPlots(plots):
     l_plot = copy.deepcopy(plots[0])
     for i_h, h in enumerate(l_plot.histos):
       for j_hi, hi in enumerate(h):
-          hi.legendText = params[i_h][j_hi]['legendText']
-          if i_h == len(plot.histos)-1 and args.backgrounds: hi.style = styles.fillStyle(params[i_h][j_hi]['color'])
-          else: hi.style = styles.lineStyle(params[i_h][j_hi]['color'])
+          hi.legendText = allParams[i_h][j_hi]['legendText']
+          if i_h == histoIndexNonInfo or i_h == histoIndexBg: hi.style = styles.fillStyle(allParams[i_h][j_hi]['color'])
+          else: hi.style = styles.lineStyle(allParams[i_h][j_hi]['color'])
           hi.Scale(0.)
           hi.GetXaxis().SetTickLength(0.)
           hi.GetYaxis().SetTickLength(0.)
@@ -326,28 +413,28 @@ def drawPlots(plots):
 
     # plot the plots
     for p, plot in enumerate(plots):
-      histoIndexSM = len(plot.histos)-1
-      if args.backgrounds and not args.addFisherInformation: histoIndexSM -= 1
+      histoIndexSM      = len(params) - 1
+      histoIndexBg      = len(params) + len(nonInfoParams) if len(bgParams) != 0 else None
+      histoIndexNonInfo = len(params) if len(nonInfoParams) != 0 else None
+      histoIndexFI      = len(plot.histos) - 2 if args.backgrounds else len(plot.histos) - 1
+
       if args.addFisherInformation:
-        if args.backgrounds: histoIndexSM -= 3
-        else: histoIndexSM -= 1
-        fi_Integral = plot.histos[histoIndexSM+1][0].Integral()
+        fi_Integral = plot.histos[histoIndexFI][0].Integral()
         fisherInfoScale = plot.histos[histoIndexSM][0].Integral() / fi_Integral if fi_Integral != 0 else 0 #scaling factor from SM histo
-        fisherInfoScale *= 100 if log else 1.5 #offset
+        fisherInfoScale *= 100 if log else 1.8 #offset
 
       for i_h, h in enumerate(plot.histos):
         for j_hi, hi in enumerate(h):
-          if args.addFisherInformation and (i_h == histoIndexSM+1 or (i_h == histoIndexSM+2 and args.backgrounds)):
+          if args.addFisherInformation and (i_h == histoIndexFI or (i_h == histoIndexFI+1 and args.backgrounds)):
             if fisherInfoVariables[p] is not None: hi.Scale(fisherInfoScale) #signal
             else: hi.Scale(0) #no fisherInfo histo, only place holder
-          hi.legendText = params[i_h][j_hi]['legendText']
+          hi.legendText = allParams[i_h][j_hi]['legendText']
+          hi.GetXaxis().SetTickLength(0.04)
+          hi.GetYaxis().SetTickLength(0.04)
+#          hi.GetXaxis().SetLabelOffset(.4)
+#          hi.GetYaxis().SetLabelOffset(.4)
 
       if not max( max(li.GetMaximum() for li in l) for l in plot.histos): continue # Empty plot
-
-      scaleIndex = len(params)-1
-      if args.backgrounds and not args.addFisherInformation: scaleIndex -= 1
-      elif not args.backgrounds and args.addFisherInformation: scaleIndex -= 1
-      elif args.backgrounds and args.addFisherInformation: scaleIndex -= 3
 
       plotting.draw(plot,
 	    plot_directory = plot_directory_,
@@ -355,7 +442,7 @@ def drawPlots(plots):
 	    logX = False, logY = log, sorting = True,
 	    yRange = (0.03, "auto") if log else (0., "auto"),
 #        scaling = {i:(len(params)-1) for i in range(len(params)-1)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
-        scaling = {i:(scaleIndex) for i in range(scaleIndex)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
+        scaling = {i:(histoIndexSM) for i in range(histoIndexSM)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
 	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,0.9,0.9), 3),
 	    drawObjects = drawObjects(),
         copyIndexPHP = True,
@@ -375,7 +462,7 @@ if args.addFisherInformation:
     for i, plot in enumerate(plots):
         if fisherInfoVariables[i] is None: continue
 
-        fiHistoListIndex = len(plot.histos)-3 if args.backgrounds else len(plot.histos)-1
+        fiHistoListIndex = len(plot.histos)-2 if args.backgrounds else len(plot.histos)-1
         bins = plot.binning
         var = fisherInfoVariables[i] #replace with better solution than FI_plots!!
 
@@ -384,11 +471,13 @@ if args.addFisherInformation:
 
         if args.backgrounds:
             #get list of contents of bg histo
-            bgContentList = histo_to_list( plot.histos_added[-1][0] )
+            bgContentList = histo_to_list( plot.histos_added[len(params)+1][0] )
+            #get list of contents of bg histo
+            nonInfoContentList = histo_to_list( plot.histos_added[len(params)][0] )
             #get list of contents of signal histo
-            sigContentList = histo_to_list( plot.histos[fiHistoListIndex-1][0] )
+            sigContentList = histo_to_list( plot.histos[len(params)-1][0] )
             #calculate purity for each bin
-            purityBinList = [ sig / ( sig + bgContentList[j] ) if (sig + bgContentList[j])!=0 else 0 for j, sig in enumerate( sigContentList ) ]
+            purityBinList = [ ( sig + nonInfoContentList[j] ) / ( sig + nonInfoContentList[j] + bgContentList[j] ) if (sig + nonInfoContentList[j] + bgContentList[j])!=0 else 0 for j, sig in enumerate( sigContentList ) ]
             # multiply ideal fisher info histo purity
             for l in range(bins[0]):
                 plot.histos[fiHistoListIndex+1][0].SetBinContent(l+1, plot.histos[fiHistoListIndex][0].GetBinContent(l+1) * purityBinList[l])

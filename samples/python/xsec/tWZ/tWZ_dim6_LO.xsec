@@ -1,0 +1,32 @@
+2018-07-24 10:36:54,728 - TopEFT.Generation.Configuration - INFO - Loading model dim6top_LO from file /afs/hephy.at/user/l/llechner/public/CMSSW_9_4_6_patch1/python/TopEFT/Models/parameters.py
+2018-07-24 10:36:55,014 - TopEFT.Generation.Configuration - INFO - Using temporary directory /afs/hephy.at/data/llechner01/Top_tmp/d152dad59d734937b389a0dafcc256a3
+2018-07-24 10:36:55,015 - TopEFT.Generation.Configuration - WARNING - Model dim6top_LO: Using MG 2.6.0!
+2018-07-24 10:36:55,015 - TopEFT.Generation.Configuration - INFO - Will use MG5 from /afs/hephy.at/data/rschoefbeck02/MG/MG5_aMC_v2.6.0.tar.gz
+2018-07-24 10:36:55,015 - TopEFT.Generation.Configuration - INFO - Will use gridpack from /cvmfs/cms.cern.ch/phys_generator/gridpacks/slc6_amd64_gcc481/13TeV/madgraph/V5_2.3.3/ttZ01j_5f_MLM/v1/ttZ01j_5f_tarball.tar.xz
+2018-07-24 10:36:55,015 - TopEFT - INFO - Processing parameter point 1/1
+2018-07-24 10:36:55,015 - TopEFT - INFO - Model:        dim6top_LO
+2018-07-24 10:36:55,016 - TopEFT - INFO - Process:      tWZ_Pheno
+2018-07-24 10:36:55,016 - TopEFT - INFO - Couplings:    
+2018-07-24 10:36:55,020 - TopEFT.Generation.Configuration - INFO - #################### Model Setup ######################
+2018-07-24 10:36:55,020 - TopEFT.Generation.Configuration - INFO - ############# pre-initialize Configuration ############
+2018-07-24 10:36:55,039 - TopEFT.Generation.Configuration - INFO - Extracting madgraph
+2018-07-24 10:37:29,543 - TopEFT.Generation.Configuration - INFO - Extracting central gridpack
+2018-07-24 10:38:41,088 - TopEFT.Generation.Configuration - INFO - Copying UFO from private Model database for model dim6top_LO
+2018-07-24 10:38:41,114 - TopEFT.Generation.Configuration - INFO - ########## Done: pre-initialize Configuration #########
+2018-07-24 10:38:41,117 - TopEFT.Generation.Configuration - INFO - Written restriction file /afs/hephy.at/data/llechner01/Top_tmp/d152dad59d734937b389a0dafcc256a3/MG5_aMC_v2_6_0/models/dim6top_LO/restrict_no_b_mass.dat
+2018-07-24 10:38:41,117 - TopEFT.Generation.Configuration - INFO - ################# Done: Model Setup ###################
+2018-07-24 10:38:41,118 - TopEFT.Generation.Process - INFO - Written process card to /afs/hephy.at/data/llechner01/Top_tmp/d152dad59d734937b389a0dafcc256a3/tWZ_Pheno.dat
+2018-07-24 10:38:41,118 - TopEFT.Generation.Process - INFO - Running MG executable: python /afs/hephy.at/data/llechner01/Top_tmp/d152dad59d734937b389a0dafcc256a3/MG5_aMC_v2_6_0/bin/mg5_aMC -f /afs/hephy.at/data/llechner01/Top_tmp/d152dad59d734937b389a0dafcc256a3/tWZ_Pheno.dat
+2018-07-24 10:40:03,478 - TopEFT.Generation.Process - INFO - Done with MG executable
+2018-07-24 10:40:03,478 - TopEFT.Generation.Process - INFO - Copying files from GP directory to temporary process directory: run_card.dat
+2018-07-24 10:40:03,480 - TopEFT.Generation.Process - INFO - Copying files from GP directory to temporary process directory: grid_card.dat
+2018-07-24 10:40:03,481 - TopEFT.Generation.Process - INFO - Copying files from GP directory to temporary process directory: me5_configuration.txt
+2018-07-24 10:40:03,484 - TopEFT.Generation.Process - INFO - Calculating x-sec
+2018-07-24 10:40:03,485 - TopEFT.Generation.Process - INFO - Calculate x-sec: Calling bin/generate_events
+2018-07-24 11:21:15,417 - TopEFT.Generation.Process - INFO - x-sec: 0.01191 +- 1.629e-05 pb
+2018-07-24 11:21:15,421 - TopEFT.Tools.resultsDB - INFO - Overwriting old result.
+2018-07-24 11:21:15,428 - TopEFT.Tools.resultsDB - INFO - Added value 0.01191+-1.629e-05 to database
+2018-07-24 11:21:15,431 - TopEFT.Generation.Process - INFO - Done!
+2018-07-24 11:21:15,431 - TopEFT - INFO - xsec: 0.01191+-1.629e-05 
+2018-07-24 11:21:15,431 - TopEFT.Generation.Configuration - INFO - Cleaning up, deleting /afs/hephy.at/data/llechner01/Top_tmp/d152dad59d734937b389a0dafcc256a3
+Trying to get xsec

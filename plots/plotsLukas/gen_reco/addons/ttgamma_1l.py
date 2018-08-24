@@ -26,6 +26,7 @@ def getVariableList( level ):
     read_variables_gen = [
 #        "ref_lumiweight1fb/F",
         "lumiweight1fb/F",
+#        "nSignalPhotons/I",
         "genMet_pt/F", "genMet_phi/F",
     
         "ngenJet/I", #"genJet[pt/F,eta/F,phi/F]",
@@ -38,6 +39,8 @@ def getVariableList( level ):
         "genBj1_pt/F", "genBj1_phi/F", "genBj1_eta/F",
 
         "genBjLeadlep_index/I", "genBjLeadhad_index/I",
+
+        "genZ_mass/F",
      ]
      
     # List of variables where genLep is replaced by reco for reco
@@ -50,7 +53,7 @@ def getVariableList( level ):
         read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F]")
         read_variables_gen.append("recoPhoton[pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I,minLeptonPt/F,minLeptonDR/F,minJetDR/F]")
         read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F]")
-        read_variables_gen.append("genPhoton[motherPdgId/I]")
+        read_variables_gen.append("genPhoton[motherPdgId/I,relIso04/F]")
 
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
@@ -61,6 +64,7 @@ def getVariableList( level ):
     read_variables = list( set( read_variables ) ) # remove double entries
 #    read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
+    print 'processFile', read_variables
     return read_variables
 
 
@@ -240,6 +244,20 @@ def getPlotList( scaleLumi, level ):
 
     plots = []
     fisherInfoVariables = []
+
+    plots.append(Plot( name = 'Z_mass',
+      texX = 'm(ll)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_mass'%preTag ) if event.passing_checks else float('nan'),
+      binning=[50,0,200],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = "l0_PdgId",
+      texX = 'motherPdgId(l_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l0['pdgId'] if event.passing_checks else float('nan'),
+      binning=[52,-26,26],
+    ))
+    fisherInfoVariables.append(None)
     
     plots.append(Plot( name = "gamma_pt",
       texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label,
@@ -609,42 +627,56 @@ def getPlotList( scaleLumi, level ):
         plots.append(Plot( name = "gamma_relIso04_q",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) < 5 and event.passing_checks else float('nan'),
-          binning=[50,0,0.5],
+          binning=[20,0,0.5],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma_relIso04_l",
+          texX = 'relIso04(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) in [11,13] and event.passing_checks else float('nan'),
+          binning=[20,0,0.5],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_g",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) == 21 and event.passing_checks else float('nan'),
-          binning=[50,0,0.5],
+          binning=[20,0,0.5],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_all",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if event.passing_checks else float('nan'),
-          binning=[50,0,0.5],
+          binning=[20,0,0.5],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "gamma_relIso04_l_zoom",
+          texX = 'relIso04(#gamma_{0})', texY = y_label,
+          attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) in [11,13] and event.passing_checks else float('nan'),
+          binning=[20,0,0.1],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_q_zoom",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) < 5 and event.passing_checks else float('nan'),
-          binning=[50,0,0.1],
+          binning=[20,0,0.1],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_g_zoom",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if abs(event.gamma0['motherPdgId']) == 21 and event.passing_checks else float('nan'),
-          binning=[50,0,0.1],
+          binning=[20,0,0.1],
         ))
         fisherInfoVariables.append(None)
 
         plots.append(Plot( name = "gamma_relIso04_all_zoom",
           texX = 'relIso04(#gamma_{0})', texY = y_label,
           attribute = lambda event, sample: event.gamma0['relIso04'] if event.passing_checks else float('nan'),
-          binning=[50,0,0.1],
+          binning=[20,0,0.1],
         ))
         fisherInfoVariables.append(None)
 
