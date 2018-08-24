@@ -198,7 +198,6 @@ if args.delphes:
  
 # Lumi weight 1fb
 variables += ["lumiweight1fb/F"]
-variables += ["nSignalPhotons/I"]
 
 if args.addReweights:
     variables.append('rw_nominal/F')
@@ -453,12 +452,6 @@ def filler( event ):
     #    for jet in filter( lambda j: not (min([999]+[deltaR2(j, l) for l in promptGenLeps if l['pt']>10]) > 0.3**2 ), genJets ):
     #        logger.debug( "Filtered gen %f jet %r lep %r", sqrt((min([999]+[deltaR2(jet, l) for l in promptGenLeps if l['pt']>10]))), jet, [ (l['eta'], jet['pt']/l['pt']) for l in promptGenLeps] )
     #        assert False, ""
-
-#    print 'sig', signalPhotons>0
-#    print 'gamma', len(genPhotons_)==0
-#    print 'lep', len(promptGenLeps)==0
-    print signalPhotons>0 and len(genPhotons_)>0 and len(promptGenLeps)>0
-#    print
 
     fill_vector_collection( event, "genPhoton", gen_photon_varnames, genPhotons_ ) 
     fill_vector_collection( event, "genLep", lep_all_varnames, promptGenLeps)
