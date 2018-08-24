@@ -13,7 +13,7 @@ ctZI=$6
 #ctGI=$8
 
 # declare samples to analyze
-declare -a samples2=('fwlite_ttgamma_LO_order2_15weights_ref')
+declare -a samples2=('fwlite_ttgammaLarge_LO_order2_15weights_ref')
 declare -a samples3=('')
 
 # declare selection strings to analyze
@@ -24,7 +24,7 @@ declare -a samples3=('')
 #declare -a selections=('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.4-met40' 'lepSel1-gammapt100-njet3p-nbjet1p-relIso0to0.4-met40' 'lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.12-met40' 'lepSel1-gammapt100-njet3p-nbjet1p-relIso0to0.12-met40')
 #declare -a selections=('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.4-met40')
 #declare -a selections=('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.12-met40' 'lepSel1-gammapt100-njet3p-nbjet1p-relIso0to0.12-met40' 'lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.4-met40' 'lepSel1-gammapt100-njet3p-nbjet1p-relIso0to0.4-met40')
-declare -a selections=('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.12-met40')
+declare -a selections=('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.12-met40-leptonIso1')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -37,19 +37,19 @@ declare -a samplesizes=('')
 declare -a reweightings=('')
 
 # declare scale
-#declare -a scales=('' '--scaleLumi')
-declare -a scales=('--scaleLumi')
+declare -a scales=('' '--scaleLumi')
+#declare -a scales=('--scaleLumi')
 #declare -a scales=('')
 
 #declare -a levels=('gen')
-declare -a levels=('reco')
-#declare -a levels=('gen' 'reco')
+#declare -a levels=('reco')
+declare -a levels=('gen' 'reco')
 
 #declare -a variables=("cpt" "cpQM")
 declare -a variables=("cpt")
 
-#declare -a flavors=('all' 'mu' 'e')
-declare -a flavors=('all')
+declare -a flavors=('all' 'mu' 'e')
+#declare -a flavors=('all')
 
 #declare -a binThresholds=("400" "100" "25" "0")
 #declare -a binThresholds=("100" "0")
@@ -63,7 +63,7 @@ declare -a fisherInfo=("")
 #declare -a backgrounds=("--backgrounds" "")
 declare -a backgrounds=("--backgrounds")
 
-version='v2'
+version='TTXPheno_240818'
 luminosity='150'
 process='ttgamma_1l'
 

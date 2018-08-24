@@ -189,6 +189,10 @@ def makeObservables( event, sample, level):
     event.bbdPhi = deltaPhi( event.bj0['phi'], event.bj1['phi'] )
     event.bbdR   = deltaR( event.bj0, event.bj1 )
 
+    # lep gamma kinematic
+    event.l0gammadPhi = deltaPhi( event.l0['phi'], event.gamma0['phi'] )
+    event.l0gammadR   = deltaR( event.l0, event.gamma0 )
+
     # Make leptonic W, Nan if any component is Nan
     event.Wlep_vec2D = event.MET['vec2D'] + event.l0['vec2D']
     # Lp, Nan if any component is Nan
@@ -244,6 +248,20 @@ def getPlotList( scaleLumi, level ):
 
     plots = []
     fisherInfoVariables = []
+
+    plots.append(Plot( name = 'l0gammaDPhi',
+      texX = '#Delta#Phi(l_{0},#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l0gammadPhi if event.passing_checks else float('nan'),
+      binning=[20,0,pi],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = 'l0gammaDR',
+      texX = '#Delta R(l_{0},#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l0gammadR if event.passing_checks else float('nan'),
+      binning=[20,0.3,3],
+    ))
+    fisherInfoVariables.append(None)
 
     plots.append(Plot( name = 'Z_mass',
       texX = 'm(ll)', texY = y_label,
@@ -470,6 +488,13 @@ def getPlotList( scaleLumi, level ):
           texX = 'isolationVar(l_{0})', texY = y_label,
           attribute = lambda event, sample: event.l0['isolationVar'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
           binning=[20,0,0.15],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_isolationVar",
+          texX = 'isolationVar(l_{0})', texY = y_label,
+          attribute = lambda event, sample: event.l0['isolationVar'] if event.passing_checks else float('nan'),
+          binning=[20,0,0.5],
         ))
         fisherInfoVariables.append(None)
 

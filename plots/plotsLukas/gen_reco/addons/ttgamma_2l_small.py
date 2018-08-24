@@ -267,8 +267,6 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
 
 
-    return plots, fisherInfoVariables
-
     plots.append(Plot( name = "mll",
       texX = 'm(ll) [GeV]', texY = y_label,
       attribute = lambda event, sample: event.mll if event.passing_checks else float('nan'),
@@ -283,6 +281,54 @@ def getPlotList( scaleLumi, level ):
       binning=[50,0,200],
     ))
     fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = 'njets',
+      texX = 'Number of Jets', texY = y_label,
+      attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
+      binning=[10,0,10],
+    ))
+    fisherInfoVariables.append('n%sJet'%preTag)
+
+
+    plots.append(Plot( name = 'nleps',
+      texX = 'Number of Leptons', texY = y_label,
+      attribute = lambda event, sample: getattr( event, 'n%sLep'%preTag ) if event.passing_checks else float('nan'),
+      binning=[8,0,8],
+    ))
+    fisherInfoVariables.append('n%sLep'%preTag)
+
+
+    plots.append(Plot( name = 'nbjets',
+      texX = 'Number of bJets', texY = y_label,
+      attribute = lambda event, sample: len(event.bjets) if event.passing_checks else float('nan'),
+      binning=[4,0,4],
+    ))
+    fisherInfoVariables.append(None)
+
+
+    plots.append(Plot( name = 'ngammas',
+      texX = 'Number of photons', texY = y_label,
+      attribute = lambda event, sample: len(event.gammas) if event.passing_checks else float('nan'),
+      binning=[10,0,10],
+    ))
+    fisherInfoVariables.append(None)
+
+
+    plots.append(Plot( name = "l0_isolationVar",
+      texX = 'isolationVar(l_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l0['isolationVar'] if event.passing_checks else float('nan'),
+      binning=[20,0,0.15],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = "l1_isolationVar",
+      texX = 'isolationVar(l_{1})', texY = y_label,
+      attribute = lambda event, sample: event.l1['isolationVar'] if event.passing_checks else float('nan'),
+      binning=[20,0,0.15],
+    ))
+    fisherInfoVariables.append(None)
+
+    return plots, fisherInfoVariables
 
 
     plots.append(Plot( name = "l0_PdgId",
@@ -1059,37 +1105,5 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     
-    plots.append(Plot( name = 'njets',
-      texX = 'Number of Jets', texY = y_label,
-      attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
-      binning=[10,0,10],
-    ))
-    fisherInfoVariables.append('n%sJet'%preTag)
-
-
-    plots.append(Plot( name = 'nleps',
-      texX = 'Number of Leptons', texY = y_label,
-      attribute = lambda event, sample: getattr( event, 'n%sLep'%preTag ) if event.passing_checks else float('nan'),
-      binning=[8,0,8],
-    ))
-    fisherInfoVariables.append('n%sLep'%preTag)
-
-
-    plots.append(Plot( name = 'nbjets',
-      texX = 'Number of bJets', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
-
-
-    plots.append(Plot( name = 'ngammas',
-      texX = 'Number of photons', texY = y_label,
-      attribute = lambda event, sample: len(event.gammas) if event.passing_checks else float('nan'),
-      binning=[10,0,10],
-    ))
-    fisherInfoVariables.append(None)
-
-
     return plots, fisherInfoVariables
 

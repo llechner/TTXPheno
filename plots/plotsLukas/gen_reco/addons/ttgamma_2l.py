@@ -200,6 +200,13 @@ def makeObservables( event, sample, level ):
     event.bbdPhi = deltaPhi( event.bj0['phi'], event.bj1['phi'] )
     event.bbdR   = deltaR( event.bj0, event.bj1 )
 
+    # lep gamma kinematic
+    event.l0gammadPhi = deltaPhi( event.l0['phi'], event.gamma0['phi'] )
+    event.l0gammadR   = deltaR( event.l0, event.gamma0 )
+
+    event.l1gammadPhi = deltaPhi( event.l1['phi'], event.gamma0['phi'] )
+    event.l1gammadR   = deltaR( event.l1, event.gamma0 )
+
     # double l kinematic
     event.lldPhi = deltaPhi( event.l0['phi'], event.l1['phi'] )
     event.lldR   = deltaR( event.l0, event.l1 )
@@ -220,7 +227,7 @@ def makeObservables( event, sample, level ):
     event.mllgamma = (event.l0['vec4D'] + event.l1['vec4D'] + event.gamma_vec4D).M()
 
     #cut the Z window in same flavor lepton region
-    event.offZ = (abs(event.mll - 91.2) > 15 and abs(event.mllgamma - 91.2) > 15) or event.mll is float('nan') or event.mllgamma is float('nan') or abs(event.l0['pdgId']) != abs(event.l1['pdgId'])
+    event.offZ = (abs(event.mll - 91.2) > 10 and abs(event.mllgamma - 91.2) > 10) or event.mll is float('nan') or event.mllgamma is float('nan') or abs(event.l0['pdgId']) != abs(event.l1['pdgId'])
     event.mllCut = event.mll > 40
 
     # choose your final selection
@@ -251,6 +258,34 @@ def getPlotList( scaleLumi, level ):
     plots = []
     fisherInfoVariables = []
     
+    plots.append(Plot( name = 'l0gammaDPhi',
+      texX = '#Delta#Phi(l_{0},#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l0gammadPhi if event.passing_checks else float('nan'),
+      binning=[20,0,pi],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = 'l0gammaDR',
+      texX = '#Delta R(l_{0},#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l0gammadR if event.passing_checks else float('nan'),
+      binning=[20,0.3,3],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = 'l1gammaDPhi',
+      texX = '#Delta#Phi(l_{1},#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l1gammadPhi if event.passing_checks else float('nan'),
+      binning=[20,0,pi],
+    ))
+    fisherInfoVariables.append(None)
+
+    plots.append(Plot( name = 'l1gammaDR',
+      texX = '#Delta R(l_{1},#gamma_{0})', texY = y_label,
+      attribute = lambda event, sample: event.l1gammadR if event.passing_checks else float('nan'),
+      binning=[20,0.3,3],
+    ))
+    fisherInfoVariables.append(None)
+
     plots.append(Plot( name = "mll",
       texX = 'm(ll) [GeV]', texY = y_label,
       attribute = lambda event, sample: event.mll if event.passing_checks else float('nan'),
@@ -265,7 +300,6 @@ def getPlotList( scaleLumi, level ):
       binning=[50,0,200],
     ))
     fisherInfoVariables.append(None)
-
 
     plots.append(Plot( name = "l0_PdgId",
       texX = 'motherPdgId(l_{0})', texY = y_label,
@@ -472,6 +506,20 @@ def getPlotList( scaleLumi, level ):
           texX = 'isolationVar(l_{0})', texY = y_label,
           attribute = lambda event, sample: event.l0['isolationVar'] if abs( event.l0['pdgId'] ) == 11 and event.passing_checks else float('nan'),
           binning=[20,0,0.15],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l0_isolationVar",
+          texX = 'isolationVar(l_{0})', texY = y_label,
+          attribute = lambda event, sample: event.l0['isolationVar'] if event.passing_checks else float('nan'),
+          binning=[20,0,0.5],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "l1_isolationVar",
+          texX = 'isolationVar(l_{1})', texY = y_label,
+          attribute = lambda event, sample: event.l1['isolationVar'] if event.passing_checks else float('nan'),
+          binning=[20,0,0.5],
         ))
         fisherInfoVariables.append(None)
 

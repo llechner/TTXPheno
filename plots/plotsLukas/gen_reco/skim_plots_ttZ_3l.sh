@@ -19,9 +19,10 @@ declare -a samples3=('')
 # declare selection strings to analyze
 #declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0to100' 'lepSel3-onZ-njet3p-nbjet1p-Zpt100to200' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200to300' 'lepSel3-onZ-njet3p-nbjet1p-Zpt300to400' 'lepSel3-onZ-njet3p-nbjet1p-Zpt400')
 #declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200')
-declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200')
+#declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0-leptonIso3' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200-leptonIso3')
 #declare -a selections=('lepSel3-onZ-njet3p-Zpt0' 'lepSel3-onZ-nbjet1p-Zpt0' 'lepSel3-onZ-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt0' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200')
 #declare -a selections=('lepSel3-onZ-njet3p-Zpt0' 'lepSel3-onZ-nbjet1p-Zpt0' 'lepSel3-onZ-Zpt0')
+declare -a selections=('lepSel3-onZ-njet3p-nbjet1p-Zpt0-leptonIso3' 'lepSel3-onZ-njet3p-nbjet1p-Zpt200-leptonIso3')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -34,22 +35,22 @@ declare -a samplesizes=('')
 declare -a reweightings=('')
 
 # declare scale
-#declare -a scales=('' '--scaleLumi')
-declare -a scales=('--scaleLumi')
+declare -a scales=('' '--scaleLumi')
+#declare -a scales=('--scaleLumi')
 #declare -a scales=('')
 
 #declare -a levels=('gen')
-declare -a levels=('reco')
-#declare -a levels=('gen' 'reco')
+#declare -a levels=('reco')
+declare -a levels=('gen' 'reco')
 
 #declare -a variables=("ctZ")
-declare -a variables=("cpt" "cpQM")
-#declare -a variables=("cpt")
+#declare -a variables=("cpt" "cpQM")
+declare -a variables=("cpt")
 
 #declare -a flavors=('all' 'mu' 'e')
 #declare -a flavors=('mu' 'e')
-declare -a flavors=('all')
-#declare -a flavors=('all' 'eee' 'mumumu' 'mumue' 'muee')
+#declare -a flavors=('all')
+declare -a flavors=('all' 'eee' 'mumumu' 'mumue' 'muee')
 
 #declare -a binThresholds=("400" "100" "25" "0")
 #declare -a binThresholds=("100" "0")
@@ -57,15 +58,16 @@ declare -a binThresholds=("100")
 #declare -a binThresholds=("10")
 
 #declare -a fisherInfo=("--addFisherInformation" "")
-declare -a fisherInfo=("--addFisherInformation")
-#declare -a fisherInfo=("")
+#declare -a fisherInfo=("--addFisherInformation")
+declare -a fisherInfo=("")
 
 #declare -a backgrounds=("--backgrounds" "")
 declare -a backgrounds=("--backgrounds")
 
-version='v1'
+#version='v1'
+version='TTXPheno_240818'
+#luminosity='150'
 luminosity='150'
-#luminosity='36'
 process='ttZ_3l'
 
 # define program to run by python

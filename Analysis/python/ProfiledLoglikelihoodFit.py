@@ -326,9 +326,12 @@ class ProfiledLoglikelihoodFit:
 
         return {i:r.GetExpectedUpperLimit(i) for i in range(-2,3)}
 
-    def cleanup( self ):
+    def cleanup( self, removeFiles = False ):
         for obj in [ self.data, self.ws]:
             obj.IsA().Destructor( obj )
+        if removeFiles:
+            os.remove('tmp/'+self.modelname+'.root')
+            os.remove('tmp/'+self.modelname+'.txt')
 
     def likelihoodTest( self ):
         '''Make likelihood test '''
