@@ -201,21 +201,21 @@ def makeSpinCorrelationObservables( event, sample, level ):
 
     # We now match leptons and tops by charge
     # Once I have the gen-top pdgId, this code will be replaced by a gen-level based
-    # matching which ensures that tp/lp and tm/lm are the top-parton/lepton pair with 'p'lus and 'm'inus charge.
+    # matching which ensures that top_pos/lep_pos and top_neg/lep_neg are the top-parton/lepton pair with 'p'lus and 'm'inus charge.
     if len(event.tops)>=2 and event.l0['pdgId']*event.l1['pdgId']<0:
         if event.l0['pdgId']<0:
-            event.lp, event.lm = event.l0, event.l1
-            event.tp, event.tm = event.tops[:2]     # <- arbitrary for now! FIXME
+            event.lep_pos, event.lep_neg = event.l0, event.l1
+            event.top_pos, event.top_neg = event.tops[:2]     # <- arbitrary for now! FIXME
         else:
-            event.lp, event.lm = event.l1, event.l0
-            event.tp, event.tm = event.tops[:2]     # <- arbitrary for now! FIXME
+            event.lep_pos, event.lep_neg = event.l1, event.l0
+            event.top_pos, event.top_neg = event.tops[:2]     # <- arbitrary for now! FIXME
 
-        # Alexander, here are the leptons (plus and minus): event.lp, event.lm 
+        # Alexander, here are the leptons (plus and minus): event.lep_pos, event.lep_neg 
         # Here are the tops (plus and minus): event.tp, event.tm
 
         # Store numbers, objects, etc. in the 'event' like this:
         # dPhi (repeated below, just a proof of principle, remove, FIXME)
-        event.lldPhi = deltaPhi( event.lm['phi'], event.lp['phi'] )
+        event.lldPhi = deltaPhi( event.lep_neg['phi'], event.lep_pos['phi'] )
     
 def makeObservables( event, sample, level ):
     ''' Compute all relevant observables
