@@ -143,7 +143,7 @@ variables += ["genBj0_%s"%var for var in jet_write_vars.split(',')]
 variables += ["genBj1_%s"%var for var in jet_write_vars.split(',')]
 # lepton vector 
 lep_vars       =  "pt/F,eta/F,phi/F,pdgId/I"
-lep_extra_vars =  "motherPdgId/I"
+lep_extra_vars =  "motherPdgId/I,grandmotherPdgId/I"
 lep_varnames   =  varnames( lep_vars ) 
 lep_all_varnames = lep_varnames + varnames(lep_extra_vars)
 variables     += ["genLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
@@ -151,7 +151,7 @@ variables     += ["genLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
 variables += [ "genBjLeadlep_index/I", "genBjLeadhad_index/I" ]
 variables += [ "genBjNonZlep_index/I", "genBjNonZhad_index/I" ]
 # top vector
-top_vars       =  "pt/F,eta/F,phi/F"
+top_vars       =  "pt/F,eta/F,phi/F,pdgId/I"
 top_varnames   =  varnames( top_vars ) 
 variables     += ["genTop[%s]"%top_vars]
 
@@ -462,7 +462,7 @@ def filler( event ):
     genPhotons_   = []
 
     for first, last in genPhotons[:100]: 
-        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else 999
+        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else 0
         genPhoton_ = {var: getattr(last, var)() for var in boson_read_varnames}
         # kinematic photon selection
         if not isGoodGenPhoton( genPhoton_): continue
@@ -480,9 +480,18 @@ def filler( event ):
     promptGenLeps    = []
     allGenLeps    = []
     for first, last in genLeptons:
-        mother_pdgId = first.mother(0).pdgId() if first.numberOfMothers()>0 else 999
+        mother = first.mother(0) if first.numberOfMothers()>0 else None
+        if mother is not None:
+            mother_pdgId      = mother.pdgId()
+            mother_ascend     = search.ascend(mother)
+            grandmother       = mother_ascend.mother(0) if mother.numberOfMothers()>0 else None
+            grandmother_pdgId = grandmother.pdgId() if grandmother is not None else 0
+        else:
+            mother_pdgId = 0
+            grandmother_pdgId = 0 
         genLep = {var: getattr(last, var)() for var in lep_varnames}
-        genLep['motherPdgId'] = mother_pdgId
+        genLep['motherPdgId']      = mother_pdgId
+        genLep['grandmotherPdgId'] = grandmother_pdgId
         allGenLeps.append( genLep )
         if abs(genLep['motherPdgId']) in [ 11, 13, 15, 23, 24, 25 ]:
             promptGenLeps.append(genLep )
@@ -575,10 +584,7 @@ def filler( event ):
     #        logger.debug( "Filtered gen %f jet %r lep %r", sqrt((min([999]+[deltaR2(jet, l) for l in promptGenLeps if l['pt']>10]))), jet, [ (l['eta'], jet['pt']/l['pt']) for l in promptGenLeps] )
     #        assert False, ""
 
-<<<<<<< HEAD
-=======
 
->>>>>>> ee12ddfae314c92b5d6ecb2659fd38bc35571cf6
     fill_vector_collection( event, "genPhoton", gen_photon_varnames, genPhotons_ ) 
     fill_vector_collection( event, "genLep", lep_all_varnames, promptGenLeps)
     fill_vector_collection( event, "genJet", jet_write_varnames, genJets)

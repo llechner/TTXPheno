@@ -13,7 +13,7 @@ Will submit a batch job for each command line in the file_with_commands.
 import hashlib, time
 import os
 import re
-from random import randint
+
 
 # some defaults
 batch_job_file="batch_job"
@@ -48,18 +48,16 @@ parser.add_option("--output", dest="output",
                   help="path for batch output ")
 parser.add_option("--qos", dest="qos",
                   help="Job Title viewied in squeue", default = "" )
-parser.add_option("--randomSleep", dest="randomSleep", type=int,
-                  help="Sleep randomly max seconds", default = 0 )
 parser.add_option("--opts", dest="opts",
                   help="Give a string for any extra options", default = host_info['def_opts'] )
 parser.add_option('--dpm', dest="dpm", default=False, action='store_true', help="Use dpm?")
-parser.add_option('--logLevel', choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], default='INFO', help="Log level for logging" )
+parser.add_option('--logLevel',  choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], default='INFO', help="Log level for logging" )
 
 (options,args) = parser.parse_args()
 
 
 # Logging
-import TTXPheno.Tools.logger as logger
+import TopEFT.Tools.logger as logger
 logger  = logger.get_logger(options.logLevel, logFile = None)
 
 # Arguments
@@ -90,12 +88,10 @@ def make_batch_job( batch_job_file, batch_job_title, batch_output_dir , command 
 
     import subprocess
 
-    randomSleep = randint(0, options.randomSleep)
-
     if host == 'heplx':
         template =\
 """\
-#!/bin/sh
+#!/bin/sh -x
 #SBATCH -J {batch_job_title}
 #SBATCH -D {pwd}
 #SBATCH -o {batch_output_dir}batch-test.%j.out
@@ -105,8 +101,6 @@ voms-proxy-info -all
 eval \`"scram runtime -sh"\` 
 echo CMSSW_BASE: {cmssw_base} 
 echo Executing user command  
-echo Random sleep {randomSleep}
-sleep {randomSleep}
 echo "{command}"
 {command} 
 
@@ -118,7 +112,6 @@ voms-proxy-info -all
                 batch_output_dir = batch_output_dir,
                 batch_job_title  = batch_job_title,
                 pwd              = os.getenv("PWD"),
-                randomSleep      = randomSleep,
                 proxy_cmd = proxy_cmd
               )
     elif host == 'lxplus':
@@ -157,6 +150,7 @@ voms-proxy-info -all
     batch_job = file(batch_job_file, "w")
     batch_job.write(template)
     batch_job.close()
+
     logger.debug("Local batch job file: %s", batch_job_file)
     logger.debug("Batch job:\n%s", template)
 
