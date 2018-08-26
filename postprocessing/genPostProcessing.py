@@ -151,7 +151,7 @@ variables     += ["genLep[%s]"%(','.join([lep_vars, lep_extra_vars]))]
 variables += [ "genBjLeadlep_index/I", "genBjLeadhad_index/I" ]
 variables += [ "genBjNonZlep_index/I", "genBjNonZhad_index/I" ]
 # top vector
-top_vars       =  "pt/F,eta/F,phi/F,pdgId/I"
+top_vars       =  "pt/F,eta/F,phi/F,pdgId/I,mass/F"
 top_varnames   =  varnames( top_vars ) 
 variables     += ["genTop[%s]"%top_vars]
 
