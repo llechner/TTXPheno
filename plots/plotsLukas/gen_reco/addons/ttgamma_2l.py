@@ -31,6 +31,7 @@ def getVariableList( level ):
     
         "ngenJet/I", #"genJet[pt/F,eta/F,phi/F]",
         "ngenLep/I", #"genLep[pt/F,eta/F,phi/F,pdgId/I]",
+        "ngenTop/I", 
     
         "ngenPhoton/I", #"genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I]"
 #        "genPhoton_pt/F", "genPhoton_eta/F", "genPhoton_phi/F",
@@ -56,6 +57,7 @@ def getVariableList( level ):
         read_variables_gen.append("genPhoton[motherPdgId/I,relIso04/F]")
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
+        read_variables_gen.append("genTop[pt/F,eta/F,phi/F]")
         read_variables_gen.append("genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I,relIso04/F,minLeptonDR/F,minJetDR/F]")
         read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I,motherPdgId/I]")
 
@@ -176,7 +178,6 @@ def makeLeps( event, sample, level, flavorCheck ):
         if level == 'reco':
             addIDeltaBeta( p )
 
-
     # Import additional functions/classes specified for the level of reconstruction
     if level == 'reco': from TTXPheno.Tools.objectSelection      import isGoodRecoLepton  as isGoodLepton
     else:               from TTXPheno.Tools.objectSelection      import isGoodGenLepton   as isGoodLepton
@@ -193,6 +194,29 @@ def makeLeps( event, sample, level, flavorCheck ):
     elif flavorCheck == 'opposite': event.passing_leptons = event.passing_leptons and not event.sameFlavor
 
 
+def makeSpinCorrelationObservables( event, sample, level ):
+
+    if level != 'gen': return
+    event.tops = getCollection( event, 'genTop', ['pt', 'eta', 'phi'], 'ngenTop' )
+
+    # We now match leptons and tops by charge
+    # Once I have the gen-top pdgId, this code will be replaced by a gen-level based
+    # matching which ensures that top_pos/lep_pos and top_neg/lep_neg are the top-parton/lepton pair with 'p'lus and 'm'inus charge.
+    if len(event.tops)>=2 and event.l0['pdgId']*event.l1['pdgId']<0:
+        if event.l0['pdgId']<0:
+            event.lep_pos, event.lep_neg = event.l0, event.l1
+            event.top_pos, event.top_neg = event.tops[:2]     # <- arbitrary for now! FIXME
+        else:
+            event.lep_pos, event.lep_neg = event.l1, event.l0
+            event.top_pos, event.top_neg = event.tops[:2]     # <- arbitrary for now! FIXME
+
+        # Alexander, here are the leptons (plus and minus): event.lep_pos, event.lep_neg 
+        # Here are the tops (plus and minus): event.tp, event.tm
+
+        # Store numbers, objects, etc. in the 'event' like this:
+        # dPhi (repeated below, just a proof of principle, remove, FIXME)
+        event.lldPhi = deltaPhi( event.lep_neg['phi'], event.lep_pos['phi'] )
+    
 def makeObservables( event, sample, level ):
     ''' Compute all relevant observables
     '''
@@ -243,6 +267,7 @@ def getSequenceList( level, flavorCheck ):
     sequence.append( lambda event, sample: makeMET( event, sample, level ) )
     sequence.append( lambda event, sample: makePhoton( event, sample, level ) )
     sequence.append( lambda event, sample: makeLeps( event, sample, level, flavorCheck ) )
+    sequence.append( lambda event, sample: makeSpinCorrelationObservables( event, sample, level) )
     sequence.append( lambda event, sample: makeObservables( event, sample, level ) )
 
     return sequence
