@@ -77,13 +77,6 @@ elif args.level == 'reco':
     # Import additional functions/classes specified for the level of reconstruction
     from TTXPheno.Tools.cutInterpreterReco import cutInterpreter
 
-if args.fit == 'SM':
-    rmin=0.99
-    rmax=1.01
-elif args.fit == 'BestFit':
-    rmin=0.01
-    rmax=2
-
 binningX = args.binning[:3]
 binningY = args.binning[3:]
 
@@ -99,7 +92,7 @@ if binningY[0] > 1:
 else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
 
-filename = '_'.join( ['nll', 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
+filename = '_'.join( ['limit', 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
 
 if not os.path.isfile('data/' + filename) or args.overwrite:
     # Import samples
@@ -171,6 +164,9 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
     background_jec_uncertainty      = {}
     background_fakerate_uncertainty = {}
 
+    ttX_SM_jec_uncertainty   = {}
+    ttX_SM_fakerate_uncertainty  = {}
+
     for i_region, region in enumerate(ttZRegions):
 
         logger.info( "At region %s", region )
@@ -179,9 +175,11 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
         ttZ_coeffList[region] = ttZSample.weightInfo.getCoeffListFromDraw( ttZSample, selectionString = region.cutString() )
         ttZ_SM_rate[region]   = ttZSample.weightInfo.get_weight_yield( ttZ_coeffList[region] )
 
+        ttX_SM_jec_uncertainty      [region] = 1.05
+        ttX_SM_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
+
         # signal uncertainties
         signal_jec_uncertainty      [region] = 1.05
-    #    signal_jec_uncertainty      [region] = 1.09
         signal_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
 
         background_rate[region]                 = {}
@@ -211,9 +209,11 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
         ttgamma2l_coeffList[region] = ttgamma2lSample.weightInfo.getCoeffListFromDraw( ttgamma2lSample, selectionString = region.cutString() )
         ttgamma2l_SM_rate[region]   = ttgamma2lSample.weightInfo.get_weight_yield( ttgamma2l_coeffList[region] )
 
+        ttX_SM_jec_uncertainty      [region] = 1.05
+        ttX_SM_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
+
         # signal uncertainties
         signal_jec_uncertainty      [region] = 1.05
-    #    signal_jec_uncertainty      [region] = 1.09
         signal_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
 
         background_rate[region]                 = {}
@@ -260,7 +260,6 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
         return ctZ, ctW
 
     def calculation( variables ):
-    #def calculation( var1, var2 ):
 
             if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
                 var1, var2 = variables #cuB cuW
@@ -279,24 +278,22 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             signal_rate                  = {}
             for i_region, region in enumerate(ttZRegions):
 
-                signal_rate[region] = ttZSample.weightInfo.get_weight_yield( ttZ_coeffList[region], **kwargs)
+                signal_rate[region] = ttZSample.weightInfo.get_weight_yield( ttZ_coeffList[region], **kwargs) - ttZ_SM_rate[region]
 
                 bin_name = "Region_%i" % i_region
                 nice_name = region.__str__()
-                c.addBin(bin_name, ['_'.join(s.name.split('_')[1:3]) for s in ttZBg], nice_name)
+                c.addBin(bin_name,['ttX_SM'] + ['_'.join(s.name.split('_')[1:3]) for s in ttZBg], nice_name)
                 c.specifyObservation( bin_name, observation[region] )
 
-    #            c.specifyFlatUncertainty( 'lumi', 1.05 )
-    #            c.specifyFlatUncertainty( 'lumi', 1.026 )
                 c.specifyFlatUncertainty( 'lumi', 1.05 )
 
                 c.specifyExpectation( bin_name, 'signal', signal_rate[region] )
                 c.specifyUncertainty( 'JEC', bin_name, 'signal', signal_jec_uncertainty[region])
                 c.specifyUncertainty( 'fake',bin_name, 'signal', signal_fakerate_uncertainty[region])
 
-                #c.specifyExpectation( bin_name, 'ttX_SM', ttX_SM_rate[region] )
-                #c.specifyUncertainty( 'JEC', bin_name, 'ttX_SM', ttX_SM_jec_uncertainty[region])
-                #c.specifyUncertainty( 'fake',bin_name, 'ttX_SM', ttX_SM_fakerate_uncertainty[region])
+                c.specifyExpectation( bin_name, 'ttX_SM', ttZ_SM_rate[region] )
+                c.specifyUncertainty( 'JEC', bin_name, 'ttX_SM', ttX_SM_jec_uncertainty[region])
+                c.specifyUncertainty( 'fake',bin_name, 'ttX_SM', ttX_SM_fakerate_uncertainty[region])
 
                 for background in ttZBg:
                     c.specifyExpectation( bin_name, '_'.join( background.name.split('_')[1:3] ), background_rate[region][background.name] )
@@ -306,8 +303,8 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
             for i_region, region in enumerate(ttgammaRegions):
 
-                signal_rate[region]  = ttgamma1lSample.weightInfo.get_weight_yield( ttgamma1l_coeffList[region], **kwargs)
-                signal_rate[region] += ttgamma2lSample.weightInfo.get_weight_yield( ttgamma2l_coeffList[region], **kwargs)
+                signal_rate[region]  = ttgamma1lSample.weightInfo.get_weight_yield( ttgamma1l_coeffList[region], **kwargs) - ttgamma1l_SM_rate[region]
+                signal_rate[region] += ttgamma2lSample.weightInfo.get_weight_yield( ttgamma2l_coeffList[region], **kwargs) - ttgamma2l_SM_rate[region]
 
                 bin_name = "Region_%i" % (i_region + len(ttZRegions))
                 nice_name = region.__str__()
@@ -323,9 +320,9 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
                 c.specifyUncertainty( 'JEC', bin_name, 'signal', signal_jec_uncertainty[region])
                 c.specifyUncertainty( 'fake',bin_name, 'signal', signal_fakerate_uncertainty[region])
 
-                #c.specifyExpectation( bin_name, 'ttX_SM', ttX_SM_rate[region] )
-                #c.specifyUncertainty( 'JEC', bin_name, 'ttX_SM', ttX_SM_jec_uncertainty[region])
-                #c.specifyUncertainty( 'fake',bin_name, 'ttX_SM', ttX_SM_fakerate_uncertainty[region])
+                c.specifyExpectation( bin_name, 'ttX_SM', ttgamma1l_SM_rate[region] + ttgamma2l_SM_rate[region] )
+                c.specifyUncertainty( 'JEC', bin_name, 'ttX_SM', ttX_SM_jec_uncertainty[region])
+                c.specifyUncertainty( 'fake',bin_name, 'ttX_SM', ttX_SM_fakerate_uncertainty[region])
 
                 for background in ttgammaBg:
                     c.specifyExpectation( bin_name, '_'.join( background.name.split('_')[1:3] ), background_rate[region][background.name] )
@@ -335,37 +332,68 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
 
             nameList = ['combined'] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, 'small' if args.small else 'full', var1, var2 ]
-            cardname = '%s_nll_card'%'_'.join( map( str, nameList ) )
+            cardname = '%s_limit_card'%'_'.join( map( str, nameList ) )
             c.writeToFile( './tmp/%s.txt'%cardname )
 
+            # try to adjust rmax with some margin
+            exp_tot_sigmas = 0
+            max_rmax = float('inf')
+            for region in ttZRegions:
+
+                tot_background = sum( [ background_rate[region][background.name] for background in ttZBg ] )
+                exp_tot_sigmas += abs(signal_rate[region]) / sqrt( tot_background ) if tot_background > 0 else float('inf')
+
+                # avoid total neg. yield
+                if signal_rate[region] < 0:
+                    max_r = -tot_background / signal_rate[region]
+                    if max_r < max_rmax:
+                        max_rmax = max_r
+
+            for region in ttgammaRegions:
+
+                tot_background = sum( [ background_rate[region][background.name] for background in ttgammaBg ] )
+                exp_tot_sigmas += abs(signal_rate[region]) / sqrt( tot_background ) if tot_background > 0 else float('inf')
+
+                # avoid total neg. yield
+                if signal_rate[region] < 0:
+                    max_r = -tot_background / signal_rate[region]
+                    if max_r < max_rmax:
+                        max_rmax = max_r
+
+
+            if exp_tot_sigmas is float('inf'): rmax_est = 0.1 #float('inf')
+            elif exp_tot_sigmas == 0: rmax_est = 2 #float('inf')
+            else: rmax_est = 400. / exp_tot_sigmas
+
+            if max_rmax < rmax_est:
+                rmax_est = 0.9*max_rmax # safety margin such that at least +10% total yield survives in the smallest SR
+
             profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
-            profiledLoglikelihoodFit.make_workspace(rmin=rmin, rmax=rmax)
+            profiledLoglikelihoodFit.make_workspace(rmin=0, rmax=rmax_est)
             #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
-            nll = profiledLoglikelihoodFit.likelihoodTest()
-            logger.info( "NLL: %f", nll)
-            profiledLoglikelihoodFit.cleanup(removeFiles=True)
+            expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic", plotLimit = False )
+            logger.info( "Expected Limit: %f", expected_limit[0] )
+            profiledLoglikelihoodFit.cleanup( removeFiles = True )
             del profiledLoglikelihoodFit
             ROOT.gDirectory.Clear()
 
-            if nll is None or abs(nll) > 10000: nll = 999
-
-            return var1, var2, nll
+            return var1, var2, [ expected_limit[i] for i in range(-2,3) ]
 
 
     # Limit plot
     from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
 
     results = []
-
     for varX in xRange:
         # do not run all calc in one pool, memory leak!!!
         pool = Pool( processes = args.cores )
         results += pool.map( calculation, [ (varX, varY) for varY in yRange ] )
         del pool
 
+
     with open('tmp/'+filename, 'w') as f:
         for item in results:
-            f.write( "%s\n" % ','.join( map( str, list(item) ) ) )
+            f.write( "%s\n" % ','.join( map( str, list(item[:2]) + item[-1] ) ) )
 
 else:
     with open('data/'+filename, 'r') as f:
@@ -374,37 +402,64 @@ else:
     results = []
     for line in data:
         vals = map( float, line.split('\n')[0].split(',') )
-        results.append( tuple( vals ) )
+        results.append( ( vals[0], vals[1], vals[2:] ) )
 
-#scale to SM
-results.sort( key = lambda res: ( abs(res[0]), abs(res[1]), res[2] ) )
-nll_SM = results[0][2]
 
-results = [ (x, y, 2*(result - nll_SM)) for x, y, result in results ]
+results.sort( key = lambda res: ( abs(res[0]), abs(res[1]) ) )
+results[0] = (results[0][0], results[0][1], results[1][-1])
 
-def toGraph2D( name, title, data ):
+def toGraph2D( name, title, data, quantIndex ):
     result = ROOT.TGraph2D( len(data) )
     debug = ROOT.TGraph()
     result.SetName( name )
     result.SetTitle( title )
     for i, datapoint in enumerate(data):
-        x, y, val = datapoint
+        x, y, valList = datapoint
+        val = valList[quantIndex+int((len(valList)-1)*0.5)]
         result.SetPoint(i, x, y, val)
-    debug.SetPoint(i, x, y)
+        debug.SetPoint(i, x, y)
     c = ROOT.TCanvas()
     result.Draw()
     debug.Draw()
     del c
-    #res = ROOT.TGraphDelaunay(result)
     return result, debug
 
 #get TGraph2D from results list
-a, debug = toGraph2D( 'combined', 'combined', results )#res_dic)
+m2, debug = toGraph2D( 'combinedm2', 'combinedm2', results, -2 )#res_dic)
+m1, debug = toGraph2D( 'combinedm1', 'combinedm1', results, -1 )#res_dic)
+a, debug  = toGraph2D( 'combined0', 'combined0', results, 0 )#res_dic)
+p1, debug = toGraph2D( 'combined1', 'combined1', results, 1 )#res_dic)
+p2, debug = toGraph2D( 'combined2', 'combined2', results, 2 )#res_dic)
 nxbins   = max(1, min(500, int(binningX[0])*int(args.binMultiplier)))
 nybins   = max(1, min(500, int(binningY[0])*int(args.binMultiplier)))
 
+
+#calculate contour lines (1sigma, 2sigma)
+contours  = {'combined': [1.]}
+contLines = []
+cans = ROOT.TCanvas("can_combined","",500,500)
+#cans.SetLogz()
+
+colors = [ROOT.kBlue, ROOT.kSpring+1, ROOT.kRed, ROOT.kSpring+1, ROOT.kBlue]
+
+for gr in [m2, m1, a, p1, p2]:
+    gr.SetNpx(nxbins)
+    gr.SetNpy(nybins)
+    hi = gr.GetHistogram().Clone()
+    #smoothing
+    if args.smooth: hi.Smooth()
+
+    if args.contours:
+        histsForCont = hi.Clone()
+        c_contlist = ((ctypes.c_double)*(len(contours['combined'])))(*contours['combined'])
+        histsForCont.SetContour(len(c_contlist),c_contlist)
+        histsForCont.Draw("contzlist")
+        cans.Update()
+        conts = ROOT.gROOT.GetListOfSpecials().FindObject("contours")
+        contLines.append(conts.At(0).Clone())
+
 #re-bin
-hist = a.GetHistogram().Clone()
+#hist = a.GetHistogram().Clone()
 a.SetNpx(nxbins)
 a.SetNpy(nybins)
 hist = a.GetHistogram().Clone()
@@ -414,24 +469,11 @@ if args.smooth: hist.Smooth()
 
 cans = ROOT.TCanvas("can_combined","",500,500)
 
-#calculate contour lines (1sigma, 2sigma)
-contours = {'combined': [1.,4.]}
-if args.contours:
-    histsForCont = hist.Clone()
-    c_contlist = ((ctypes.c_double)*(len(contours['combined'])))(*contours['combined'])
-    histsForCont.SetContour(len(c_contlist),c_contlist)
-    histsForCont.Draw("contzlist")
-    cans.Update()
-    conts = ROOT.gROOT.GetListOfSpecials().FindObject("contours")
-    #cont_m2 = conts.At(0).Clone()
-    #cont_m1 = conts.At(1).Clone()
-    cont_p1 = conts.At(0).Clone()
-    cont_p2 = conts.At(1).Clone()
-
 pads = ROOT.TPad("pad_combined","",0.,0.,1.,1.)
 pads.SetRightMargin(0.20)
 pads.SetLeftMargin(0.14)
 pads.SetTopMargin(0.11)
+pads.SetLogz(1)
 pads.Draw()
 pads.cd()
 
@@ -439,21 +481,14 @@ hist.Draw("colz")
 
 #draw contour lines
 if args.contours:
-    for conts in [cont_p2]:
+    for i, conts in enumerate(contLines):
         for cont in conts:
-            cont.SetLineColor(ROOT.kOrange+7)
-            cont.SetLineWidth(2)
-#            cont.SetLineStyle(7)
-            cont.Draw("same")
-    for conts in [cont_p1]:
-        for cont in conts:
-            cont.SetLineColor(ROOT.kSpring-1)
+            cont.SetLineColor(colors[i])
             cont.SetLineWidth(2)
 #            cont.SetLineStyle(7)
             cont.Draw("same")
 
-
-hist.GetZaxis().SetTitle("-2 #Delta ln L")
+hist.GetZaxis().SetTitle("#mu")
 
 if not None in args.zRange:
     hist.GetZaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
@@ -474,6 +509,7 @@ hist.GetZaxis().SetLabelFont(42)
 
 hist.GetXaxis().SetTitleOffset(1.4)
 hist.GetYaxis().SetTitleOffset(1.4)
+hist.GetZaxis().SetTitleOffset(1.4)
 
 hist.GetXaxis().SetTitleSize(0.04)
 hist.GetYaxis().SetTitleSize(0.04)
@@ -495,7 +531,7 @@ plot_directory_ = os.path.join(\
     plot_directory,
     '%s_%s'%(args.level, args.version),
     'combined',
-    'nll_small' if args.small else 'nll')
+    'limit_small' if args.small else 'limit')
 
 if not os.path.isdir( plot_directory_ ):
     os.makedirs( plot_directory_ )

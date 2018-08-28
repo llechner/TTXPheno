@@ -48,36 +48,39 @@ argParser.add_argument('--small',           action='store_true', help='Run only 
 argParser.add_argument('--contours',        action='store_true', help='draw 1sigma and 2sigma contour line?')
 argParser.add_argument('--smooth',          action='store_true', help='smooth histogram?')
 argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
-#argParser.add_argument('--variables' ,      action='store',     default = ['cpQM', 'cpt'], type=str, nargs=2, help = "argument plotting variables")
 argParser.add_argument('--variables' ,      action='store',     default = ['ctZ', 'ctZI'], type=str, nargs=2, help = "argument plotting variables")
-#argParser.add_argument('--binning',         action='store',     default = [24, -8, 40, 24, -30, 18], type=float, nargs=6, help = "argument parameters")
-#argParser.add_argument('--binning',         action='store',     default = [2, -8, 40, 2, -30, 18], type=float, nargs=6, help = "argument parameters")
 argParser.add_argument('--binning',         action='store',     default = [1, -2, 2, 1, -2, 2], type=float, nargs=6, help = "argument parameters")
 argParser.add_argument('--zRange',          action='store',     default = [None, None], type=int, nargs=2, help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 argParser.add_argument('--cores',           action='store',     default=8, type=int, help='number of cpu cores for multicore processing')
+argParser.add_argument('--overwrite',       action='store_true', help='overwrite datafile?')
+argParser.add_argument('--binMultiplier',   action='store',     default=3, type=int, help='bin multiplication factor')
 
 args = argParser.parse_args()
 
+
 if args.level == 'gen':
-    # Load the analysis regions
     if 'ttZ' in args.process.split('_'):
-        from TTXPheno.Analysis.regions import genttZRegions as regions
+        if args.small: from TTXPheno.Analysis.regions import genttZRegionsSmall as regions
+        else:          from TTXPheno.Analysis.regions import genttZRegions as regions
     elif 'ttgamma' in args.process.split('_'):
-        from TTXPheno.Analysis.regions import genttgammaRegions as regions
+        if args.small: from TTXPheno.Analysis.regions import genttgammaRegionsSmall as regions
+        else:          from TTXPheno.Analysis.regions import genttgammaRegions as regions
 
     # Import additional functions/classes specified for the level of reconstruction
     from TTXPheno.Tools.cutInterpreterGen import cutInterpreter
 
 elif args.level == 'reco':
-    # Load the analysis regions
     if 'ttZ' in args.process.split('_'):
-        from TTXPheno.Analysis.regions import recottZRegions as regions
+        if args.small: from TTXPheno.Analysis.regions import recottZRegionsSmall as regions
+        else:          from TTXPheno.Analysis.regions import recottZRegions as regions
     elif 'ttgamma' in args.process.split('_'):
-        from TTXPheno.Analysis.regions import recottgammaRegions as regions
+        if args.small: from TTXPheno.Analysis.regions import recottgammaRegionsSmall as regions
+        else:          from TTXPheno.Analysis.regions import recottgammaRegions as regions
 
     # Import additional functions/classes specified for the level of reconstruction
     from TTXPheno.Tools.cutInterpreterReco import cutInterpreter
+
 
 if args.fit == 'SM':
     rmin=0.99
@@ -86,173 +89,7 @@ elif args.fit == 'BestFit':
     rmin=0.01
     rmax=2
 
-#if args.process == 'ttgamma_1l': ttSampleName = 'fwlite_tt_nonhad_LO_order2_15weights'
-#else: ttSampleName = 'fwlite_tt_dilep_LO_order2_15weights'
-
-# Import samples
-sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
-loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
-
-ttXSample       = getattr( loadedSamples, args.sample )
-WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights' )
-tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
-tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
-tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
-ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
-ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
-
-#if args.process.split('_')[0] == 'ttgamma':
-#    ttgammaIsrSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
-#    ttgammaIsrSample.name = 'fwlite_ttgamma_ISR_LO_order2_15weights_ref'
-
-if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-elif args.process == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-elif args.process == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-elif args.process == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-
-def checkReferencePoint( sample ):
-    ''' check if sample is simulated with a reference point
-    '''
-    return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
-
-# set selection string
-selectionString = cutInterpreter.cutString(args.selection)
-
-# somehow has to be separate from the next loop
-if args.small:
-    for s in [ttXSample] + bg:
-        s.reduceFiles( to = 5 )
-
-# configure samples
-for s in [ttXSample] + bg:
-
-    s.event_factor = s.nEvents / float( s.chain.GetEntries() )
-    s.weightInfo = WeightInfo( s.reweight_pkl )
-    s.weightInfo.set_order( args.order )
-    s.setSelectionString( selectionString )
-
-    if checkReferencePoint( s ):
-        s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
-    else:
-        s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
-
-# overlap removal
-if args.process.split('_')[0] == 'ttgamma':
-    ttXSample.addSelectionString( "(nonIsoPhoton!=1)" ) 
-    ttSample.addSelectionString(  "(nonIsoPhoton==1)" ) 
-
-for var in args.variables:
-    if var not in ttXSample.weightInfo.variables:
-        raise ValueError('Input variable not in gridpack: %s' %var)
-
-observation                  = {}
-
-signal_jec_uncertainty       = {}
-signal_fakerate_uncertainty  = {}
-
-ttX_SM_rate                  = {}
-ttX_coeffList                = {}
-
-background_rate                 = {}
-background_jec_uncertainty      = {}
-background_fakerate_uncertainty = {}
-
-for i_region, region in enumerate(regions):
-    # compute signal yield for this region (this is the final code)
-
-    logger.info( "At region %s", region )
-
-    # ttX SM
-    ttX_coeffList[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
-    ttX_SM_rate[region]   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region] )
-
-    # signal uncertainties
-    signal_jec_uncertainty      [region] = 1.05
-#    signal_jec_uncertainty      [region] = 1.09
-    signal_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
-
-    background_rate[region]                 = {}
-    background_fakerate_uncertainty[region] = {}
-    background_jec_uncertainty[region]      = {}
-
-    for i_background, background in enumerate(bg):
-        # compute bg yield for this region (this is the final code)
-
-        background_rate                 [region][background.name] = background.getYieldFromDraw( selectionString=region.cutString() )['val']
-        background_fakerate_uncertainty [region][background.name] = min( [ 1 + 0.03*(i_region+1), 1.12 ] ) #*(i_background+1) #change that
-        background_jec_uncertainty  [region][background.name] = max( [ 1.05, min( [ 1.12 - 0.01*(i_region+1), 1.12 ] ) ] ) #1.2 - 0.02*(i_region+1) #*(i_background+1) #change that
-
-    # Our expected observation :-)
-    observation[region] = int( sum( background_rate[region].values() ) + ttX_SM_rate[region] )
-
-
-# Write temporary card file
-from TTXPheno.Tools.cardFileWriter import cardFileWriter
-c = cardFileWriter.cardFileWriter()
-
-
-def calculateNLL( variables ):
-#def calculation( var1, var2 ):
-
-        var1, var2 = variables
-        kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
-
-        # uncertainties
-        c.reset()
-        c.addUncertainty('lumi',        'lnN')
-        c.addUncertainty('JEC',         'lnN')
-        c.addUncertainty('fake',        'lnN')
-
-        signal_rate                  = {}
-        for i_region, region in enumerate(regions):
-
-            signal_rate[region] = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region], **kwargs)
-
-            bin_name = "Region_%i" % i_region
-            nice_name = region.__str__()
-            c.addBin(bin_name, ['_'.join(s.name.split('_')[1:3]) for s in bg], nice_name)
-            c.specifyObservation( bin_name, observation[region] )
-
-#            c.specifyFlatUncertainty( 'lumi', 1.05 )
-#            c.specifyFlatUncertainty( 'lumi', 1.026 )
-            c.specifyFlatUncertainty( 'lumi', 1.05 )
-
-            c.specifyExpectation( bin_name, 'signal', signal_rate[region] )
-            c.specifyUncertainty( 'JEC', bin_name, 'signal', signal_jec_uncertainty[region])
-            c.specifyUncertainty( 'fake',bin_name, 'signal', signal_fakerate_uncertainty[region])
-
-            #c.specifyExpectation( bin_name, 'ttX_SM', ttX_SM_rate[region] )
-            #c.specifyUncertainty( 'JEC', bin_name, 'ttX_SM', ttX_SM_jec_uncertainty[region])
-            #c.specifyUncertainty( 'fake',bin_name, 'ttX_SM', ttX_SM_fakerate_uncertainty[region])
-
-            for background in bg:
-                c.specifyExpectation( bin_name, '_'.join( background.name.split('_')[1:3] ), background_rate[region][background.name] )
-                c.specifyUncertainty( 'JEC', bin_name, '_'.join( background.name.split('_')[1:3] ), background_jec_uncertainty[region][background.name])
-                c.specifyUncertainty( 'fake',bin_name, '_'.join( background.name.split('_')[1:3] ), background_fakerate_uncertainty[region][background.name])
-                
-        nameList = ttXSample.name.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, args.selection, 'small' if args.small else 'full', var1, var2 ]
-        cardname = '%s_nll_card'%'_'.join( map( str, nameList ) )
-        c.writeToFile( './tmp/%s.txt'%cardname )
-
-        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
-        profiledLoglikelihoodFit.make_workspace(rmin=rmin, rmax=rmax)
-        #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
-        nll = profiledLoglikelihoodFit.likelihoodTest()
-        logger.info( "NLL: %f", nll)
-        profiledLoglikelihoodFit.cleanup(removeFiles=True)
-        del profiledLoglikelihoodFit
-        ROOT.gDirectory.Clear()
-
-        # in very large WC regions, the fit fails, not relevant for the interesting regions
-        if nll is None or abs(nll) > 1000000: nll = 999
-
-        return var1, var2, nll
-
-
-# Limit plot
-from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
-
+#binning range
 binningX = args.binning[:3]
 binningY = args.binning[3:]
 
@@ -268,18 +105,218 @@ if binningY[0] > 1:
 else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
 
-results = []
+#save data file
+filename = '_'.join( ['nll'] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity) ] ) + '.data'
 
-for varX in xRange:
-    # do not run all calc in one pool, memory leak!!!
-    pool = Pool( processes = args.cores )
-    results += pool.map( calculateNLL, [ (varX, varY) for varY in yRange ] )
-    del pool
+#do the calculation
+if not os.path.isfile('data/' + filename) or args.overwrite:
+    # Import samples
+    sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
+    loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
-filename = '_'.join( ['nll'] + ttXSample.name.split('_')[1:3] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
-with open('tmp/'+filename, 'w') as f:
-    for item in results:
-        f.write( "%s\n" % ','.join( map( str, list(item) ) ) )
+    ttXSample       = getattr( loadedSamples, args.sample )
+    WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
+    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights' )
+    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
+    tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
+    tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
+    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
+    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
+
+    #if args.process.split('_')[0] == 'ttgamma':
+    #    ttgammaIsrSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
+    #    ttgammaIsrSample.name = 'fwlite_ttgamma_ISR_LO_order2_15weights_ref'
+
+    if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+    elif args.process == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+    elif args.process == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+    elif args.process == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+
+    def checkReferencePoint( sample ):
+        ''' check if sample is simulated with a reference point
+        '''
+        return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
+
+    # set selection string
+    selectionString = cutInterpreter.cutString(args.selection)
+
+    # somehow has to be separate from the next loop
+    if args.small:
+        for s in [ttXSample] + bg:
+            s.reduceFiles( to = 5 )
+
+    # configure samples
+    for s in [ttXSample] + bg:
+
+        s.event_factor = s.nEvents / float( s.chain.GetEntries() )
+        s.weightInfo = WeightInfo( s.reweight_pkl )
+        s.weightInfo.set_order( args.order )
+        s.setSelectionString( selectionString )
+
+        if checkReferencePoint( s ):
+            s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+        else:
+            s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+
+    # overlap removal
+    if args.process.split('_')[0] == 'ttgamma':
+        ttXSample.addSelectionString( "(nonIsoPhoton!=1)" ) 
+        ttSample.addSelectionString(  "(nonIsoPhoton==1)" ) 
+
+    for var in args.variables:
+        if var not in ttXSample.weightInfo.variables and not (args.variables[0] == 'cuB' and args.variables[1] == 'cuW'):
+            raise ValueError('Input variable not in gridpack: %s' %var)
+
+    observation                  = {}
+
+    signal_jec_uncertainty       = {}
+    signal_fakerate_uncertainty  = {}
+
+    ttX_SM_rate                  = {}
+    ttX_coeffList                = {}
+
+    background_rate                 = {}
+    background_jec_uncertainty      = {}
+    background_fakerate_uncertainty = {}
+
+    for i_region, region in enumerate(regions):
+        # compute signal yield for this region (this is the final code)
+
+        logger.info( "At region %s", region )
+
+        # ttX SM
+        ttX_coeffList[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
+        ttX_SM_rate[region]   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region] )
+
+        # signal uncertainties
+        signal_jec_uncertainty      [region] = 1.05
+    #    signal_jec_uncertainty      [region] = 1.09
+        signal_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
+
+        background_rate[region]                 = {}
+        background_fakerate_uncertainty[region] = {}
+        background_jec_uncertainty[region]      = {}
+
+        for i_background, background in enumerate(bg):
+            # compute bg yield for this region (this is the final code)
+
+            background_rate                 [region][background.name] = background.getYieldFromDraw( selectionString=region.cutString() )['val']
+            background_fakerate_uncertainty [region][background.name] = min( [ 1 + 0.03*(i_region+1), 1.12 ] ) #*(i_background+1) #change that
+            background_jec_uncertainty  [region][background.name] = max( [ 1.05, min( [ 1.12 - 0.01*(i_region+1), 1.12 ] ) ] ) #1.2 - 0.02*(i_region+1) #*(i_background+1) #change that
+
+        # Our expected observation :-)
+        observation[region] = int( sum( background_rate[region].values() ) + ttX_SM_rate[region] )
+
+
+    # Write temporary card file
+    from TTXPheno.Tools.cardFileWriter import cardFileWriter
+    c = cardFileWriter.cardFileWriter()
+
+
+    def cuBWtoctWZ( cuB, cuW ):
+        ''' transforms C_tZ and C_tW to C_uB and C_uW
+            C_tZ = Re( -sW*C_uB + cW*C_uW )
+            C_tW = Re( C_uW )
+            arXiv: 1802.07237
+        '''
+        sW=0.4715
+        cW=0.8819
+
+        ctW = cuW
+        ctZ = -sW*cuB + cW*cuW
+
+        return ctZ, ctW
+
+
+    def calculation( variables ):
+    #def calculation( var1, var2 ):
+
+            if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
+                var1, var2 = variables #cuB cuW
+                ctZ, ctW = cuBWtoctWZ( var1, var2 )
+                kwargs = { 'ctZ':ctZ, 'ctW':ctW }
+            else:
+                var1, var2 = variables
+                kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
+
+            # uncertainties
+            c.reset()
+            c.addUncertainty('lumi',        'lnN')
+            c.addUncertainty('JEC',         'lnN')
+            c.addUncertainty('fake',        'lnN')
+
+            signal_rate                  = {}
+            for i_region, region in enumerate(regions):
+
+                signal_rate[region] = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region], **kwargs)
+
+                bin_name = "Region_%i" % i_region
+                nice_name = region.__str__()
+                c.addBin(bin_name, ['_'.join(s.name.split('_')[1:3]) for s in bg], nice_name)
+                c.specifyObservation( bin_name, observation[region] )
+
+    #            c.specifyFlatUncertainty( 'lumi', 1.05 )
+    #            c.specifyFlatUncertainty( 'lumi', 1.026 )
+                c.specifyFlatUncertainty( 'lumi', 1.05 )
+
+                c.specifyExpectation( bin_name, 'signal', signal_rate[region] )
+                c.specifyUncertainty( 'JEC', bin_name, 'signal', signal_jec_uncertainty[region])
+                c.specifyUncertainty( 'fake',bin_name, 'signal', signal_fakerate_uncertainty[region])
+
+                #c.specifyExpectation( bin_name, 'ttX_SM', ttX_SM_rate[region] )
+                #c.specifyUncertainty( 'JEC', bin_name, 'ttX_SM', ttX_SM_jec_uncertainty[region])
+                #c.specifyUncertainty( 'fake',bin_name, 'ttX_SM', ttX_SM_fakerate_uncertainty[region])
+
+                for background in bg:
+                    c.specifyExpectation( bin_name, '_'.join( background.name.split('_')[1:3] ), background_rate[region][background.name] )
+                    c.specifyUncertainty( 'JEC', bin_name, '_'.join( background.name.split('_')[1:3] ), background_jec_uncertainty[region][background.name])
+                    c.specifyUncertainty( 'fake',bin_name, '_'.join( background.name.split('_')[1:3] ), background_fakerate_uncertainty[region][background.name])
+                    
+            nameList = ttXSample.name.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, args.selection, 'small' if args.small else 'full', var1, var2 ]
+            cardname = '%s_nll_card'%'_'.join( map( str, nameList ) )
+            c.writeToFile( './tmp/%s.txt'%cardname )
+
+            profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
+            profiledLoglikelihoodFit.make_workspace(rmin=rmin, rmax=rmax)
+            #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
+            nll = profiledLoglikelihoodFit.likelihoodTest()
+            logger.info( "NLL: %f", nll)
+            profiledLoglikelihoodFit.cleanup(removeFiles=True)
+            del profiledLoglikelihoodFit
+            ROOT.gDirectory.Clear()
+
+            # in very large WC regions, the fit fails, not relevant for the interesting regions
+            if nll is None or abs(nll) > 1000000: nll = 999
+
+            return var1, var2, nll
+
+
+    # Limit plot
+    from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
+
+    results = []
+
+    for varX in xRange:
+        # do not run all calc in one pool, memory leak!!!
+        pool = Pool( processes = args.cores )
+        results += pool.map( calculation, [ (varX, varY) for varY in yRange ] )
+        del pool
+
+    with open('tmp/'+filename, 'w') as f:
+        for item in results:
+            f.write( "%s\n" % ','.join( map( str, list(item) ) ) )
+
+else:
+    with open('data/'+filename, 'r') as f:
+        data = f.readlines()
+
+    results = []
+    for line in data:
+        vals = map( float, line.split('\n')[0].split(',') )
+        results.append( tuple( vals ) )
+
+
+#Plot
 
 #scale to SM
 results.sort( key = lambda res: ( abs(res[0]), abs(res[1]), res[2] ) )
@@ -303,12 +340,10 @@ def toGraph2D( name, title, data ):
     #res = ROOT.TGraphDelaunay(result)
     return result, debug
 
-multiplier = 3
-
 #get TGraph2D from results list
 a, debug = toGraph2D( args.process, args.process, results )#res_dic)
-nxbins   = max(1, min(500, int(binningX[0])*multiplier))
-nybins   = max(1, min(500, int(binningY[0])*multiplier))
+nxbins   = max(1, min(500, int(binningX[0])*int(args.binMultiplier)))
+nybins   = max(1, min(500, int(binningY[0])*int(args.binMultiplier)))
 
 #re-bin
 hist = a.GetHistogram().Clone()
@@ -366,8 +401,12 @@ if not None in args.zRange:
     hist.GetZaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
 
 
-hist.GetXaxis().SetTitle('C_{' + args.variables[0].replace('c','').replace('p','#phi') + '}' )
-hist.GetYaxis().SetTitle('C_{' + args.variables[1].replace('c','').replace('p','#phi') + '}' )
+if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
+    hist.GetXaxis().SetTitle('C^{(33)}_{uB} [(#Lambda/TeV)^{2}]' )
+    hist.GetYaxis().SetTitle('C^{(33)}_{uW} [(#Lambda/TeV)^{2}]' )
+else:
+    hist.GetXaxis().SetTitle('C_{' + args.variables[0].replace('c','').replace('p','#phi') + '} [(#Lambda/TeV)^{2}]' )
+    hist.GetYaxis().SetTitle('C_{' + args.variables[1].replace('c','').replace('p','#phi') + '} [(#Lambda/TeV)^{2}]' )
 
 hist.GetXaxis().SetTitleFont(42)
 hist.GetYaxis().SetTitleFont(42)
@@ -375,6 +414,9 @@ hist.GetZaxis().SetTitleFont(42)
 hist.GetXaxis().SetLabelFont(42)
 hist.GetYaxis().SetLabelFont(42)
 hist.GetZaxis().SetLabelFont(42)
+
+hist.GetXaxis().SetTitleOffset(1.4)
+hist.GetYaxis().SetTitleOffset(1.4)
 
 hist.GetXaxis().SetTitleSize(0.04)
 hist.GetYaxis().SetTitleSize(0.04)
@@ -395,7 +437,7 @@ latex1.DrawLatex(0.45, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
 plot_directory_ = os.path.join(\
     plot_directory,
     '%s_%s'%(args.level, args.version),
-    ttXSample.name,
+    args.sample,
     'backgrounds',
     'nll_small' if args.small else 'nll',
     args.selection)
@@ -406,50 +448,3 @@ if not os.path.isdir( plot_directory_ ):
 for e in [".png",".pdf",".root"]:
     cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity)]) + e)
 
-
-"""
-nll_plot = ROOT.TH2F( 'nll_plot', 'nll_plot', *(binningX + binningY) )
-nll_plot.GetZaxis().SetTitle("-2 #Delta ln(L)")
-nll_plot.GetZaxis().SetLabelSize(0.04)
-nll_plot.GetZaxis().SetTitleSize(0.04)
-if not None in args.zRange:
-    nll_plot.GetZaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
-
-for x,y,result in results:
-    nll_plot.SetBinContent( nll_plot.FindBin(x, y), 2*(result - nll_SM) )
-
-nllPlot = Plot2D.fromHisto('_'.join(args.variables + ['lumi'+str(args.luminosity)]), texX = args.variables[0], texY = args.variables[1], histos = [[nll_plot]])
-nllPlot.drawOption = "colz"
-
-ROOT.gStyle.SetPaintTextFormat("2.2f")        
-ROOT.gStyle.SetTextFont(12)
-ROOT.gStyle.SetTextSize(0.04)
-
-def drawObjects( hasData = False ):
-    tex = ROOT.TLatex()
-    tex.SetNDC()
-    tex.SetTextSize(0.04)
-    tex.SetTextAlign(11) # align right
-    lines = [
-      (0.15, 0.95, "Simulation (%s)"%args.level),
-      (0.55, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)' %float(args.luminosity) )
-    ]
-    return [tex.DrawLatex(*l) for l in lines]
-
-plot_directory_ = os.path.join(\
-    plot_directory,
-    '%s_%s'%(args.level, args.version),
-    ttXSample.name,
-    'backgrounds',
-    'nll_small' if args.small else 'nll',
-    args.selection)
-
-plotting.draw2D( nllPlot,
-                 logZ=False,
-                 plot_directory = plot_directory_,
-                 drawObjects = drawObjects(),
-                 extensions = ["png"],
-                 copyIndexPHP=True)
-
-
-"""

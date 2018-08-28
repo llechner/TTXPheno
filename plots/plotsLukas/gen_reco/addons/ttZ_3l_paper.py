@@ -220,22 +220,29 @@ def getPlotList( scaleLumi, level ):
     tag = 'reco' if level == 'reco' else 'genLep'
     preTag = 'reco' if level == 'reco' else 'gen'
 
-    if scaleLumi: y_label = 'norm. diff. xsec'
-    else:         y_label = 'diff. x-sec'
+#    if scaleLumi: y_label = 'norm. diff. xsec'
+#    else:         y_label = 'diff. x-sec'
+
+#    labelAddon = '#frac{1}{#sigma} ' if scaleLumi else ''
+    labelAddon = '1/#sigma ' if scaleLumi else ''
+#    unit = ' [GeV^{-1}]' if scaleLumi else ' [fb/GeV]'
+    unit = ''
 
     plots = []
     fisherInfoVariables = []
     
 
     plots.append( Plot( name = "Z_pt20",
-      texX = 'p_{T}(ll) [GeV]', texY = y_label,
+      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(ll)'+unit,
+#      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + '#frac{d#sigma}{d p_{T}(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_pt'%level ) if event.passing_checks else float('nan'),
       binning=[20,0,400],
     ) )
     fisherInfoVariables.append('%sZ_pt'%level)
 
     plots.append( Plot( name = "Z_pt10",
-      texX = 'p_{T}(ll) [GeV]', texY = y_label,
+      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(ll)'+unit,
+#      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + '#frac{d#sigma}{d p_{T}(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_pt'%level ) if event.passing_checks else float('nan'),
       binning=[10,0,400],
     ) )
@@ -243,7 +250,8 @@ def getPlotList( scaleLumi, level ):
 
     # for gen use genLepZ_lldPhi
     plots.append( Plot( name = 'Z_deltaPhi_ll',
-      texX = '#Delta#phi(ll)', texY = y_label,
+      texX = '#Delta#phi(ll)', texY = labelAddon + 'd#sigma/d#Delta#phi(ll)'+unit,
+#      texX = '#Delta#phi(ll)', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_lldPhi'%tag ) if event.passing_checks else float('nan'),
       binning=[20,0,pi],
     ) )
@@ -251,114 +259,60 @@ def getPlotList( scaleLumi, level ):
 
     # for gen use genLepZ_lldR
     plots.append( Plot( name = 'Z_deltaR_ll',
-      texX = '#DeltaR(ll)', texY = y_label,
+      texX = '#DeltaR(ll)', texY = labelAddon + 'd#sigma/d#DeltaR(ll)'+unit,
+#      texX = '#DeltaR(ll)', texY = labelAddon + '#frac{d#sigma}{d #DeltaR(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_lldR'%tag ) if event.passing_checks else float('nan'),
-      binning=[20,0,4],
+      binning=[20,0,3.5],
     ) )
     fisherInfoVariables.append('%sZ_lldR'%tag)
         
-    plots.append( Plot( name = 'Z_eta',
-      texX = '#eta(Z) [GeV]', texY = y_label,
-      attribute = lambda event, sample: getattr( event, '%sZ_eta'%level ) if event.passing_checks else float('nan'),
-      binning=[20,-3,3],
-    ) )
-    fisherInfoVariables.append('%sZ_eta'%level)
-
     plots.append( Plot( name = "Z_cosThetaStar10",
-      texX = 'cos(#theta*)', texY = y_label,
+      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
+#      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
       binning=[10,-1.,1.],
     ) )
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
 
     plots.append( Plot( name = "Z_cosThetaStar20",
-      texX = 'cos(#theta*)', texY = y_label,
+      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
+#      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
       binning=[20,-1.,1.],
     ) )
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
 
     plots.append( Plot( name = "Z_cosThetaStar5",
-      texX = 'cos(#theta*)', texY = y_label,
+      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
+#      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
       binning=[5,-1.,1.],
     ) )
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
     
     plots.append( Plot( name = 'deltaPhi_bb',
-      texX = '#Delta#phi(bb)', texY = y_label,
+      texX = '#Delta#phi(bb)', texY = labelAddon + 'd#sigma/d#Delta#phi(bb)'+unit,
+#      texX = '#Delta#phi(bb)', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(bb)}'+unit,
       attribute = lambda event, sample: event.bbdPhi if event.passing_checks else float('nan'),
       binning=[20,0,pi],
     ) )
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = 'deltaR_bb',
-      texX = '#DeltaR(bb)', texY = y_label,
+      texX = '#DeltaR(bb)', texY = labelAddon + 'd#sigma/d#DeltaR(bb)'+unit,
+#      texX = '#DeltaR(bb)', texY = labelAddon + '#frac{d#sigma}{d #DeltaR(bb)}'+unit,
       attribute = lambda event, sample: event.bbdR if event.passing_checks else float('nan'),
-      binning=[20,0,4],
+      binning=[20,0,3.5],
     ) )
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = 'Met_pt',
-      texX = 'E_{T}^{miss} [GeV]', texY = y_label,
+      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + 'd#sigma/dE_{T}^{miss}'+unit,
+#      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + '#frac{d#sigma}{d E_{T}^{miss}}'+unit,
       attribute = lambda event, sample: event.MET['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,200],
     ) )
     fisherInfoVariables.append('%sMet_pt'%preTag)
-
-    plots.append( Plot( name	= 'Met_phi',
-      texX = '#phi(E_{T}^{miss})', texY = y_label,
-      attribute = lambda event, sample: event.MET['phi'] if event.passing_checks else float('nan'),
-      binning=[20,-pi,pi],
-    ) )
-    fisherInfoVariables.append('%sMet_phi'%preTag)
-
-
-    plots.append( Plot( name = 'lnonZ_pt',
-      texX = 'p_{T}(l^{non-Z}) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.NonZ_l0['pt'] if event.passing_checks else float('nan'),
-      binning=[20,0,200],
-    ) )
-    fisherInfoVariables.append(None)
-
-    
-    plots.append( Plot( name = 'l0Z_pt',
-      texX = 'p_{T}(l^{Z}) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.Z_l0['pt'] if event.passing_checks else float('nan'),
-      binning=[20,0,400],
-    ) )
-    fisherInfoVariables.append(None)
-
-    
-    plots.append( Plot( name = 'l1Z_pt',
-      texX = 'p_{T}(l^{Z}) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.Z_l1['pt'] if event.passing_checks else float('nan'),
-      binning=[20,0,400],
-    ) )
-    fisherInfoVariables.append(None)
-
-    plots.append(Plot( name = 'njets',
-      texX = 'Number of Jets', texY = y_label,
-      attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
-      binning=[8,0,8],
-    ) )
-    fisherInfoVariables.append('n%sJet'%preTag)
-
-
-    plots.append(Plot( name = 'nleps',
-      texX = 'Number of Leptons', texY = y_label,
-      attribute = lambda event, sample: getattr( event, 'n%sLep'%preTag ) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ) )
-    fisherInfoVariables.append('n%sLep'%preTag)
-
-
-    plots.append(Plot( name = 'nbjets',
-      texX = 'Number of bJets', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
 
     if len(plots) != len(fisherInfoVariables):
         raise ValueError('Wrong plot list in ttZ_3l! plots and fisherInfoVariables lists must be same size!')
