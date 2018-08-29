@@ -309,6 +309,7 @@ else:
 ttXWeightString = 'ref_lumiweight1fb*%s*%s*%s'%(str(args.luminosity), str(ttXSample.event_factor), w.get_weight_string( **fisherInfo_WC ))
 
 def drawObjects( hasData = False ):
+    offset = 0.5 if args.addFisherInformation else 0.6
     titleAddon = ', FI: %s'%' '.join(args.variables) if args.addFisherInformation else ''
     tex = ROOT.TLatex()
     tex.SetNDC()
@@ -317,7 +318,7 @@ def drawObjects( hasData = False ):
     tex.SetTextFont(42)
     lines = [
       (0.15, 0.95, 'data' if hasData else ' '.join(args.processFile.split('_')[:2])),
-      (0.6, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
+      (offset, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
@@ -432,8 +433,13 @@ def drawPlots(plots):
           hi.legendText = allParams[i_h][j_hi]['legendText']
           hi.GetXaxis().SetTickLength(0.04)
           hi.GetYaxis().SetTickLength(0.04)
-#          hi.GetXaxis().SetLabelOffset(.4)
-#          hi.GetYaxis().SetLabelOffset(.4)
+#          hi.GetXaxis().SetLabelOffset(1.4)
+#          hi.GetYaxis().SetLabelOffset(1.2)
+#          hi.GetXaxis().SetTitleOffset(1.4)
+          hi.GetYaxis().SetTitleOffset(1.)
+          hi.GetXaxis().SetTitleSize(0.035)
+          hi.GetYaxis().SetTitleSize(0.035)
+
 
       if not max( max(li.GetMaximum() for li in l) for l in plot.histos): continue # Empty plot
 

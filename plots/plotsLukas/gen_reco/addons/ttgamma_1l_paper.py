@@ -196,7 +196,7 @@ def makeObservables( event, sample, level):
     # Make leptonic W, Nan if any component is Nan
     event.Wlep_vec2D = event.MET['vec2D'] + event.l0['vec2D']
     # Lp, Nan if any component is Nan
-    event.Wlep_Lp = ( event.Wlep_vec2D*event.l0['vec2D'] ) / ( event.Wlep_vec2D*event.Wlep_vec2D )
+    event.Wlep_Lp = ( event.Wlep_vec2D*event.l0['vec2D'] )/( event.Wlep_vec2D*event.Wlep_vec2D )
     # classic MT, Nan if any component is Nan
     event.Wlep_MT = sqrt( MTSquared( event.MET, event.l0 ) )
 
@@ -243,119 +243,89 @@ def getPlotList( scaleLumi, level ):
     tag = 'reco' if level == 'reco' else 'genLep'
     preTag = 'reco' if level == 'reco' else 'gen'
 
-    if scaleLumi: y_label = 'norm. diff. xsec'
-    else:         y_label = 'diff. x-sec'
+#    if scaleLumi: y_label = 'norm. diff. xsec'
+#    else:         y_label = 'diff. x-sec'
+
+#    labelAddon = '#frac{1}{#sigma} ' if scaleLumi else ''
+    labelAddon = '1/#sigma ' if scaleLumi else ''
+#    unit = ' [GeV^{-1}]' if scaleLumi else ' [fb/GeV]'
+    unit = ''
+
+    y_label = 'Number of Events'
 
     plots = []
     fisherInfoVariables = []
 
     plots.append(Plot( name = 'l0gammaDPhi',
-      texX = '#Delta#Phi(l_{0},#gamma_{0})', texY = y_label,
+      texX = '#Delta#phi(l_{0},#gamma_{0})', texY = y_label + ' / bin',
+#      texX = '#Delta#phi(l_{0},#gamma_{0})', texY = labelAddon + 'd#sigma/d#Delta#phi(l_{0},#gamma_{0})'+unit,
+#      texX = '#Delta#phi(l_{0},#gamma_{0})', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(l_{0},#gamma_{0})}'+unit,
       attribute = lambda event, sample: event.l0gammadPhi if event.passing_checks else float('nan'),
       binning=[20,0,pi],
     ))
     fisherInfoVariables.append(None)
 
     plots.append(Plot( name = 'l0gammaDR',
-      texX = '#Delta R(l_{0},#gamma_{0})', texY = y_label,
+      texX = '#Delta R(l_{0},#gamma_{0})', texY = y_label + ' / bin',
+#      texX = '#Delta R(l_{0},#gamma_{0})', texY = labelAddon + 'd#sigma/d#Delta R(l_{0},#gamma_{0})'+unit,
+#      texX = '#Delta R(l_{0},#gamma_{0})', texY = labelAddon + '#frac{d#sigma}{d #Delta R(l_{0},#gamma_{0})}'+unit,
       attribute = lambda event, sample: event.l0gammadR if event.passing_checks else float('nan'),
       binning=[20,0.3,3],
     ))
     fisherInfoVariables.append(None)
 
     plots.append(Plot( name = "gamma_pt10",
-      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label,
+      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label + ' / 40 GeV',
+#      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(#gamma_{0})'+unit,
+#      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + '#frac{d#sigma}{d p_{T}(#gamma_{0})}'+unit,
       attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
       binning=[10,0,400],
     ))
     fisherInfoVariables.append('%sPhoton_pt[0]'%preTag)
 
+    plots.append(Plot( name = "gamma_eta",
+      texX = '#eta(#gamma_{0})', texY = y_label + ' / bin',
+#      texX = '#eta(#gamma_{0})', texY = labelAddon + 'd#sigma/d#eta(#gamma_{0})'+unit,
+      attribute = lambda event, sample: event.gamma0['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-3,3],
+    ))
+    fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
+
     plots.append(Plot( name = "gamma_pt20",
-      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label,
+      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label + ' / 20 GeV',
+#      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(#gamma_{0})'+unit,
+#      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + '#frac{d#sigma}{d p_{T}(#gamma_{0})}'+unit,
       attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,400],
     ))
     fisherInfoVariables.append('%sPhoton_pt[0]'%preTag)
 
-    plots.append(Plot( name = "gamma_eta10",
-      texX = '#eta(#gamma_{0})', texY = y_label,
-      attribute = lambda event, sample: event.gamma0['eta'] if event.passing_checks else float('nan'),
-      binning=[10,-3,3],
-    ))
-    fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
-
-    plots.append(Plot( name = "gamma_eta20",
-      texX = '#eta(#gamma_{0})', texY = y_label,
-      attribute = lambda event, sample: event.gamma0['eta'] if event.passing_checks else float('nan'),
-      binning=[20,-3,3],
-    ))
-    fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
-
-    plots.append(Plot( name = "l0_pt",
-      texX = 'p_{T}(l_{0}) [GeV]', texY = y_label,
-      attribute = lambda event, sample: event.l0['pt'] if event.passing_checks else float('nan'),
-      binning=[20,0,200],
-    ))
-    fisherInfoVariables.append('%sLep_pt[0]'%preTag)
-
-    plots.append(Plot( name = "l0_eta",
-      texX = '#eta(l_{0})', texY = y_label,
-      attribute = lambda event, sample: event.l0['eta'] if event.passing_checks else float('nan'),
-      binning=[20,-3,3],
-    ))
-    fisherInfoVariables.append('%sLep_eta[0]'%preTag)
-    
     plots.append(Plot( name = 'deltaPhi_bb',
-      texX = '#Delta#phi(bb)', texY = y_label,
+      texX = '#Delta#phi(bb)', texY = y_label + ' / bin',
+#      texX = '#Delta#phi(bb)', texY = labelAddon + 'd#sigma/d#Delta#phi(bb)'+unit,
+#      texX = '#Delta#phi(bb)', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(bb)}'+unit,
       attribute = lambda event, sample: event.bbdPhi if event.passing_checks else float('nan'),
       binning=[20,0,pi],
     ))
     fisherInfoVariables.append(None)
 
     plots.append(Plot( name = 'deltaR_bb',
-      texX = '#DeltaR(bb)', texY = y_label,
+      texX = '#DeltaR(bb)', texY = y_label + ' / bin',
+#      texX = '#DeltaR(bb)', texY = labelAddon + 'd#sigma/d#DeltaR(bb)'+unit,
+#      texX = '#DeltaR(bb)', texY = labelAddon + '#frac{d#sigma}{d #DeltaR(bb)}'+unit,
       attribute = lambda event, sample: event.bbdR if event.passing_checks else float('nan'),
-      binning=[20,0,4],
+      binning=[20,0,3.5],
     ))
     fisherInfoVariables.append(None)
 
     plots.append(Plot( name = 'Met_pt',
-      texX = 'E_{T}^{miss} [GeV]', texY = y_label,
+      texX = 'E_{T}^{miss} [GeV]', texY = y_label + ' / 10 GeV',
+#      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + 'd#sigma/dE_{T}^{miss}'+unit,
+#      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + '#frac{d#sigma}{d E_{T}^{miss}}'+unit,
       attribute = lambda event, sample: event.MET['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,200],
     ))
     fisherInfoVariables.append('%sMet_pt'%preTag)
-
-    plots.append(Plot( name = 'njets',
-      texX = 'Number of Jets', texY = y_label,
-      attribute = lambda event, sample: getattr( event, 'n%sJet'%preTag ) if event.passing_checks else float('nan'),
-      binning=[8,0,8],
-    ))
-    fisherInfoVariables.append('n%sJet'%preTag)
-
-
-    plots.append(Plot( name = 'nleps',
-      texX = 'Number of Leptons', texY = y_label,
-      attribute = lambda event, sample: getattr( event, 'n%sLep'%preTag ) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append('n%sLep'%preTag)
-
-
-    plots.append(Plot( name = 'nbjets',
-      texX = 'Number of bJets', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
-
-
-    plots.append(Plot( name = 'ngammas',
-      texX = 'Number of photons', texY = y_label,
-      attribute = lambda event, sample: len(event.gammas) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
 
     if len(plots) != len(fisherInfoVariables):
         raise ValueError('Wrong plot list in ttgamma_1l! plots and fisherInfoVariables lists must be same size!')

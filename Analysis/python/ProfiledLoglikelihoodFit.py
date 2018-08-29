@@ -257,7 +257,7 @@ class ProfiledLoglikelihoodFit:
         self.ws.writeToFile('tmp/'+self.modelname+'.root', True);
 #        self.ws.writeToFile(self.modelname+'.root', True);
 
-    def calculate_limit( self, calculator = "asymptotic"):
+    def calculate_limit( self, calculator = "asymptotic", plotLimit = True):
 
         # asymptotic calculator
         asymptotic_calc = ROOT.RooStats.AsymptoticCalculator(self.data, self.bModel, self.sbModel)
@@ -298,31 +298,32 @@ class ProfiledLoglikelihoodFit:
         upperLimit = r.UpperLimit()
 
         # make Brazilian flag plot
-        c1 = ROOT.TCanvas() 
-        plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot_%i"%self.seed,"HypoTest Scan Result_%i"%self.seed,r)
-        plot.Draw("goff") 
-        c1.SetLogy()
-        directory = os.path.join( plot_directory, "limits", self.modelname )
-        if not os.path.exists( directory ):
-            os.makedirs( directory )
-        c1.Print( os.path.join( directory, calculator+"_HTI_Result_Plot.png") )
+        if plotLimit:
+            c1 = ROOT.TCanvas() 
+            plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot_%i"%self.seed,"HypoTest Scan Result_%i"%self.seed,r)
+            plot.Draw("goff") 
+            c1.SetLogy()
+            directory = os.path.join( plot_directory, "limits", self.modelname )
+            if not os.path.exists( directory ):
+                os.makedirs( directory )
+            c1.Print( os.path.join( directory, calculator+"_HTI_Result_Plot.png") )
 
-        # Plots of test statistic 
-        n = r.ArraySize()
-        if (n> 0 and r.GetResult(0).GetNullDistribution() ):
-           if n > 1: 
-              ny = ROOT.TMath.CeilNint( sqrt(n) )
-              nx = ROOT.TMath.CeilNint(float(n)/ny) 
-           for i in range(n): 
-              #if (n > 1) c1.cd(i+1)
-              pl = plot.MakeTestStatPlot(i)
-              pl.SetLogYaxis(True)
-              pl.Draw("goff")
-              c1.Print(os.path.join( directory, calculator + "teststat_%i.png"%i) )
+            # Plots of test statistic 
+            n = r.ArraySize()
+            if (n> 0 and r.GetResult(0).GetNullDistribution() ):
+                if n > 1: 
+                    ny = ROOT.TMath.CeilNint( sqrt(n) )
+                    nx = ROOT.TMath.CeilNint(float(n)/ny) 
+                for i in range(n): 
+                    #if (n > 1) c1.cd(i+1)
+                    pl = plot.MakeTestStatPlot(i)
+                    pl.SetLogYaxis(True)
+                    pl.Draw("goff")
+                    c1.Print(os.path.join( directory, calculator + "teststat_%i.png"%i) )
 
 
-        plot.IsA().Destructor( plot )
-        del plot
+            plot.IsA().Destructor( plot )
+            del plot
 
         return {i:r.GetExpectedUpperLimit(i) for i in range(-2,3)}
 

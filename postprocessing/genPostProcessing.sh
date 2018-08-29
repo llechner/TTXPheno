@@ -1,44 +1,44 @@
 #!/bin/sh
 
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgammaLarge_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT2000
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_full_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT2000
-#
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
-#
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttW_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_dilep_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_nonhad_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tZq_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tWZ_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
+# Large samples for ttbar and ttgamma
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgammaLarge_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT2000
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_full_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT2000
+
+# Signal samples with reference point
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttW_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
+
+# background samples without reference point
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_dilep_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_nonhad_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tZq_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tWZ_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
+
 python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tW_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
 python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_Zgamma_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
 python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_bg_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
 python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_WZ_lep_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
 
-#python genPostProcessing.py --overwrite --targetDir v6 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --overwrite --targetDir v6 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights --addReweights --interpolationOrder 2 --delphes #SPLIT200
+######################################################################################################################################################################
+######################################################################################################################################################################
+######################################################################################################################################################################
+
+# ttbar sample with reference point (not intended to use)
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
+
+# Signal sample without reference point (not intended to use)
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights --interpolationOrder 2 --delphes #SPLIT200
 #python genPostProcessing.py --overwrite --targetDir v6 --logLevel DEBUG --sample fwlite_ttW_LO_order2_15weights --addReweights --interpolationOrder 2 --delphes #SPLIT200
 
 
-#python genPostProcessing.py --small --logLevel DEBUG --overwrite --sample fwlite_ttZ_ll_LO_order2_15weights --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --small --logLevel DEBUG --overwrite --sample fwlite_ttW_LO_order2_15weights --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --small --logLevel DEBUG --overwrite --sample fwlite_ttgamma_LO_order2_15weights --addReweights --interpolationOrder 2 --delphes #SPLIT200
-
-#python genPostProcessing.py --small --logLevel DEBUG --overwrite --sample fwlite_ttZ_ll_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --small --logLevel DEBUG --overwrite --sample fwlite_ttW_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-#python genPostProcessing.py --small --logLevel DEBUG --overwrite --sample fwlite_ttgamma_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes #SPLIT200
-
-
-
+# Signal sample without reference point, 8 weights, 3rd order (not intended to use)
 #python genPostProcessing.py --logLevel DEBUG --overwrite --sample fwlite_ttZ_ll_LO_order3_8weights --addReweights --interpolationOrder 3 --delphes #SPLIT200
 #python genPostProcessing.py --logLevel DEBUG --overwrite --sample fwlite_ttW_LO_order3_8weights --addReweights --interpolationOrder 3 --delphes #SPLIT200
 #python genPostProcessing.py --logLevel DEBUG --overwrite --sample fwlite_ttgamma_LO_order3_8weights --addReweights --interpolationOrder 3 --delphes #SPLIT200
 
+# Old or test scans
 #python genPostProcessing.py --overwrite --sample fwlite_ttZ_ll_LO_highStat_scan --addReweights --delphes #SPLIT200
 #python genPostProcessing.py --overwrite --sample fwlite_ttZ_ll_LO_currentplane_highStat_scan --overwrite --addReweights #SPLIT200
 #python genPostProcessing.py --sample fwlite_ttZ_ll_LO_scan --overwrite --addReweights #SPLIT200
