@@ -228,12 +228,15 @@ def getPlotList( scaleLumi, level ):
 #    unit = ' [GeV^{-1}]' if scaleLumi else ' [fb/GeV]'
     unit = ''
 
+    y_label = 'Number of Events'
+
     plots = []
     fisherInfoVariables = []
     
 
     plots.append( Plot( name = "Z_pt20",
-      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(ll)'+unit,
+      texX = 'p_{T}(ll) [GeV]', texY = y_label + ' / 20 GeV',
+#      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(ll)'+unit,
 #      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + '#frac{d#sigma}{d p_{T}(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_pt'%level ) if event.passing_checks else float('nan'),
       binning=[20,0,400],
@@ -241,7 +244,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_pt'%level)
 
     plots.append( Plot( name = "Z_pt10",
-      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(ll)'+unit,
+      texX = 'p_{T}(ll) [GeV]', texY = y_label + ' / 40 GeV',
+#      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(ll)'+unit,
 #      texX = 'p_{T}(ll) [GeV]', texY = labelAddon + '#frac{d#sigma}{d p_{T}(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_pt'%level ) if event.passing_checks else float('nan'),
       binning=[10,0,400],
@@ -250,7 +254,8 @@ def getPlotList( scaleLumi, level ):
 
     # for gen use genLepZ_lldPhi
     plots.append( Plot( name = 'Z_deltaPhi_ll',
-      texX = '#Delta#phi(ll)', texY = labelAddon + 'd#sigma/d#Delta#phi(ll)'+unit,
+      texX = '#Delta#phi(ll)', texY = y_label + ' / bin',
+#      texX = '#Delta#phi(ll)', texY = labelAddon + 'd#sigma/d#Delta#phi(ll)'+unit,
 #      texX = '#Delta#phi(ll)', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_lldPhi'%tag ) if event.passing_checks else float('nan'),
       binning=[20,0,pi],
@@ -259,7 +264,8 @@ def getPlotList( scaleLumi, level ):
 
     # for gen use genLepZ_lldR
     plots.append( Plot( name = 'Z_deltaR_ll',
-      texX = '#DeltaR(ll)', texY = labelAddon + 'd#sigma/d#DeltaR(ll)'+unit,
+      texX = '#DeltaR(ll)', texY = y_label + ' / bin',
+#      texX = '#DeltaR(ll)', texY = labelAddon + 'd#sigma/d#DeltaR(ll)'+unit,
 #      texX = '#DeltaR(ll)', texY = labelAddon + '#frac{d#sigma}{d #DeltaR(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_lldR'%tag ) if event.passing_checks else float('nan'),
       binning=[20,0,3.5],
@@ -267,7 +273,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_lldR'%tag)
         
     plots.append( Plot( name = "Z_cosThetaStar10",
-      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
+      texX = 'cos(#theta*)', texY = y_label + ' / bin',
+#      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
 #      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
       binning=[10,-1.,1.],
@@ -275,7 +282,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
 
     plots.append( Plot( name = "Z_cosThetaStar20",
-      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
+      texX = 'cos(#theta*)', texY = y_label + ' / bin',
+#      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
 #      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
       binning=[20,-1.,1.],
@@ -283,7 +291,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
 
     plots.append( Plot( name = "Z_cosThetaStar5",
-      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
+      texX = 'cos(#theta*)', texY = y_label + ' / bin',
+#      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
 #      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
       binning=[5,-1.,1.],
@@ -291,7 +300,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
     
     plots.append( Plot( name = 'deltaPhi_bb',
-      texX = '#Delta#phi(bb)', texY = labelAddon + 'd#sigma/d#Delta#phi(bb)'+unit,
+      texX = '#Delta#phi(bb)', texY = y_label + ' / bin',
+#      texX = '#Delta#phi(bb)', texY = labelAddon + 'd#sigma/d#Delta#phi(bb)'+unit,
 #      texX = '#Delta#phi(bb)', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(bb)}'+unit,
       attribute = lambda event, sample: event.bbdPhi if event.passing_checks else float('nan'),
       binning=[20,0,pi],
@@ -299,7 +309,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = 'deltaR_bb',
-      texX = '#DeltaR(bb)', texY = labelAddon + 'd#sigma/d#DeltaR(bb)'+unit,
+      texX = '#DeltaR(bb)', texY = y_label + ' / bin',
+#      texX = '#DeltaR(bb)', texY = labelAddon + 'd#sigma/d#DeltaR(bb)'+unit,
 #      texX = '#DeltaR(bb)', texY = labelAddon + '#frac{d#sigma}{d #DeltaR(bb)}'+unit,
       attribute = lambda event, sample: event.bbdR if event.passing_checks else float('nan'),
       binning=[20,0,3.5],
@@ -307,7 +318,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = 'Met_pt',
-      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + 'd#sigma/dE_{T}^{miss}'+unit,
+      texX = 'E_{T}^{miss} [GeV]', texY = y_label + ' / 10 GeV',
+#      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + 'd#sigma/dE_{T}^{miss}'+unit,
 #      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + '#frac{d#sigma}{d E_{T}^{miss}}'+unit,
       attribute = lambda event, sample: event.MET['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,200],

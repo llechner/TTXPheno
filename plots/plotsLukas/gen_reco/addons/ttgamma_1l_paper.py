@@ -251,11 +251,14 @@ def getPlotList( scaleLumi, level ):
 #    unit = ' [GeV^{-1}]' if scaleLumi else ' [fb/GeV]'
     unit = ''
 
+    y_label = 'Number of Events'
+
     plots = []
     fisherInfoVariables = []
 
     plots.append(Plot( name = 'l0gammaDPhi',
-      texX = '#Delta#phi(l_{0},#gamma_{0})', texY = labelAddon + 'd#sigma/d#Delta#phi(l_{0},#gamma_{0})'+unit,
+      texX = '#Delta#phi(l_{0},#gamma_{0})', texY = y_label + ' / bin',
+#      texX = '#Delta#phi(l_{0},#gamma_{0})', texY = labelAddon + 'd#sigma/d#Delta#phi(l_{0},#gamma_{0})'+unit,
 #      texX = '#Delta#phi(l_{0},#gamma_{0})', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(l_{0},#gamma_{0})}'+unit,
       attribute = lambda event, sample: event.l0gammadPhi if event.passing_checks else float('nan'),
       binning=[20,0,pi],
@@ -263,7 +266,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append(Plot( name = 'l0gammaDR',
-      texX = '#Delta R(l_{0},#gamma_{0})', texY = labelAddon + 'd#sigma/d#Delta R(l_{0},#gamma_{0})'+unit,
+      texX = '#Delta R(l_{0},#gamma_{0})', texY = y_label + ' / bin',
+#      texX = '#Delta R(l_{0},#gamma_{0})', texY = labelAddon + 'd#sigma/d#Delta R(l_{0},#gamma_{0})'+unit,
 #      texX = '#Delta R(l_{0},#gamma_{0})', texY = labelAddon + '#frac{d#sigma}{d #Delta R(l_{0},#gamma_{0})}'+unit,
       attribute = lambda event, sample: event.l0gammadR if event.passing_checks else float('nan'),
       binning=[20,0.3,3],
@@ -271,7 +275,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append(Plot( name = "gamma_pt10",
-      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(#gamma_{0})'+unit,
+      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label + ' / 40 GeV',
+#      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(#gamma_{0})'+unit,
 #      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + '#frac{d#sigma}{d p_{T}(#gamma_{0})}'+unit,
       attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
       binning=[10,0,400],
@@ -279,14 +284,16 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sPhoton_pt[0]'%preTag)
 
     plots.append(Plot( name = "gamma_eta",
-      texX = '#eta(#gamma_{0})', texY = labelAddon + 'd#sigma/d#eta(#gamma_{0})'+unit,
+      texX = '#eta(#gamma_{0})', texY = y_label + ' / bin',
+#      texX = '#eta(#gamma_{0})', texY = labelAddon + 'd#sigma/d#eta(#gamma_{0})'+unit,
       attribute = lambda event, sample: event.gamma0['eta'] if event.passing_checks else float('nan'),
       binning=[20,-3,3],
     ))
     fisherInfoVariables.append('%sPhoton_eta[0]'%preTag)
 
     plots.append(Plot( name = "gamma_pt20",
-      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(#gamma_{0})'+unit,
+      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = y_label + ' / 20 GeV',
+#      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + 'd#sigma/dp_{T}(#gamma_{0})'+unit,
 #      texX = 'p_{T}(#gamma_{0}) [GeV]', texY = labelAddon + '#frac{d#sigma}{d p_{T}(#gamma_{0})}'+unit,
       attribute = lambda event, sample: event.gamma0['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,400],
@@ -294,7 +301,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sPhoton_pt[0]'%preTag)
 
     plots.append(Plot( name = 'deltaPhi_bb',
-      texX = '#Delta#phi(bb)', texY = labelAddon + 'd#sigma/d#Delta#phi(bb)'+unit,
+      texX = '#Delta#phi(bb)', texY = y_label + ' / bin',
+#      texX = '#Delta#phi(bb)', texY = labelAddon + 'd#sigma/d#Delta#phi(bb)'+unit,
 #      texX = '#Delta#phi(bb)', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(bb)}'+unit,
       attribute = lambda event, sample: event.bbdPhi if event.passing_checks else float('nan'),
       binning=[20,0,pi],
@@ -302,7 +310,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append(Plot( name = 'deltaR_bb',
-      texX = '#DeltaR(bb)', texY = labelAddon + 'd#sigma/d#DeltaR(bb)'+unit,
+      texX = '#DeltaR(bb)', texY = y_label + ' / bin',
+#      texX = '#DeltaR(bb)', texY = labelAddon + 'd#sigma/d#DeltaR(bb)'+unit,
 #      texX = '#DeltaR(bb)', texY = labelAddon + '#frac{d#sigma}{d #DeltaR(bb)}'+unit,
       attribute = lambda event, sample: event.bbdR if event.passing_checks else float('nan'),
       binning=[20,0,3.5],
@@ -310,7 +319,8 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append(Plot( name = 'Met_pt',
-      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + 'd#sigma/dE_{T}^{miss}'+unit,
+      texX = 'E_{T}^{miss} [GeV]', texY = y_label + ' / 10 GeV',
+#      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + 'd#sigma/dE_{T}^{miss}'+unit,
 #      texX = 'E_{T}^{miss} [GeV]', texY = labelAddon + '#frac{d#sigma}{d E_{T}^{miss}}'+unit,
       attribute = lambda event, sample: event.MET['pt'] if event.passing_checks else float('nan'),
       binning=[20,0,200],
