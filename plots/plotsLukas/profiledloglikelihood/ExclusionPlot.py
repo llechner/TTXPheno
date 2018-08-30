@@ -54,6 +54,7 @@ argParser.add_argument('--fit',             action='store',     default='', type
 argParser.add_argument('--zRange',          action='store',     default = [None, None], type=float, nargs=2, help = "argument parameters")
 argParser.add_argument('--overwrite',       action='store_true', help='overwrite data file?')
 argParser.add_argument('--binMultiplier',   action='store',     default=3, type=int, help='bin multiplication factor')
+argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?')
 
 args = argParser.parse_args()
 
@@ -106,14 +107,14 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
     sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
     loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
-    ttXSample       = getattr( loadedSamples, args.sample )
-    WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights' )
-    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
-    tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
-    tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
-    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
-    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
+    ttXSample       = getattr( loadedSamples, args.sample + '_%s' %args.detector )
+    WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
+    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
+    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
+    tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
+    tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
+    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
+    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
 
     if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
     elif args.process == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
@@ -459,7 +460,8 @@ latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
 plot_directory_ = os.path.join(\
     plot_directory,
     '%s_%s'%(args.level, args.version),
-    ttXSample.name,
+    args.detector,
+    args.sample,
     'backgrounds',
     'limit_small' if args.small else 'limit',
     args.selection)

@@ -45,13 +45,14 @@ argParser.add_argument('--small',           action='store_true', help='Run only 
 argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--variables' ,      action='store',     default = ['ctZ', 'ctZI'], type=str, nargs=2, help = "argument plotting variables")
 argParser.add_argument('--binning',         action='store',     default = [1, -2, 2, 1, -2, 2], type=float, nargs=6, help = "argument parameters")
-argParser.add_argument('--zRange',          action='store',     default = [None, None], type=int, nargs=2, help = "argument parameters")
+argParser.add_argument('--zRange',          action='store',     default = [None, None], type=float, nargs=2, help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 argParser.add_argument('--contours',        action='store_true', help='draw 1sigma and 2sigma contour line?')
 argParser.add_argument('--smooth',          action='store_true', help='smooth histogram?')
 argParser.add_argument('--cores',           action='store',     default=8, type=int, help='number of cpu cores for multicore processing')
 argParser.add_argument('--overwrite',       action='store_true', help='overwrite data file?')
 argParser.add_argument('--binMultiplier',   action='store',     default=3, type=int, help='bin multiplication factor')
+argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?')
 
 args = argParser.parse_args()
 
@@ -106,17 +107,17 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
     sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
     loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
-    ttZSample       = getattr( loadedSamples, 'fwlite_ttZ_ll_LO_order2_15weights_ref' )
-    ttgamma1lSample = getattr( loadedSamples, 'fwlite_ttgammaLarge_LO_order2_15weights_ref')
+    ttZSample       = getattr( loadedSamples, 'fwlite_ttZ_ll_LO_order2_15weights_ref_%s' %args.detector )
+    ttgamma1lSample = getattr( loadedSamples, 'fwlite_ttgammaLarge_LO_order2_15weights_ref_%s' %args.detector )
     ttgamma2lSample = copy.deepcopy( ttgamma1lSample )
 
-    WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights' )
-    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
-    tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
-    tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
-    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
-    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
+    WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
+    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
+    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
+    tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
+    tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
+    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
+    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
 
     signal    = [ ttZSample, ttgamma1lSample, ttgamma2lSample ]
     ttZBg     = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
@@ -494,6 +495,7 @@ latex1.DrawLatex(0.45, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
 plot_directory_ = os.path.join(\
     plot_directory,
     '%s_%s'%(args.level, args.version),
+    args.detector,
     'combined',
     'nll_small' if args.small else 'nll')
 

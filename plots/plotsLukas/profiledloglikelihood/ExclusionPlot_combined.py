@@ -45,7 +45,7 @@ argParser.add_argument('--small',           action='store_true', help='Run only 
 argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--variables' ,      action='store',     default = ['ctZ', 'ctZI'], type=str, nargs=2, help = "argument plotting variables")
 argParser.add_argument('--binning',         action='store',     default = [1, -2, 2, 1, -2, 2], type=float, nargs=6, help = "argument parameters")
-argParser.add_argument('--zRange',          action='store',     default = [None, None], type=int, nargs=2, help = "argument parameters")
+argParser.add_argument('--zRange',          action='store',     default = [None, None], type=float, nargs=2, help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 argParser.add_argument('--contours',        action='store_true', help='draw 1sigma and 2sigma contour line?')
 argParser.add_argument('--smooth',          action='store_true', help='smooth histogram?')
