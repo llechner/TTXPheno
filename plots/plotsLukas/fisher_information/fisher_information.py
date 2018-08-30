@@ -45,6 +45,7 @@ argParser.add_argument('--parameters',         action='store',      default = []
 argParser.add_argument('--luminosity',         action='store',      default=150)
 argParser.add_argument('--binThreshold',       action='store',      default=100)
 argParser.add_argument('--fpsScaling',         action='store_true', help='Scale to full pre-selection')
+argParser.add_argument('--detector',           action='store',      default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?')
 
 args = argParser.parse_args()
 
@@ -60,7 +61,7 @@ if len(args.parameters) == 0: args.parameters = None
 # Import samples
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
-sample = getattr( samples, args.sample )
+sample = getattr( samples, args.sample +  '_%s' %args.detector)
 
 fisher_directory = 'fisher_information'
 if args.small:
@@ -273,6 +274,7 @@ def drawPlot( log = False ):
     plot_directory_ = os.path.join(\
         plot_directory,
         plot_subdirectory,
+        args.detector,
         sample.name,
         fisher_directory,
         'fisherinfo',

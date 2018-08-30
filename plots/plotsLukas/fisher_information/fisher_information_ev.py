@@ -46,6 +46,7 @@ argParser.add_argument('--parameters',         action='store',      default = []
 argParser.add_argument('--luminosity',         action='store',      default=150)
 argParser.add_argument('--binThreshold',       action='store',      default=100)
 argParser.add_argument('--fpsScaling',         action='store_true', help='Scale to full pre-selection')
+argParser.add_argument('--detector',           action='store',      default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?')
 
 args = argParser.parse_args()
 
@@ -62,7 +63,7 @@ variableColors = [ ROOT.kBlue-7, ROOT.kSpring-5, ROOT.kOrange, ROOT.kPink-1, ROO
 # Import samples
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
-sample = getattr( samples, args.sample )
+sample = getattr( samples, args.sample + '_%s' %args.detector )
 
 # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
 fisher_directory = 'fisher_information'
@@ -196,6 +197,7 @@ n_data = len(data)
 plot_directory_ = os.path.join(\
     plot_directory,
     plot_subdirectory,
+    args.detector,
     sample.name,
     fisher_directory,
     'eigenvector',

@@ -47,10 +47,9 @@ argParser.add_argument('--leptonFlavor',    action='store',     default='all', n
 argParser.add_argument('--variables',       action='store',     default = ['cpt'], type=str, nargs='+', help = "argument variables")
 argParser.add_argument('--binThreshold',    action='store',     default=100)
 argParser.add_argument('--addFisherInformation', action='store_true', help='include Fisher Information Plot in a.u.?')
+argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?') 
 
 args = argParser.parse_args()
-
-#args.processFile = args.processFile.replace('_small','')
 
 if len(args.parameters) < 2: args.parameters = None
 
@@ -119,15 +118,16 @@ loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 #if args.processFile == 'ttgamma_1l': ttSampleName = 'fwlite_tt_nonhad_LO_order2_15weights'
 #else:                                ttSampleName = 'fwlite_tt_dilep_LO_order2_15weights'
 
-ttXSample = getattr( loadedSamples, args.sample )
-WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
-tWZSample = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
-tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
-ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
-ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
-ttgammaSample.name = 'fwlite_ttgamma__LO_order2_15weights_ref'
-ttSample = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights' )
+ttXSample = getattr( loadedSamples, args.sample + '_%s' %args.detector)
+WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
+tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
+tWZSample = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
+tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
+ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
+ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
+ttgammaSample.name = 'fwlite_ttgamma__LO_order2_15weights_%s' %args.detector
+ttSample = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
+ttSample.name = 'fwlite_tt__LO_order2_15weights_%s' %args.detector
 
 # details of the categories are written in the postprocessing script
 if args.processFile.split('_')[0] == 'ttgamma':
@@ -317,7 +317,7 @@ def drawObjects( hasData = False ):
     tex.SetTextAlign(11) # align right
     tex.SetTextFont(42)
     lines = [
-      (0.15, 0.95, 'data' if hasData else ' '.join(args.processFile.split('_')[:2])),
+      (0.15, 0.95, ' '.join(args.processFile.split('_')[:2]) + '(' + args.detector + ')'),
       (offset, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
     ]
     return [tex.DrawLatex(*l) for l in lines]
@@ -376,6 +376,7 @@ def drawPlots(plots):
     plot_directory_ = os.path.join(\
         plot_directory,
         '%s_%s'%(args.level, args.version),
+        args.detector,
         ttXSample.name,
         'fisher_information' if args.addFisherInformation else '',
         'kinematics' if args.addFisherInformation else '',
