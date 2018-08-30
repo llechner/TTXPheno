@@ -14,9 +14,18 @@ class GenSearch:
 #        if l['pdgId']!=self.genParticles[l['motherIndex1']]['pdgId']: return self.genParticles[l['motherIndex1']]
 #        else: return self.mother(self.genParticles[l['motherIndex1']])
 
-#    def ancestry(self, l, stop_at_pdgId = [2212]):
-#        self.__found = set()
-#        return self.__ancestry(l, stop_at_pdgId = stop_at_pdgId )
+    def ancestry(self, l, stop_at_pdgId = [2212]):
+        self.__found = set()
+        return self.__ancestry(l, stop_at_pdgId = stop_at_pdgId )
+
+    @property
+    def final_state_particles_no_neutrinos( self ):
+        if hasattr(self, "final_state_particles_no_neutrinos_"):
+            return self.final_state_particles_no_neutrinos_
+        else:
+            self.final_state_particles_no_neutrinos_ =  filter( lambda p: p.status()==1 and abs(p.pdgId()) not in [12,14,16], self.genParticles ) 
+            return self.final_state_particles_no_neutrinos_
+
 
     def daughters(self, p):
         return [p.daughter(i) for i in xrange( p.numberOfDaughters()) ]
@@ -56,7 +65,8 @@ class GenSearch:
     def __ancestry(self, p, stop_at_pdgId):
         ''' Returns indices of all genParticles in the ancestry of l
         '''
-        # print "Looking at %s, nMothers %i, already self.__found: %s"% ( pdgToName(l['pdgId']), l['nMothers'], ",".join(str(x) for x in self.__found) )
+        #print stop_at_pdgId
+        #print "Looking at %s, nMothers %i, motherPdgID %i, already self.__found: %s"% ( p.pdgId(), p.numberOfMothers(), p.mother(0).pdgId(),",".join(str(x.pdgId()) for x in self.__found) )
         for m in self.mothers(p):
             if abs(m.pdgId()) in stop_at_pdgId or m.numberOfMothers()==0:
                 # print "Done."

@@ -9,8 +9,8 @@ ctW=$3
 ctWI=$4
 ctZ=$5
 ctZI=$6
-ctG=$7
-ctGI=$8
+#ctG=$7
+#ctGI=$8
 
 # declare samples to analyze
 #declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights' 'fwlite_ttZ_ll_LO_order2_15weights_ref')
@@ -22,8 +22,8 @@ declare -a samples2=('fwlite_ttZ_ll_LO_order2_15weights_ref')
 declare -a samples3=('')
 
 # declare selection strings to analyze
-declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0' 'lepSel4-onZ-njet2p-nbjet1p-Zpt0to100' 'lepSel4-onZ-njet2p-nbjet1p-Zpt100to200' 'lepSel4-onZ-njet2p-nbjet1p-Zpt200to300' 'lepSel4-onZ-njet2p-nbjet1p-Zpt300to400' 'lepSel4-onZ-njet2p-nbjet1p-Zpt400')
-#declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0')
+#declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0' 'lepSel4-onZ-njet2p-nbjet1p-Zpt0to100' 'lepSel4-onZ-njet2p-nbjet1p-Zpt100to200' 'lepSel4-onZ-njet2p-nbjet1p-Zpt200to300' 'lepSel4-onZ-njet2p-nbjet1p-Zpt300to400' 'lepSel4-onZ-njet2p-nbjet1p-Zpt400')
+declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0' 'lepSel4-onZ-njet2p-nbjet1p-Zpt200')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -31,9 +31,9 @@ declare -a selections=('lepSel4-onZ-njet2p-nbjet1p-Zpt0' 'lepSel4-onZ-njet2p-nbj
 declare -a samplesizes=('')
 
 # declare reweighting
-declare -a reweightings=('' '--reweightPtXToSM')
+#declare -a reweightings=('' '--reweightPtXToSM')
 #declare -a reweightings=('--reweightPtXToSM')
-#declare -a reweightings=('')
+declare -a reweightings=('')
 
 # declare scale
 declare -a scales=('' '--scaleLumi')
@@ -46,11 +46,25 @@ declare -a scales=('' '--scaleLumi')
 #declare -a levels=('gen' 'genLep' 'reco')
 declare -a levels=('gen' 'reco')
 
-version='v8'
+declare -a flavors=('all' 'same' 'opposite')
+#declare -a flavors=('all')
+
+#declare -a variables=("cpt" "cpQM")
+declare -a variables=("cpt")
+
+#declare -a binThresholds=("400" "100" "25" "0")
+#declare -a binThresholds=("100" "0")
+declare -a binThresholds=("100")
+
+#declare -a fisherInfo=("--addFisherInformation" "")
+declare -a fisherInfo=("--addFisherInformation")
+
+#declare -a backgrounds=("--backgrounds" "")
+declare -a backgrounds=("--backgrounds")
+
+version='v25'
 luminosity='150'
 process='ttZ_4l'
-
-backgrounds='--backgrounds'
 
 # define program to run by python
 prog=skim_plots.py
@@ -75,28 +89,49 @@ do
             for level in "${levels[@]}"
             do
 
-               order=2
-               for sample in "${samples2[@]}"
+               for flavor in "${flavors[@]}"
                do
 
-                  if [ -z $sample ]; then
-                     continue
-                  fi
+                  for variable in "${variables[@]}"
+                  do
 
-                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+                     for binThreshold in "${binThresholds[@]}"
+                     do
 
-               done
+                        for addFisher in "${fisherInfo[@]}"
+                        do
 
-               order=3
-               for sample in "${samples3[@]}"
-               do
+                           for background in "${backgrounds[@]}"
+                           do
 
-                  if [ -z $sample ]; then
-                     continue
-                  fi
+                               order=2
+                               for sample in "${samples2[@]}"
+                               do
 
-                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI}"
+                                  if [ -z $sample ]; then
+                                     continue
+                                  fi
 
+                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
+#                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
+
+                               done
+
+                               order=3
+                               for sample in "${samples3[@]}"
+                               do
+
+                                  if [ -z $sample ]; then
+                                     continue
+                                  fi
+
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
+
+                               done
+                            done
+                        done
+                     done
+                  done
                done
             done
          done

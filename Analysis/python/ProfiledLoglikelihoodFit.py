@@ -6,6 +6,8 @@ import ROOT
 import os
 from math import *
 
+import random
+
 # resources
 # http://people.na.infn.it/~lista/Statistics/slides/10%20-%20roostats.pdf
 # https://twiki.cern.ch/twiki/bin/view/RooStats/RooStatsTutorialsJune2013#Exercise_2_Profile_Likelihood_Ca
@@ -30,6 +32,48 @@ def float_cast( string ):
         return 1.0
     else:
         return float( string )
+
+def minimize( nll ):
+    '''Minimize NLL according to 
+       https://root.cern.ch/doc/v606/classRooStats_1_1ProfileLikelihoodCalculator.html#a5fb0beddc24d1bd4bf4346532a517497
+    '''
+    minimType = ROOT.Math.MinimizerOptions.DefaultMinimizerType()
+    minimAlgo = ROOT.Math.MinimizerOptions.DefaultMinimizerAlgo()
+    strategy  = ROOT.Math.MinimizerOptions.DefaultStrategy()
+    level     = ROOT.Math.MinimizerOptions.DefaultPrintLevel() -1
+    tolerance = ROOT.Math.MinimizerOptions.DefaultTolerance()
+
+    minimizer = ROOT.RooMinimizer(nll)
+
+    minimizer.setStrategy(strategy)
+    minimizer.setEps(tolerance)
+    minimizer.setPrintLevel(999)
+    minimizer.optimizeConst(2) #to optimize likelihood calculations
+
+    status = minimizer.minimize(minimType,minimAlgo)
+    result = minimizer.save()
+
+    status   = -1
+    maxtries = 4
+    for ntry in range(1, maxtries+1):
+       status = minimizer.minimize(minimType,minimAlgo)
+       if (status%1000 == 0): # ignore erros from Improve 
+          break
+       elif ntry < maxtries:
+          logger.warning( "minimizer re-try %i: Doing a re-scan first", ntry)
+          minimizer.minimize(minimType,"Scan")
+          if (ntry == 2):
+             if (strategy == 0 ):
+                logger.warning( "minimizer re-try %i, trying with strategy = 1", ntry)
+                minimizer.setStrategy(1)
+             else: 
+                ntry+=1 # skip this trial if strategy is already 1 
+          if (ntry == 3):
+             logger.warning("minimizer re-try %i, trying with migradimproved", ntry)
+             minimType = "Minuit"
+             minimAlgo = "migradimproved"
+
+    if (status%1000 == 0): return minimizer.save()
         
 class ProfiledLoglikelihoodFit:
 
@@ -39,8 +83,7 @@ class ProfiledLoglikelihoodFit:
         self.modelname                   = os.path.splitext(os.path.basename(self.filename))[0]
         self.nuisance_names              = []
         self.nuisance_uncertainty_values = {}
-        self.rmin = 0
-        self.rmax = 10.
+        self.seed                        = random.randint(0,1000000)
 
         # read card filefile
         with open( filename, 'r' ) as file:
@@ -95,8 +138,8 @@ class ProfiledLoglikelihoodFit:
         self.nNuisances     = len(self.nuisance_names)  
         logger.info( "Nuisances: %i (%s)", self.nNuisances, ",".join( self.nuisance_names ) )
 
-    def make_workspace( self ):
-        self.ws = ROOT.RooWorkspace("workspace")
+    def make_workspace( self, rmin=0, rmax=10.):
+        self.ws = ROOT.RooWorkspace("workspace_%i"%self.seed)
         ROOT.SetOwnership( self.ws, False )
 
         # set all observations
@@ -113,7 +156,7 @@ class ProfiledLoglikelihoodFit:
         self.glob      = ROOT.RooArgSet("global")
 
         # signal strength modifier
-        self.ws.factory( "r[1,%f,%f]"%(self.rmin, self.rmax) )
+        self.ws.factory( "r[1,%f,%f]"%(rmin, rmax) )
         self.poi       = ROOT.RooArgSet("poi")
         self.poi.add( self.ws.var("r") )
 
@@ -188,7 +231,7 @@ class ProfiledLoglikelihoodFit:
         self.ws.Print()
       
         # Import data 
-        self.data = ROOT.RooDataSet("data", "data", self.observables)
+        self.data = ROOT.RooDataSet("data_%i"%self.seed, "data_%i"%self.seed, self.observables)
         ROOT.SetOwnership( self.data, False )
         self.data.add( self.observables )
         # import dataset into workspace
@@ -211,9 +254,10 @@ class ProfiledLoglikelihoodFit:
         self.bModel.SetSnapshot( self.poi )
         getattr(self.ws, 'import')(self.bModel)
 
-        self.ws.writeToFile(self.modelname+'.root', True);
+        self.ws.writeToFile('tmp/'+self.modelname+'.root', True);
+#        self.ws.writeToFile(self.modelname+'.root', True);
 
-    def calculate_limit( self, calculator = "asymptotic"):
+    def calculate_limit( self, calculator = "asymptotic", plotLimit = True):
 
         # asymptotic calculator
         asymptotic_calc = ROOT.RooStats.AsymptoticCalculator(self.data, self.bModel, self.sbModel)
@@ -254,30 +298,67 @@ class ProfiledLoglikelihoodFit:
         upperLimit = r.UpperLimit()
 
         # make Brazilian flag plot
-        c1 = ROOT.TCanvas() 
-        plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","HypoTest Scan Result",r)
-        plot.Draw("goff") 
-        c1.SetLogy()
-        directory = os.path.join( plot_directory, "limits", self.modelname )
-        if not os.path.exists( directory ):
-            os.makedirs( directory )
-        c1.Print( os.path.join( directory, calculator+"_HTI_Result_Plot.png") )
-        
-        # Plots of test statistic 
-        n = r.ArraySize()
-        if (n> 0 and r.GetResult(0).GetNullDistribution() ):
-           if n > 1: 
-              ny = ROOT.TMath.CeilNint( sqrt(n) )
-              nx = ROOT.TMath.CeilNint(float(n)/ny) 
-           for i in range(n): 
-              #if (n > 1) c1.cd(i+1)
-              pl = plot.MakeTestStatPlot(i)
-              pl.SetLogYaxis(True)
-              pl.Draw("goff")
-              c1.Print(os.path.join( directory, calculator + "teststat_%i.png"%i) )
+        if plotLimit:
+            c1 = ROOT.TCanvas() 
+            plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot_%i"%self.seed,"HypoTest Scan Result_%i"%self.seed,r)
+            plot.Draw("goff") 
+            c1.SetLogy()
+            directory = os.path.join( plot_directory, "limits", self.modelname )
+            if not os.path.exists( directory ):
+                os.makedirs( directory )
+            c1.Print( os.path.join( directory, calculator+"_HTI_Result_Plot.png") )
+
+            # Plots of test statistic 
+            n = r.ArraySize()
+            if (n> 0 and r.GetResult(0).GetNullDistribution() ):
+                if n > 1: 
+                    ny = ROOT.TMath.CeilNint( sqrt(n) )
+                    nx = ROOT.TMath.CeilNint(float(n)/ny) 
+                for i in range(n): 
+                    #if (n > 1) c1.cd(i+1)
+                    pl = plot.MakeTestStatPlot(i)
+                    pl.SetLogYaxis(True)
+                    pl.Draw("goff")
+                    c1.Print(os.path.join( directory, calculator + "teststat_%i.png"%i) )
+
+
+            plot.IsA().Destructor( plot )
+            del plot
 
         return {i:r.GetExpectedUpperLimit(i) for i in range(-2,3)}
 
+    def cleanup( self, removeFiles = False ):
+        for obj in [ self.data, self.ws]:
+            obj.IsA().Destructor( obj )
+        if removeFiles:
+            os.remove('tmp/'+self.modelname+'.root')
+            os.remove('tmp/'+self.modelname+'.txt')
+
+    def likelihoodTest( self ):
+        '''Make likelihood test '''
+        # read PDF and data
+        pdf =  self.ws.pdf("model")
+        data = self.ws.data("data_%i"%self.seed)
+
+        # Here we only test hypothesis
+        self.poi.first().setVal(1)
+        self.poi.first().setConstant(True)
+
+        # get the fit parameters
+        parameters = pdf.getParameters(data)
+        ROOT.RooStats.RemoveConstantParameters( parameters )
+        
+        # create NLL
+        self.nll = pdf.createNLL(data, ROOT.RooFit.CloneData(True), ROOT.RooFit.Constrain(parameters))
+        ROOT.SetOwnership( self.nll, False )
+
+        # minimize
+        fitResult = minimize( self.nll )
+        if fitResult is not None:
+            logger.info( "Minimum NLL is %f", fitResult.minNll() )
+            return fitResult.minNll()
+        else:
+            logger.warning( "Did not get fitResult!" )
 
 #    def make_profiled_interval( self ):
 #
@@ -311,7 +392,8 @@ if __name__=="__main__":
     profiledLoglikelihoodFit.make_workspace() 
 
     #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
-    expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
+    #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
+    #for i in range( -2, 3):
+    #    print "expected limit %+i sigma %f"%( i, expected_limit[i] )
 
-    for i in range( -2, 3):
-        print "expected limit %+i sigma %f"%( i, expected_limit[i] )
+    profiledLoglikelihoodFit.likelihoodTest()

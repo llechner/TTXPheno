@@ -5,6 +5,9 @@
 # Standard imports 
 import sys
 import ROOT
+from math import sqrt
+# turn off graphics
+ROOT.gROOT.SetBatch( True )
 
 # RootTools
 from RootTools.core.standard import *
@@ -18,18 +21,18 @@ logger_rt = logger_rt.get_logger('INFO', logFile = None)
 # TTXPheno
 from TTXPheno.Tools.cutInterpreterGen import cutInterpreter
 from TTXPheno.samples.benchmarks import * 
+from TTXPheno.Tools.user import plot_directory
 
 # Sample
 ttZ_sample = fwlite_ttZ_ll_LO_order2_15weights_ref
 
 # reduce dataset
-ttZ_sample.reduceFiles( to = 1 )
+#ttZ_sample.reduceFiles( to = 1 )
 # approximately compensate reduction of files
-ttZ_sample.setWeightString("200")
+#ttZ_sample.setWeightString("200")
 
 # get the reweighting function
 from TTXPheno.Tools.WeightInfo import WeightInfo
-from TTXPheno.Tools.plot_helpers import  getCoeffListFromDraw
 ttZ_sample.weightInfo = WeightInfo(ttZ_sample.reweight_pkl)
 ttZ_sample.weightInfo.set_order( 2 )
 
@@ -75,7 +78,7 @@ for i_region, region in enumerate(regions):
     logger.info( "At region %s", region )
 
     # compute signal yield for this region (this is the final code)
-    ttZ_coeffList[region] = getCoeffListFromDraw( ttZ_sample, 2, region.cutString(), weightString='150*ref_lumiweight1fb' ) 
+    ttZ_coeffList[region] = ttZ_sample.weightInfo.getCoeffListFromDraw( ttZ_sample, region.cutString(), weightString='150*ref_lumiweight1fb' ) 
     # TTZ SM
     ttZ_SM_rate[region] = ttZ_sample.weightInfo.get_weight_yield( ttZ_coeffList[region] )
     ttZ_SM_jec_uncertainty      [region] = 1.05 
@@ -99,6 +102,7 @@ for i_region, region in enumerate(regions):
     # Our expected observation :-)
     observation[region] = int( sum( background_rate[region].values() ) + ttZ_SM_rate[region] )
 
+
 # Write temporary card file
 from TTXPheno.Tools.cardFileWriter import cardFileWriter
 c = cardFileWriter.cardFileWriter()
@@ -106,10 +110,16 @@ c = cardFileWriter.cardFileWriter()
 # Limit plot
 from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
 
-limit = ROOT.TH2F( 'limit', 'limit', 8, -40, 40, 8, -40, 40 )
+#binningX = binningY = [12, -12, 12]
+binningX = [24, -24-6, 24-6]
+binningY = [24, -24+16, 24+16]
 
-for cpt in range( -40,50,10):
-    for cpQM in range( -40, 50, 10):
+limit = ROOT.TH2F( 'limit', 'limit', *(binningX + binningY) )
+
+for cpt in range( binningX[1], binningX[2], ( binningX[2] - binningX[1]) / binningX[0] ):
+    for cpQM in range( binningY[1], binningY[2], ( binningY[2] - binningY[1]) / binningY[0] ):
+#for cpt in [4]:
+#    for cpQM in [4]:
         kwargs = {'cpt':cpt, 'cpQM':cpQM}
 
         # uncertainties
@@ -143,13 +153,34 @@ for cpt in range( -40,50,10):
                 c.specifyUncertainty( 'JEC', bin_name, background.name, background_jec_uncertainty[region][background.name])
                 c.specifyUncertainty( 'fake',bin_name, background.name, background_fakerate_uncertainty[region][background.name])
                 
-        c.writeToFile( './tmp_card.txt' ) 
+        c.writeToFile( './tmp_limit_card.txt' ) 
 
-        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp_card.txt' )
-        profiledLoglikelihoodFit.make_workspace()
+        # try to adjust rmax with some margin
+        exp_tot_sigmas = 0
+        max_rmax = float('inf')
+        for region in regions:
+            tot_background = sum( [ background_rate[region][background.name] for background in backgrounds ] )
+            exp_tot_sigmas += abs(signal_rate[region])/sqrt( tot_background )
+            # avoid total neg. yield
+            if signal_rate[region]<0: 
+                max_r = -tot_background/signal_rate[region]
+                if max_r<max_rmax:
+                    max_rmax = max_r
+            
+        rmax_est = 400./exp_tot_sigmas if exp_tot_sigmas>0 else 1.
+        if max_rmax < rmax_est:
+            rmax_est = 0.9*max_rmax # safety margin such that at least +10% total yield survives in the smallest SR
+
+        profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp_limit_card.txt' )
+        profiledLoglikelihoodFit.make_workspace(rmin=0, rmax=rmax_est)
         #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
         expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "asymptotic" )
+        logger.info( "Expected Limit: %f", expected_limit[0] )
+        limit.SetBinContent( limit.FindBin(cpt, cpQM), expected_limit[0] )
+        profiledLoglikelihoodFit.cleanup()
 
-        limit.Fill( expected_limit[0], cpt, cpQM )
-
+limitPlot = Plot2D.fromHisto( "2D_limit_3", texX = "cpt", texY = "cpQM", histos = [[limit]])
+limitPlot.drawOption = "colz"
+ROOT.gStyle.SetPaintTextFormat("2.2f")        
+plotting.draw2D( limitPlot, plot_directory = os.path.join( plot_directory, 'limits', ttZ_sample.name), extensions = ["png"])
 

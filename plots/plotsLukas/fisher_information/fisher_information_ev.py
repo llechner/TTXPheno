@@ -44,6 +44,8 @@ argParser.add_argument('--selection',          action='store',      default='lep
 argParser.add_argument('--variables',          action='store',      default = [], type=str, nargs='+', help = "argument variables")
 argParser.add_argument('--parameters',         action='store',      default = [], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',         action='store',      default=150)
+argParser.add_argument('--binThreshold',       action='store',      default=100)
+argParser.add_argument('--fpsScaling',         action='store_true', help='Scale to full pre-selection')
 
 args = argParser.parse_args()
 
@@ -63,12 +65,12 @@ samples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 sample = getattr( samples, args.sample )
 
 # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
-event_factor = 1.
 fisher_directory = 'fisher_information'
 if args.small:
     sample.reduceFiles( to = 1 )
-    event_factor = sample.nEvents / float(sample.chain.GetEntries())
     fisher_directory += '_small'
+
+event_factor = sample.nEvents / float(sample.chain.GetEntries())
 
 # Polynomial parametrization
 w = WeightInfo(sample.reweight_pkl)
@@ -94,35 +96,56 @@ def get_reweight_function():
 
     def reweight( event, sample ):
         return event.ref_lumiweight1fb * float(args.luminosity) * event_factor
+#        return sample.xsec * 1000 / sample.nEvents / event.p_C[0] * float(args.luminosity) * event_factor
 
     return reweight
 
 
 selection_string = cutInterpreter.cutString( args.selection )
+selection_addon = "(1)"
+
+# overlap removal + signal categorization
+if args.process == 'ttgamma':
+    selection_addon = "(signalPhoton==1)"
+    selection_string += '&&' + selection_addon
+#elif args.process == 'ttZ':
+#    selection_addon = "(signalZ==1)"
+#    selection_string += '&&' + selection_addon
 
 # Make sure that weightString contains the same as weightFunction!!!
 weightString = 'ref_lumiweight1fb*%s*%s' %( str(args.luminosity) , str(event_factor) )
+#weightString = '%s*1000/%s*%s*%s/p_C[0]' %( str(sample.xsec), str(sample.nEvents), str(args.luminosity), str(event_factor) )
 weightFunction = get_reweight_function()
 
-print weightString
 # split selection string step by step
 selections = []
-selectionElements = args.selection.split('-')
-for i, item in enumerate(selectionElements[:-1]):
-    selections.append( {'plotstring':' + '.join(replace_selectionstrings(selectionElements[:i+1])) + ' selection', 'selection':'-'.join(selectionElements[:i+1])} )
+if not args.fpsScaling:
+    selectionElements = args.selection.split('-')
+    for i, item in enumerate(selectionElements[:-1]):
+        selections.append( {'plotstring':' + '.join(replace_selectionstrings(selectionElements[:i+1])) + ' selection', 'selection':'-'.join(selectionElements[:i+1])} )
 
 selections.append( {'plotstring':'full pre-selection (fps)', 'selection':args.selection} )
     
 # Additional plot variables from process_variables.py (defined for ttZ, ttW and ttgamma)
 plotVariables2D = getattr( process_variables, args.process )['2D']
 plotVariables3D = getattr( process_variables, args.process )['3D']
+plotVariables4D = getattr( process_variables, args.process )['4D']
 
 if args.level != 'gen':
-    if args.level == 'reco': search_string, replacement_string = ( 'gen', 'reco' )
+    if args.level == 'reco':
+        search_stringGen, replacement_stringGen = ( 'gen', 'reco' )
     # Take care if that is really everything you have to replace!!!
-    elif args.level == 'genLep': search_string, replacement_string = ( 'genZ', 'genLepZ' )
-    for item in plotVariables2D + plotVariables3D:
-        item['var'] = item['var'].replace(search_string, replacement_string)
+    for item in plotVariables2D + plotVariables3D + plotVariables4D:
+        item['var'] = item['var'].replace('genLepZ_lld','recoZ_lld')
+        item['var'] = item['var'].replace('genLepNonZ','recoNonZ')
+        item['var'] = item['var'].replace(search_stringGen, replacement_stringGen)
+
+#if args.level != 'gen':
+#    if args.level == 'reco': search_string, replacement_string = ( 'gen', 'reco' )
+#    # Take care if that is really everything you have to replace!!!
+#    elif args.level == 'genLep': search_string, replacement_string = ( 'genZ', 'genLepZ' )
+#    for item in plotVariables2D + plotVariables3D + plotVariables4D:
+#        item['var'] = item['var'].replace(search_string, replacement_string)
 
 # Calculate coefficients for binned distribution
 # Calculate determinant using the 'variables' submatrix of FI
@@ -130,8 +153,7 @@ for var in plotVariables2D:
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = getCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
-
+    var['coeff']       = w.getCoeffPlotFromDraw( sample, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s bins)' %str(var['binning'][0])
     var['color']       = 30
@@ -140,24 +162,35 @@ for var in plotVariables3D:
     #remove initial selection string
     sample.setSelectionString('1')
 
-    var['coeff']       = get2DCoeffPlotFromDraw( sample, args.order, var['var'], var['binning'], selection_string, weightString=weightString )
+    var['coeff']       = w.get2DCoeffPlotFromDraw( sample, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
     # add bin information to plot labels
     var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]))
     var['color']       = 41
 
+for var in plotVariables4D:
+    #remove initial selection string
+    sample.setSelectionString('1')
+
+    var['coeff']       = w.get3DCoeffPlotFromDraw( sample, var['var'], var['binning'], selection_string, weightString=weightString, nEventsThresh=args.binThreshold )
+    # add bin information to plot labels
+    var['plotstring'] = 'fps + ' + var['plotstring'] + ' (%s:%s:%s bins)' %(str(var['binning'][0]), str(var['binning'][3]), str(var['binning'][6]))
+    var['color']       = 45
+
 # Calculate coefficients unbinned (event loop)
 # Calculate determinant using the 'variables' submatrix of FI
 for selection in selections:
-    selection['coeff'] = getCoeffListFromEvents( sample, selectionString = cutInterpreter.cutString(selection['selection']), weightFunction = weightFunction )
+    selection['coeff'] = w.getCoeffListFromEvents( sample, selectionString = cutInterpreter.cutString(selection['selection']) + '&&' + selection_addon, weightFunction = weightFunction )
     selection['color']       = 46
 
 # Full Fisher information
-full              = { 'plotstring':'full'}
-full['coeff']     = getCoeffListFromEvents( sample, selectionString = None, weightFunction = weightFunction )
-full['color']     = 15
+if not args.fpsScaling:
+    full              = { 'plotstring':'full'}
+    full['coeff']     = w.getCoeffListFromEvents( sample, selectionString = selection_addon, weightFunction = weightFunction )
+    full['color']     = 15
 
 expo = 1. / len(inputvariables)
-data = [full] + selections + plotVariables2D + plotVariables3D
+data = [full] if not args.fpsScaling else []
+data += selections + plotVariables2D + plotVariables3D + plotVariables4D
 n_data = len(data)
 
 plot_directory_ = os.path.join(\
@@ -169,6 +202,7 @@ plot_directory_ = os.path.join(\
     args.selection,
     WC_string,
     '_'.join(inputvariables) if len([k for k, j in zip(inputvariables, w.variables) if k != j]) > 0 else 'all',
+    'full' if not args.fpsScaling else 'fps',
     )
 if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
 if os.path.isfile(os.path.join(plot_directory_,'ev_file.log')): os.remove(os.path.join(plot_directory_,'ev_file.log'))
@@ -244,7 +278,7 @@ def drawPlot( log = False ):
     if log: c1.SetLogy()
 
     # Plot ranges
-    ymin = 1e-6
+    ymin = 1e-10
     ymax = 1e6
     mg.GetYaxis().SetRangeUser(ymin, ymax)
     mg.GetXaxis().SetRangeUser(0, len(data)+1)
@@ -294,19 +328,10 @@ def drawPlot( log = False ):
         t.DrawLatex( i+1.25, ymin*1.4 if log else 0.05, "#color[%i]{%s}"%(item['color'],item['plotstring']) )
 
     # Directory
-    plot_directory_ = os.path.join(\
-        plot_directory,
-        plot_subdirectory,
-        sample.name,
-        fisher_directory,
-        'eigenvector',
-        args.selection,
-        WC_string,
-        '_'.join(inputvariables) if len([i for i, j in zip(inputvariables, w.variables) if i != j]) > 0 else 'all',
-        'log' if log else 'lin')
-    
-    if not os.path.isdir(plot_directory_): os.makedirs(plot_directory_)
-    c1.Print(os.path.join(plot_directory_, 'eigenvector.png'))
+    plot_dir = os.path.join(plot_directory_, 'log' if log else 'lin')
+
+    if not os.path.isdir(plot_dir): os.makedirs(plot_dir)
+    c1.Print(os.path.join(plot_dir, 'fisherinfo_ev_%sEventsPerBin.png'%str(args.binThreshold)))
     
     del c1
 

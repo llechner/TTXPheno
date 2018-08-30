@@ -17,15 +17,39 @@ ROOT.setTDRStyle()
 #mZ=91.1876
 mZ = 91.2
 
+
 def nanJet():
     ''' return a dict in Jet format filled with Nan
     '''
-    return {'index':float('nan'), 'pt':float('nan'), 'phi':float('nan'), 'eta':float('nan'), 'bTag':float('nan'), 'bTagPhys':float('nan'), 'matchBParton':float('nan'), 'vec2D':ROOT.TVector2( float('nan'), float('nan') ), 'vec4D':ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )}
+    elementList = ['index', 'pt', 'eta', 'phi', 'bTag', 'matchBParton']
+    jet = {}
+    for element in elementList:
+        jet[element] = float('nan')
+    jet['vec2D'] = ROOT.TVector2( float('nan'), float('nan') )
+    jet['vec4D'] = ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )
+    return jet
+
+def nanPhoton():
+    ''' return a dict in Jet format filled with Nan
+    '''
+    elementList = ['index', 'pt', 'eta', 'phi', 'mass', 'motherPdgId', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
+    gamma = {}
+    for element in elementList:
+        gamma[element] = float('nan')
+    gamma['vec2D'] = ROOT.TVector2( float('nan'), float('nan') )
+    gamma['vec4D'] = ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )
+    return gamma
 
 def nanLepton():
     ''' return a dict in Lepton format filled with Nan
     '''
-    return {'index':float('nan'), 'pt':float('nan'), 'phi':float('nan'), 'pdgId':float('nan'), 'eta':float('nan'), 'motherPdgId':float('nan'), 'vec2D':ROOT.TVector2( float('nan'), float('nan') ), 'vec4D':ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )}
+    elementList = ['index', 'pt', 'eta', 'phi', 'pdgId', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
+    lepton = {}
+    for element in elementList:
+        lepton[element] = float('nan')
+    lepton['vec2D'] = ROOT.TVector2( float('nan'), float('nan') )
+    lepton['vec4D'] = ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )
+    return lepton
 
 def natural_sort(list, key=lambda s:s):
     """
