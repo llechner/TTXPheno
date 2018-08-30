@@ -36,10 +36,12 @@ argParser.add_argument('--overwrite',          action='store',      nargs='?', c
 argParser.add_argument('--targetDir',          action='store',      default='v5')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_scan', help="Name of the sample loaded from fwlite_benchmarks. Only if no inputFiles are specified")
 argParser.add_argument('--inputFiles',         action='store',      nargs = '*', default=[])
+argParser.add_argument('--delphesCard',        action='store',      default='delphes_card_CMS', help="name of the delphes card in delphes/cards/NAME.tcl")
 argParser.add_argument('--targetSampleName',   action='store',      default=None, help="Name of the sample in case inputFile are specified. Otherwise ignored")
 argParser.add_argument('--nJobs',              action='store',      nargs='?', type=int, default=1,  help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      nargs='?', type=int, default=0,  help="Run only job i")
 argParser.add_argument('--addReweights',       action='store_true',   help="Add reweights?")
+argParser.add_argument('--removeDelphesFiles', action='store_true',   help="remove Delphes file after postprocessing?")
 argParser.add_argument('--interpolationOrder', action='store',      nargs='?', type=int, default=3,  help="Interpolation order for EFT weights.")
 args = argParser.parse_args()
 
@@ -64,7 +66,7 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=100 # Number of files
+    maxEvents=5000 # Number of files
     sample.files=sample.files[:1]
 
 xsec = sample.xsec
@@ -72,7 +74,8 @@ nEvents = sample.nEvents
 lumiweight1fb = xsec * 1000. / nEvents
 
 # output directory
-output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, sample.name) 
+output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, args.delphesCard if args.delphes else 'noDelphes', sample.name) 
+
 if not os.path.exists( output_directory ): 
     os.makedirs( output_directory )
     logger.info( "Created output directory %s", output_directory )
@@ -591,7 +594,8 @@ def filler( event ):
 
     # Reco quantities
     if args.delphes:
-        delphesReader.getEntry(reader.position-1 )
+#        delphesReader.getEntry(reader.position-1 ) # Suchi-reader version
+        delphesReader.event.GetEntry(reader.position-1 ) # RootTools reader version
 
         # read jets
         recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
@@ -691,7 +695,8 @@ def filler( event ):
                 else:
                     event.recoBjNonZlep_index, event.recoBjNonZhad_index = recoBj1['index'], recoBj0['index']
 
-         
+
+
 tmp_dir     = ROOT.gDirectory
 #post_fix = '_%i'%args.job if args.nJobs > 1 else ''
 output_filename =  os.path.join(output_directory, sample.name + '.root')
@@ -706,9 +711,10 @@ if os.path.exists( output_filename ) and args.overwrite =='none' :
 if args.delphes:
     delphes_file = os.path.join( output_directory, 'delphes', sample.name+'.root' )
     if not os.path.exists( delphes_file ) or args.overwrite in ['all']:
-        delphesProducer = DelphesProducer()
+        delphesProducer = DelphesProducer( card = args.delphesCard )
         delphesProducer.produce( sample.files, delphes_file )
-    delphesReader = DelphesReader( delphes_file )
+#    delphesReader = DelphesReader( delphes_file ) # Suchi-reader version
+    delphesReader = DelphesReader( Sample.fromFiles( delphes_file, delphes_file, treeName = "Delphes" ) ) # RootTools version
 
 output_file = ROOT.TFile( output_filename, 'recreate')
 output_file.cd()
@@ -728,15 +734,27 @@ while reader.run( ):
     #if abs(map( lambda p: p.daughter(0).pdgId(), filter( lambda p: p.pdgId()==23 and p.numberOfDaughters()==2, reader.products['gp']))[0])==13: 
     #    maker.run()
     #    break
+    print 'run'
     maker.run()
 
+         
     counter += 1
     if counter == maxEvents:  break
 
 logger.info( "Done with running over %i events.", reader.nEvents )
 
+print 'test 7'
+print
+print
+         
 output_file.cd()
 maker.tree.Write()
 output_file.Close()
 
 logger.info( "Written output file %s", output_filename )
+
+#cleanup delphes file:
+if os.path.exists( output_filename ) and args.delphes and args.removeDelphesFiles:
+    os.remove( delphes_file )
+    logger.info( "Removing Delphes file %s", delphes_file )
+

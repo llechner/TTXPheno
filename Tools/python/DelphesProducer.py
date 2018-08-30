@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 class DelphesProducer:
 
-    def __init__(self, card = 'cards/delphes_card_CMS.tcl'):
+    def __init__(self, card = 'delphes_card_CMS'):
         self.delphes_dir = os.path.expandvars( '$CMSSW_BASE/../delphes' )
-        self.card = card
+        self.card = 'cards/' + card + '.tcl'
 
     def produce( self, infiles, outfile ):
 
@@ -42,7 +42,7 @@ class DelphesProducer:
                 os.remove( tmp_file )
             tmp_files.append( tmp_file )
             print os.path.join( self.delphes_dir, 'DelphesCMSFWLite'), os.path.join( self.delphes_dir, self.card), tmp_file, infile
-            subprocess.check_call( [ os.path.join( self.delphes_dir, 'DelphesCMSFWLite'), os.path.join( self.delphes_dir, self.card), tmp_file, infile ] )
+            subprocess.check_call( [ os.path.join( self.delphes_dir, 'DelphesCMSFWLite'), os.path.join( self.delphes_dir, self.card ), tmp_file, infile ] )
 
         # Hadd
         subprocess.check_call( ['hadd', outfile] + tmp_files ) 
