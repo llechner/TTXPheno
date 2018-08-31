@@ -100,7 +100,7 @@ if binningY[0] > 1:
 else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
 
-filename = '_'.join( ['nll', 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
+filename = '_'.join( ['nll', args.detector, 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
 
 if not os.path.isfile('data/' + filename) or args.overwrite:
     # Import samples
@@ -129,9 +129,9 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
         return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
 
     # set selection string
-    ttZSelectionString       = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
-    ttgamma1lSelectionString = cutInterpreter.cutString('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.12-met40')
-    ttgamma2lSelectionString = cutInterpreter.cutString('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40')
+    ttZSelectionString       = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p-Zpt0-leptonIso3')
+    ttgamma1lSelectionString = cutInterpreter.cutString('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.12-met40-leptonIso1')
+    ttgamma2lSelectionString = cutInterpreter.cutString('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-leptonIso2')
 
     ttZSample.setSelectionString( ttZSelectionString )
     ttgamma1lSample.setSelectionString( ttgamma1lSelectionString )
@@ -415,8 +415,8 @@ if args.smooth: hist.Smooth()
 
 cans = ROOT.TCanvas("can_combined","",500,500)
 
-#calculate contour lines (1sigma, 2sigma)
-contours = {'combined': [1.,4.]}
+#calculate contour lines (1sigma, 2sigma) for 2D
+contours = {'combined': [1.515*1.515, 2.486*2.486]}
 if args.contours:
     histsForCont = hist.Clone()
     c_contlist = ((ctypes.c_double)*(len(contours['combined'])))(*contours['combined'])
@@ -489,8 +489,8 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l')
-latex1.DrawLatex(0.45, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
+latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l (%s)'%args.detector)
+latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
 
 plot_directory_ = os.path.join(\
     plot_directory,

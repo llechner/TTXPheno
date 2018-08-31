@@ -107,7 +107,7 @@ else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
 
 #save data file
-filename = '_'.join( ['nll'] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity) ] ) + '.data'
+filename = '_'.join( ['nll', args.detector ] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity) ] ) + '.data'
 
 #do the calculation
 if not os.path.isfile('data/' + filename) or args.overwrite:
@@ -357,8 +357,8 @@ if args.smooth: hist.Smooth()
 
 cans = ROOT.TCanvas("can_%s"%args.process,"",500,500)
 
-#calculate contour lines (1sigma, 2sigma)
-contours = {'ttZ_3l': [1.,4.], 'ttgamma_1l': [1.,4.], 'ttgamma_2l': [1.,4.]}
+#calculate contour lines (1sigma, 2sigma) for 2D
+contours = {'ttZ_3l': [1.515*1.515, 2.486*2.486], 'ttgamma_1l': [1.515*1.515, 2.486*2.486], 'ttgamma_2l': [1.515*1.515, 2.486*2.486]}
 if args.contours:
     histsForCont = hist.Clone()
     c_contlist = ((ctypes.c_double)*(len(contours[args.process])))(*contours[args.process])
@@ -432,8 +432,8 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]))
-latex1.DrawLatex(0.45, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
+latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]) + ' (' + args.detector + ')')
+latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
 
 plot_directory_ = os.path.join(\
     plot_directory,

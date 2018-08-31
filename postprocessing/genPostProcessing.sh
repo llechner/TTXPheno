@@ -7,11 +7,11 @@
 #########
 
 # Signal samples with reference point
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
 
 # Large samples for ttbar and ttgamma
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgammaLarge_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT2000
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_full_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT2000
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgammaLarge_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT2000
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_full_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT2000
 
 # background samples without reference point
 python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_dilep_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200

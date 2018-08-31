@@ -98,7 +98,7 @@ else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
 
 #save data file
-filename = '_'.join( ['limit'] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity) ] ) + '.data'
+filename = '_'.join( ['limit', args.detector ] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity) ] ) + '.data'
 
 #do the calculation
 if not os.path.isfile('data/' + filename) or args.overwrite:
@@ -454,7 +454,7 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]))
+latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]) + ' (' + args.detector + ')')
 latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
 
 plot_directory_ = os.path.join(\

@@ -2,11 +2,15 @@
 '''
 
 # Standard imports 
-import sys
+import sys, copy
 import ROOT
 import imp
 import pickle
-import copy
+import gc
+
+import numpy as np
+import ctypes
+from multiprocessing import Pool
 
 from math import sqrt
 # turn off graphics
@@ -15,12 +19,6 @@ ROOT.gROOT.SetBatch( True )
 # RootTools
 from RootTools.core.standard import *
 
-import numpy as np
-
-from multiprocessing import Pool
-import ctypes
-ROOT.gStyle.SetNumberContours(255)
-
 # Logger
 import TTXPheno.Tools.logger as logger
 import RootTools.core.logger as logger_rt
@@ -28,11 +26,12 @@ logger    = logger.get_logger(   'DEBUG', logFile = None)
 logger_rt = logger_rt.get_logger('INFO', logFile = None)
 
 # TTXPheno
-from TTXPheno.samples.benchmarks import * 
+from TTXPheno.samples.benchmarks import *
 from TTXPheno.Tools.user import plot_directory
 
 # get the reweighting function
 from TTXPheno.Tools.WeightInfo import WeightInfo
+
 
 # Arguments
 import argparse
@@ -52,6 +51,7 @@ argParser.add_argument('--smooth',          action='store_true', help='smooth hi
 argParser.add_argument('--cores',           action='store',     default=8, type=int, help='number of cpu cores for multicore processing')
 argParser.add_argument('--overwrite',       action='store_true', help='overwrite data file?')
 argParser.add_argument('--binMultiplier',   action='store',     default=3, type=int, help='bin multiplication factor')
+argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?')
 
 args = argParser.parse_args()
 
@@ -92,24 +92,24 @@ if binningY[0] > 1:
 else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
 
-filename = '_'.join( ['limit', 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
+filename = '_'.join( ['limit', args.detector, 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
 
 if not os.path.isfile('data/' + filename) or args.overwrite:
     # Import samples
     sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
     loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
-    ttZSample       = getattr( loadedSamples, 'fwlite_ttZ_ll_LO_order2_15weights_ref' )
-    ttgamma1lSample = getattr( loadedSamples, 'fwlite_ttgammaLarge_LO_order2_15weights_ref')
+    ttZSample       = getattr( loadedSamples, 'fwlite_ttZ_ll_LO_order2_15weights_ref_%s' %args.detector )
+    ttgamma1lSample = getattr( loadedSamples, 'fwlite_ttgammaLarge_LO_order2_15weights_ref_%s' %args.detector )
     ttgamma2lSample = copy.deepcopy( ttgamma1lSample )
 
-    WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights' )
-    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights' )
-    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights' )
-    tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights' )
-    tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights' )
-    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights' )
-    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights' )
+    WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
+    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
+    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
+    tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
+    tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
+    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
+    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
 
     signal    = [ ttZSample, ttgamma1lSample, ttgamma2lSample ]
     ttZBg     = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
@@ -121,9 +121,9 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
         return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
 
     # set selection string
-    ttZSelectionString       = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p-Zpt0')
-    ttgamma1lSelectionString = cutInterpreter.cutString('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.12-met40')
-    ttgamma2lSelectionString = cutInterpreter.cutString('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40')
+    ttZSelectionString       = cutInterpreter.cutString('lepSel3-onZ-njet3p-nbjet1p-Zpt0-leptonIso3')
+    ttgamma1lSelectionString = cutInterpreter.cutString('lepSel1-gammapt40-njet3p-nbjet1p-relIso0to0.12-met40-leptonIso1')
+    ttgamma2lSelectionString = cutInterpreter.cutString('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-leptonIso2')
 
     ttZSample.setSelectionString( ttZSelectionString )
     ttgamma1lSample.setSelectionString( ttgamma1lSelectionString )
@@ -308,8 +308,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
                 bin_name = "Region_%i" % (i_region + len(ttZRegions))
                 nice_name = region.__str__()
-
-                c.addBin(bin_name, ['_'.join(s.name.split('_')[1:3]) for s in ttgammaBg], nice_name)
+                c.addBin(bin_name,['ttX_SM'] + ['_'.join(s.name.split('_')[1:3]) for s in ttgammaBg], nice_name)
                 c.specifyObservation( bin_name, observation[region] )
 
     #            c.specifyFlatUncertainty( 'lumi', 1.05 )
@@ -341,18 +340,27 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             for region in ttZRegions:
 
                 tot_background = sum( [ background_rate[region][background.name] for background in ttZBg ] )
-                exp_tot_sigmas += abs(signal_rate[region]) / sqrt( tot_background ) if tot_background > 0 else float('inf')
+                exp_tot_sigmas += abs(signal_rate[region]) / sqrt( tot_background ) if tot_background > 0 else 1. #float('inf')
+
+                print 'region', region
+                print 'exp_sigma', exp_tot_sigmas
 
                 # avoid total neg. yield
                 if signal_rate[region] < 0:
                     max_r = -tot_background / signal_rate[region]
                     if max_r < max_rmax:
                         max_rmax = max_r
+
+                print 'max_rmax', max_rmax
+                print
 
             for region in ttgammaRegions:
 
                 tot_background = sum( [ background_rate[region][background.name] for background in ttgammaBg ] )
-                exp_tot_sigmas += abs(signal_rate[region]) / sqrt( tot_background ) if tot_background > 0 else float('inf')
+                exp_tot_sigmas += abs(signal_rate[region]) / sqrt( tot_background ) if tot_background > 0 else 100. #float('inf')
+
+                print 'region', region
+                print 'exp_sigma', exp_tot_sigmas
 
                 # avoid total neg. yield
                 if signal_rate[region] < 0:
@@ -360,13 +368,22 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
                     if max_r < max_rmax:
                         max_rmax = max_r
 
+                print 'max_rmax', max_rmax
+                print
 
-            if exp_tot_sigmas is float('inf'): rmax_est = 0.1 #float('inf')
-            elif exp_tot_sigmas == 0: rmax_est = 2 #float('inf')
+
+            if exp_tot_sigmas is float('inf'): rmax_est = 0.5 #float('inf')
+            elif exp_tot_sigmas == 0: rmax_est = 200 #float('inf')
             else: rmax_est = 400. / exp_tot_sigmas
+
+            print
+            print 'rmax_est', rmax_est
 
             if max_rmax < rmax_est:
                 rmax_est = 0.9*max_rmax # safety margin such that at least +10% total yield survives in the smallest SR
+
+            print 'rmax_est', rmax_est
+            print
 
             profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
             profiledLoglikelihoodFit.make_workspace(rmin=0, rmax=rmax_est)
@@ -524,12 +541,13 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l')
-latex1.DrawLatex(0.45, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
+latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l (%s)'%args.detector)
+latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
 
 plot_directory_ = os.path.join(\
     plot_directory,
     '%s_%s'%(args.level, args.version),
+    args.detector,
     'combined',
     'limit_small' if args.small else 'limit')
 
