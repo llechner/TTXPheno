@@ -16,3 +16,10 @@ if os.environ['USER'] in ['llechner']:
     results_directory      = "/afs/hephy.at/data/llechner01/TTXPheno/results/" #for analysis results and cache files
     skim_output_directory  = "/afs/hephy.at/data/llechner02/TTXPheno/skims/"
     plot_directory         = "/afs/hephy.at/user/l/llechner/www/TTXPheno"
+
+
+if os.environ['USER'] in ['grohsjea']:
+    results_directory     = "/afs/cern.ch/work/g/grohsjea/samples/eft/ttx/results/"
+    tmp_directory         = "/afs/cern.ch/work/g/grohsjea/debug/eft/ttx/tmp/"
+    skim_output_directory = "/afs/cern.ch/work/g/grohsjea/samples/eft/ttx/skims/"
+    plot_directory        = "/afs/desy.de/user/a/agrohsje/www/hidden/eft/ttx/"

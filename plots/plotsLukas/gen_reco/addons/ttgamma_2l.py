@@ -57,9 +57,9 @@ def getVariableList( level ):
         read_variables_gen.append("genPhoton[motherPdgId/I,relIso04/F]")
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
-        read_variables_gen.append("genTop[pt/F,eta/F,phi/F]")
+        read_variables_gen.append("genTop[pt/F,eta/F,phi/F,pdgId/I]")
         read_variables_gen.append("genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I,relIso04/F,minLeptonDR/F,minJetDR/F]")
-        read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I,motherPdgId/I]")
+        read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I,motherPdgId/I,grandmotherPdgId/I]")
 
     read_variables = read_variables_gen + read_variables_genLep
     read_variables = list( set( read_variables ) ) # remove double entries
@@ -163,7 +163,7 @@ def makeLeps( event, sample, level, flavorCheck ):
     if level == 'reco':
         leptonList = ['pt', 'eta', 'phi', 'pdgId', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
     else:
-        leptonList = ['pt', 'eta', 'phi', 'pdgId', 'motherPdgId']
+        leptonList = ['pt', 'eta', 'phi', 'pdgId', 'motherPdgId', 'grandmotherPdgId']
 
     event.leps = getCollection( event, '%sLep'%preTag, leptonList, 'n%sLep'%preTag )
 
@@ -197,21 +197,25 @@ def makeLeps( event, sample, level, flavorCheck ):
 def makeSpinCorrelationObservables( event, sample, level ):
 
     if level != 'gen': return
-    event.tops = getCollection( event, 'genTop', ['pt', 'eta', 'phi'], 'ngenTop' )
+    event.tops = getCollection( event, 'genTop', ['pt', 'eta', 'phi', 'pdgId'], 'ngenTop' )
 
-    # We now match leptons and tops by charge
-    # Once I have the gen-top pdgId, this code will be replaced by a gen-level based
-    # matching which ensures that top_pos/lep_pos and top_neg/lep_neg are the top-parton/lepton pair with 'p'lus and 'm'inus charge.
-    if len(event.tops)>=2 and event.l0['pdgId']*event.l1['pdgId']<0:
+    if      len(event.tops)>=2 \
+            and event.l0['pdgId']*event.l1['pdgId']<0\
+            and abs(event.l0['motherPdgId'])==abs(event.l1['motherPdgId']) == 24\
+            and abs(event.l0['grandmotherPdgId'])==abs(event.l1['grandmotherPdgId']) == 6:
+
+        if event.tops[0]['pdgId'] <0:
+            event.top_pos, event.top_neg = event.tops[:2]
+        else:
+            event.top_neg, event.top_pos = event.tops[:2]
+            
         if event.l0['pdgId']<0:
             event.lep_pos, event.lep_neg = event.l0, event.l1
-            event.top_pos, event.top_neg = event.tops[:2]     # <- arbitrary for now! FIXME
         else:
-            event.lep_pos, event.lep_neg = event.l1, event.l0
-            event.top_pos, event.top_neg = event.tops[:2]     # <- arbitrary for now! FIXME
+            event.lep_neg, event.lep_pos = event.l0, event.l1
 
         # Alexander, here are the leptons (plus and minus): event.lep_pos, event.lep_neg 
-        # Here are the tops (plus and minus): event.tp, event.tm
+        # Here are the tops (plus and minus): event.top_pos, event.top_neg
 
         # Store numbers, objects, etc. in the 'event' like this:
         # dPhi (repeated below, just a proof of principle, remove, FIXME)
