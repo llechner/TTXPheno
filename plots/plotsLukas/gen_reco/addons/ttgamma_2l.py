@@ -57,7 +57,7 @@ def getVariableList( level ):
         read_variables_gen.append("genPhoton[motherPdgId/I,relIso04/F]")
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
-        read_variables_gen.append("genTop[pt/F,eta/F,phi/F,pdgId/I]")
+        read_variables_gen.append("genTop[pt/F,eta/F,phi/F,mass/F,pdgId/I]")
         read_variables_gen.append("genPhoton[pt/F,phi/F,eta/F,mass/F,motherPdgId/I,relIso04/F,minLeptonDR/F,minJetDR/F]")
         read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I,motherPdgId/I,grandmotherPdgId/I]")
 
@@ -165,6 +165,7 @@ def makeLeps( event, sample, level, flavorCheck ):
     else:
         leptonList = ['pt', 'eta', 'phi', 'pdgId', 'motherPdgId', 'grandmotherPdgId']
 
+
     event.leps = getCollection( event, '%sLep'%preTag, leptonList, 'n%sLep'%preTag )
 
     # Define hardest leptons
@@ -197,7 +198,7 @@ def makeLeps( event, sample, level, flavorCheck ):
 def makeSpinCorrelationObservables( event, sample, level ):
 
     if level != 'gen': return
-    event.tops = getCollection( event, 'genTop', ['pt', 'eta', 'phi', 'pdgId'], 'ngenTop' )
+    event.tops = getCollection( event, 'genTop', ['pt', 'eta', 'phi', 'pdgId' , 'mass'], 'ngenTop' )
 
     if      len(event.tops)>=2 \
             and event.l0['pdgId']*event.l1['pdgId']<0\
@@ -214,13 +215,76 @@ def makeSpinCorrelationObservables( event, sample, level ):
         else:
             event.lep_neg, event.lep_pos = event.l0, event.l1
 
-        # Alexander, here are the leptons (plus and minus): event.lep_pos, event.lep_neg 
-        # Here are the tops (plus and minus): event.top_pos, event.top_neg
+        # fill top/antitip with event.top_pos, event.top_neg
+        top_lab = ROOT.TLorentzVector()
+        top_lab.SetPtEtaPhiM(event.top_neg['pt'], event.top_neg['eta'], event.top_neg['phi'], event.top_neg['mass'])
+        tbar_lab = ROOT.TLorentzVector()
+        tbar_lab.SetPtEtaPhiM(event.top_pos['pt'], event.top_pos['eta'], event.top_pos['phi'], event.top_pos['mass'])
+        # create boost to ttbar
+        ttbar_lab = ROOT.TLorentzVector(top_lab + tbar_lab)
+        boosttottbar = -ttbar_lab.BoostVector()
+        # apply ttbar boost to top/tbar
+        top_ZMFttbar = ROOT.TLorentzVector(top_lab)
+        top_ZMFttbar.Boost(boosttottbar)
+        tbar_ZMFttbar = ROOT.TLorentzVector(tbar_lab)
+        tbar_ZMFttbar.Boost(boosttottbar)
+        # apply ttbar boost to leptons
+        lep_ZMFtbar = ROOT.TLorentzVector()
+        lep_ZMFtbar.SetPtEtaPhiM(event.lep_neg['pt'], event.lep_neg['eta'], event.lep_neg['phi'], 0. )
+        lep_ZMFtbar.Boost(boosttottbar)
+        boosttotbar = -tbar_ZMFttbar.BoostVector()
+        lep_ZMFtbar.Boost(boosttotbar)
+        # anti lepton
+        lbar_ZMFtop = ROOT.TLorentzVector()
+        lbar_ZMFtop.SetPtEtaPhiM(event.lep_pos['pt'], event.lep_pos['eta'], event.lep_pos['phi'], 0. )
+        lbar_ZMFtop.Boost(boosttottbar)
+        boosttotop = -top_ZMFttbar.BoostVector()
+        lbar_ZMFtop.Boost(boosttotop)
+        # caculate correlation obervables
+        # cos between leptons
+        #event.cosphi = cos(lep_ZMFtbar.Angle(lbar_ZMFtop.Vect()))
+        # define bases
+        pbone = ROOT.TVector3(0.,0.,1.)
+        kbone = ROOT.TVector3(top_ZMFttbar.Vect().Unit())
+        # observables based on https://arxiv.org/pdf/1508.05271v2.pdf
+        yp = pbone.Dot(kbone)
+        rp = sqrt(1-yp*yp)
+        signyp = 1.
+        if yp<0 :
+            signyp = -1.
+        rbtwo = ROOT.TVector3(1/rp*(pbone-yp*kbone))
+        nbtwo = ROOT.TVector3(1/rp*(pbone.Cross(kbone)))
+        lbar_ZMFtop_V3U = ROOT.TVector3(lbar_ZMFtop.Vect().Unit())
+        lep_ZMFtbar_V3U = ROOT.TVector3(lep_ZMFtbar.Vect().Unit())
+        # calculate spin correlation coefficients and add variables to event 
+        event.c_nn    = lbar_ZMFtop_V3U.Dot(signyp*nbtwo) * lep_ZMFtbar_V3U.Dot(-1*signyp*nbtwo)
+        event.c_rr    = lbar_ZMFtop_V3U.Dot(signyp*rbtwo) * lep_ZMFtbar_V3U.Dot(-1*signyp*rbtwo)
+        event.c_kk    = lbar_ZMFtop_V3U.Dot(kbone) * lep_ZMFtbar_V3U.Dot(-1*kbone)
+        event.c_rkpkr = lbar_ZMFtop_V3U.Dot(signyp*rbtwo) * lep_ZMFtbar_V3U.Dot(-1*kbone) + lbar_ZMFtop_V3U.Dot(kbone) * lep_ZMFtbar_V3U.Dot(-1*signyp*rbtwo)
+        event.c_nrprn = lbar_ZMFtop_V3U.Dot(signyp*nbtwo) * lep_ZMFtbar_V3U.Dot(-1*signyp*rbtwo) + lbar_ZMFtop_V3U.Dot(signyp*rbtwo) * lep_ZMFtbar_V3U.Dot(-1*signyp*nbtwo)
+        event.c_nkpkn = lbar_ZMFtop_V3U.Dot(signyp*nbtwo) * lep_ZMFtbar_V3U.Dot(-1*kbone) + lbar_ZMFtop_V3U.Dot(kbone) * lep_ZMFtbar_V3U.Dot(-1*signyp*nbtwo)
+        event.c_rkmkr = lbar_ZMFtop_V3U.Dot(signyp*rbtwo) * lep_ZMFtbar_V3U.Dot(-1*kbone) - lbar_ZMFtop_V3U.Dot(kbone) * lep_ZMFtbar_V3U.Dot(-1*signyp*rbtwo)
+        event.c_nrmrn = lbar_ZMFtop_V3U.Dot(signyp*nbtwo) * lep_ZMFtbar_V3U.Dot(-1*signyp*rbtwo) - lbar_ZMFtop_V3U.Dot(signyp*rbtwo) * lep_ZMFtbar_V3U.Dot(-1*signyp*nbtwo)
+        event.c_nkmkn = lbar_ZMFtop_V3U.Dot(signyp*nbtwo) * lep_ZMFtbar_V3U.Dot(-1*kbone) - lbar_ZMFtop_V3U.Dot(kbone) * lep_ZMFtbar_V3U.Dot(-1*signyp*nbtwo)
+        # calculate polarization observables and add variables to event
+        event.b_ntop  = lbar_ZMFtop_V3U.Dot(signyp*nbtwo)
+        event.b_ntbar = lep_ZMFtbar_V3U.Dot(-1*signyp*nbtwo)
+        event.b_rtop  = lbar_ZMFtop_V3U.Dot(signyp*rbtwo)
+        event.b_rtbar = lep_ZMFtbar_V3U.Dot(-1*signyp*rbtwo)
+        event.b_ktop  = lbar_ZMFtop_V3U.Dot(kbone)
+        event.b_ktbar = lep_ZMFtbar_V3U.Dot(-1*kbone)
+        # third base for spin polarization
+        signdrap = -1.
+        if abs(top_lab.Rapidity())>abs(tbar_lab.Rapidity())  :
+            signdrap = 1.
+        kbthree = ROOT.TVector3(signdrap * kbone)
+        rbthree = ROOT.TVector3(signdrap * signyp * rbtwo)
+        event.b_rstartop  = lbar_ZMFtop_V3U.Dot(rbthree)
+        event.b_rstartbar = lep_ZMFtbar_V3U.Dot(-1*rbthree)
+        event.b_kstartop  = lbar_ZMFtop_V3U.Dot(kbthree)
+        event.b_kstartbar = lep_ZMFtbar_V3U.Dot(-1*kbthree)
 
-        # Store numbers, objects, etc. in the 'event' like this:
-        # dPhi (repeated below, just a proof of principle, remove, FIXME)
-        event.lldPhi = deltaPhi( event.lep_neg['phi'], event.lep_pos['phi'] )
-    
+                
 def makeObservables( event, sample, level ):
     ''' Compute all relevant observables
     '''
