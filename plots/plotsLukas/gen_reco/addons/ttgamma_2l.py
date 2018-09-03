@@ -199,8 +199,27 @@ def makeSpinCorrelationObservables( event, sample, level ):
 
     if level != 'gen': return
     event.tops = getCollection( event, 'genTop', ['pt', 'eta', 'phi', 'pdgId' , 'mass'], 'ngenTop' )
+    event.c_nn    = float('nan')
+    event.c_rr    = float('nan')
+    event.c_kk    = float('nan')
+    event.c_rkpkr = float('nan')
+    event.c_nrprn = float('nan')
+    event.c_nkpkn = float('nan')
+    event.c_rkmkr = float('nan')
+    event.c_nrmrn = float('nan')
+    event.c_nkmkn = float('nan')
+    event.b_ntop  = float('nan')
+    event.b_ntbar = float('nan')
+    event.b_rtop  = float('nan')
+    event.b_rtbar = float('nan')
+    event.b_ktop  = float('nan')
+    event.b_ktbar = float('nan')
+    event.b_rstartop  = float('nan')
+    event.b_rstartbar = float('nan')
+    event.b_kstartop  = float('nan')
+    event.b_kstartbar = float('nan')
 
-    if      len(event.tops)>=2 \
+    if len(event.tops)>=2 \
             and event.l0['pdgId']*event.l1['pdgId']<0\
             and abs(event.l0['motherPdgId'])==abs(event.l1['motherPdgId']) == 24\
             and abs(event.l0['grandmotherPdgId'])==abs(event.l1['grandmotherPdgId']) == 6:
@@ -974,6 +993,138 @@ def getPlotList( scaleLumi, level ):
         ))
         fisherInfoVariables.append(None)
 
+        plots.append(Plot( name = "c_nn",
+          texX = 'C_{nn}', texY = y_label,
+          attribute = lambda event, sample: event.c_nn if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "c_rr",
+          texX = 'C_{rr}', texY = y_label,
+          attribute = lambda event, sample: event.c_rr if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "c_kk",
+          texX = 'C_{kk}', texY = y_label,
+          attribute = lambda event, sample: event.c_kk if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "c_rkpkr",
+          texX = 'C_{rk}+C_{kr}', texY = y_label,
+          attribute = lambda event, sample: event.c_rkpkr if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "c_nrprn",
+          texX = 'C_{nr}+C_{rn}', texY = y_label,
+          attribute = lambda event, sample: event.c_nrprn if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "c_nkpkn",
+          texX = 'C_{nk}+C_{kn}', texY = y_label,
+          attribute = lambda event, sample: event.c_nkpkn if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "c_rkmkr",
+          texX = 'C_{rk}-C_{kr}', texY = y_label,
+          attribute = lambda event, sample: event.c_rkmkr if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "c_nrmrn",
+          texX = 'C_{nr}-C_{rn}', texY = y_label,
+          attribute = lambda event, sample: event.c_nrmrn if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "c_nkmkn",
+          texX = 'C_{nk}-C_{kn}', texY = y_label,
+          attribute = lambda event, sample: event.c_nkmkn if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_ntop",
+          texX = 'b_{n}(t)', texY = y_label,
+          attribute = lambda event, sample: event.b_ntop if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_ntbar",
+          texX = 'b_{n}(#overline{t})', texY = y_label,
+          attribute = lambda event, sample: event.b_ntbar if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_rtop",
+          texX = 'b_{r}(t)', texY = y_label,
+          attribute = lambda event, sample: event.b_rtop if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_rtbar",
+          texX = 'b_{r}(#overline{t})', texY = y_label,
+          attribute = lambda event, sample: event.b_rtbar if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_ktop",
+          texX = 'b_{k}(t)', texY = y_label,
+          attribute = lambda event, sample: event.b_ktop if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_ktbar",
+          texX = 'b_{k}(#overline{t})', texY = y_label,
+          attribute = lambda event, sample: event.b_ktbar if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_rstartop",
+          texX = 'b_{r^*}(t)', texY = y_label,
+          attribute = lambda event, sample: event.b_rstartop if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_rstartbar",
+          texX = 'b_{r^*}(#overline{t})', texY = y_label,
+          attribute = lambda event, sample: event.b_rstartbar if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_kstartop",
+          texX = 'b_{k^*}(t)', texY = y_label,
+          attribute = lambda event, sample: event.b_kstartop if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
+
+        plots.append(Plot( name = "b_kstartbar",
+          texX = 'b_{k^*}(#overline{t})', texY = y_label,
+          attribute = lambda event, sample: event.b_kstartbar if event.passing_checks else float('nan'),
+          binning=[20,-1,1],
+        ))
+        fisherInfoVariables.append(None)
 
     plots.append(Plot( name = "b0_pt",
       texX = 'p_{T}(b_{0}) [GeV]', texY = y_label,
