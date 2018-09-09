@@ -28,6 +28,68 @@ gridpack_dir = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/"
 ##############################
 ##############################
 
+# 4th order
+
+##############################
+##############################
+##############################
+
+gen_dir = "/afs/hephy.at/data/llechner02/TTXPheno/skims/gen/v18/delphes_card_CMS/"
+
+# reference point samples 4/4, dim6 <= 2
+fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_CMS               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order4_4weights_2WC_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order4_4weights_2WC_ref" )]) 
+fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_CMS.reweight_pkl  = gridpack_dir + "07092018/ttZ/order4/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_CMS.nEvents       = 1000000
+fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_CMS.xsec          = 0.2511 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
+
+fwlite_ttgamma_LO_order4_4weights_2WC_ref_CMS               = Sample.fromDirectory("fwlite_ttgamma_LO_order4_4weights_2WC_ref",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_LO_order4_4weights_2WC_ref" )]) 
+fwlite_ttgamma_LO_order4_4weights_2WC_ref_CMS.reweight_pkl  = gridpack_dir + "07092018/ttgamma/order4/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgamma_LO_order4_4weights_2WC_ref_CMS.nEvents      = 1000000
+fwlite_ttgamma_LO_order4_4weights_2WC_ref_CMS.xsec         = 8.704 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+
+# reference point samples 4/4, ewkDMGZ, NP <= 1
+fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_CMS               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref" )]) 
+fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_CMS.reweight_pkl  = gridpack_dir + "08092018/ttZ/order4/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_CMS.nEvents       = 1000000
+fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_CMS.xsec          = 0.05357 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
+
+# reference point samples 2/4, ewkDMGZ, NP <= 1
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS               = Sample.fromDirectory("fwlite_ttgamma_LO_order4_4weights_ewkDMGZ_ref",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_LO_order4_4weights_ewkDMGZ_ref" )]) 
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS.reweight_pkl  = gridpack_dir + "08092018/ttgamma/order4/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS.nEvents       = 1000000
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS.xsec          = 58.48 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+
+"""
+gen_dir = "/afs/hephy.at/data/llechner02/TTXPheno/skims/gen/v18/delphes_card_ATLAS/"
+
+# reference point samples 4/4, dim6 <= 2
+fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_ATLAS               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order4_4weights_2WC_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order4_4weights_2WC_ref" )]) 
+fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_ATLAS.reweight_pkl  = gridpack_dir + "07092018/ttZ/order4/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_ATLAS.nEvents       = 1000000
+fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_ATLAS.xsec          = 0.2511 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
+
+fwlite_ttgamma_LO_order4_4weights_2WC_ref_ATLAS               = Sample.fromDirectory("fwlite_ttgamma_LO_order4_4weights_2WC_ref",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_LO_order4_4weights_2WC_ref" )]) 
+fwlite_ttgamma_LO_order4_4weights_2WC_ref_ATLAS.reweight_pkl  = gridpack_dir + "07092018/ttgamma/order4/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgamma_LO_order4_4weights_2WC_ref_ATLAS.nEvents      = 1000000
+fwlite_ttgamma_LO_order4_4weights_2WC_ref_ATLAS.xsec         = 8.704 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+
+# reference point samples 4/4, ewkDMGZ, NP <= 1
+fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_ATLAS               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref" )]) 
+fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_ATLAS.reweight_pkl  = gridpack_dir + "08092018/ttZ/order4/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_ATLAS.nEvents       = 1000000
+fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_ATLAS.xsec          = 0.05357 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
+
+# reference point samples 2/4, ewkDMGZ, NP <= 1
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_ATLAS               = Sample.fromDirectory("fwlite_ttgamma_LO_order4_4weights_ewkDMGZ_ref",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_LO_order4_4weights_ewkDMGZ_ref" )]) 
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_ATLAS.reweight_pkl  = gridpack_dir + "08092018/ttgamma/order4/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_ATLAS.nEvents       = 1000000
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_ATLAS.xsec          = 58.48 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+
+"""
+##############################
+##############################
+##############################
+
 # CMS
 
 ##############################
@@ -168,7 +230,7 @@ fwlite_WZ_lep_LO_order2_15weights_CMS.xsec              = 4.666 #WZTo3LNu_amcatn
 ##############################
 ##############################
 ##############################
-"""
+
 # signal samples with reference point
 
 gen_dir = "/afs/hephy.at/data/llechner02/TTXPheno/skims/gen/v18/delphes_card_ATLAS/"
@@ -293,7 +355,7 @@ fwlite_WZ_lep_LO_order2_15weights_ATLAS.xsec              = 4.666 #WZTo3LNu_amca
 #fwlite_Zgamma_LO_order2_15weights_ATLAS.addFriend(     fwlite_Zgamma_LO_order2_15weights_ATLAS_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_ttgamma_bg_LO_order2_15weights_ATLAS.addFriend( fwlite_ttgamma_bg_LO_order2_15weights_ATLAS_delphes, treeName = "Delphes", sortFiles = True)
 #fwlite_WZ_lep_LO_order2_15weights_ATLAS.addFriend(     fwlite_WZ_lep_LO_order2_15weights_ATLAS_delphes, treeName = "Delphes", sortFiles = True)
-"""
+
 ##############################
 ##############################
 ##############################

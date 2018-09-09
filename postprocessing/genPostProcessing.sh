@@ -2,6 +2,24 @@
 
 #use cardfile delphes_card_ATLAS or delphes_card_CMS
 
+#########################
+##4th order 2WC samples##
+#########################
+
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order4_4weights_2WC_ref --addReweights --interpolationOrder 4 --delphes --delphesCard delphes_card_CMS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order4_4weights_2WC_ref --addReweights --interpolationOrder 4 --delphes --delphesCard delphes_card_CMS --removeDelphesFiles #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order4_4weights_2WC_ref --addReweights --interpolationOrder 4 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order4_4weights_2WC_ref --addReweights --interpolationOrder 4 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+
+###############
+##ewkDMGZ_UFO##
+###############
+
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref --addReweights --interpolationOrder 4 --delphes --delphesCard delphes_card_CMS --removeDelphesFiles #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref --addReweights --interpolationOrder 4 --delphes --delphesCard delphes_card_CMS --removeDelphesFiles #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref --addReweights --interpolationOrder 4 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref --addReweights --interpolationOrder 4 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+
 #########
 ##ATLAS##
 #########
@@ -14,18 +32,18 @@
 #python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_full_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT2000
 
 # background samples without reference point
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_dilep_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_nonhad_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tZq_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tWZ_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tW_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_Zgamma_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_bg_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_WZ_lep_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_dilep_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_nonhad_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tZq_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tWZ_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tW_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_Zgamma_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_bg_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_WZ_lep_LO_order2_15weights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
 
 # Signal samples with reference point
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
-python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttW_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttgamma_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
+#python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_ttW_LO_order2_15weights_ref --addReweights --interpolationOrder 2 --delphes --delphesCard delphes_card_ATLAS --removeDelphesFiles #SPLIT200
 
 #######
 ##CMS##
