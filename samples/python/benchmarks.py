@@ -54,7 +54,7 @@ fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_CMS.nEvents       = 1000000
 fwlite_ttZ_ll_LO_order4_4weights_ewkDMGZ_ref_CMS.xsec          = 0.05357 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
 
 # reference point samples 2/4, ewkDMGZ, NP <= 1
-fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS               = Sample.fromDirectory("fwlite_ttgamma_LO_order4_4weights_ewkDMGZ_ref",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_LO_order4_4weights_ewkDMGZ_ref" )]) 
+fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS               = Sample.fromDirectory("fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref" )]) 
 fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS.reweight_pkl  = gridpack_dir + "08092018/ttgamma/order4/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS.nEvents       = 1000000
 fwlite_ttgamma_LO_order4_2weights_ewkDMGZ_ref_CMS.xsec          = 58.48 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
