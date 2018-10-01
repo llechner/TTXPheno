@@ -21,10 +21,13 @@ mZ = 91.2
 def nanJet():
     ''' return a dict in Jet format filled with Nan
     '''
-    elementList = ['index', 'pt', 'eta', 'phi', 'bTag', 'matchBParton']
+    elementList = ['index', 'pt', 'eta', 'phi', 'bTag', 'matchBParton' ]
     jet = {}
     for element in elementList:
         jet[element] = float('nan')
+    jet['bTagPhys'] = -1
+    jet['nCharged'] = -1
+    jet['nNeutrals'] = -1
     jet['vec2D'] = ROOT.TVector2( float('nan'), float('nan') )
     jet['vec4D'] = ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )
     return jet
