@@ -21,7 +21,8 @@ from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cos
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
-from TTXPheno.Tools.DelphesReader          import DelphesReader
+from TTXPheno.Tools.DelphesReaderCMSHLLHC  import DelphesReader
+#from TTXPheno.Tools.DelphesReader          import DelphesReader
 from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoLepton, isGoodRecoJet, isGoodRecoPhoton, genJetId
 
 #
@@ -66,7 +67,7 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=5000 # Number of files
+    maxEvents=50 
     sample.files=sample.files[:1]
 
 xsec = sample.xsec
@@ -74,7 +75,7 @@ nEvents = sample.nEvents
 lumiweight1fb = xsec * 1000. / nEvents
 
 # output directory
-output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, args.delphesCard if args.delphes else 'noDelphes', sample.name) 
+output_directory = os.path.join(skim_output_directory, 'gen', args.targetDir, sample.name) 
 
 if not os.path.exists( output_directory ): 
     os.makedirs( output_directory )
@@ -182,7 +183,7 @@ if args.delphes:
     recoLep_varnames  = varnames( recoLep_vars )
         
     # reconstructed jets
-    recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F'#,bTagPhys/F' 
+    recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F,bTagPhys/I,nCharged/I,nNeutrals/I' 
     variables      += ["recoJet[%s]"%recoJet_vars]
     recoJet_write_varnames = varnames( recoJet_vars )
     variables += ["recoBj0_%s"%var for var in recoJet_vars.split(',')]
@@ -224,7 +225,11 @@ def fill_vector_collection( event, collection_name, collection_varnames, objects
             getattr(event, collection_name+"_"+var)[i_obj] = obj[var]
 def fill_vector( event, collection_name, collection_varnames, obj):
     for var in collection_varnames:
-        setattr(event, collection_name+"_"+var, obj[var] )
+        try:
+            setattr(event, collection_name+"_"+var, obj[var] )
+        except TypeError as e:
+            logger.error( "collection_name %s var %s obj[var] %r", collection_name, var,  obj[var] )
+            raise e
 
 reader = sample.fwliteReader( products = products )
 
@@ -334,7 +339,7 @@ def filler( event ):
     def printTopMothers():
             genTopCheck = [ (search.ascend(l), l, search.ancestry( search.ascend(l) )) for l in filter( lambda p:abs(p.pdgId())==6,  gp) ]
 
-#            print genTopCheck
+            print genTopCheck
             genTopCheck.sort( key = lambda p: -p[1].pt() )
             if len(genTopCheck) > 0:
                 topPdg_ids = filter( lambda p:p!=2212, [abs(particle.pdgId()) for particle in genTopCheck[0][2]])
@@ -606,14 +611,13 @@ def filler( event ):
         recoBJets    = filter( lambda j:j['bTag']==1, recoJets )
         recoNonBJets = filter( lambda j:not (j['bTag']==1), recoJets )
         recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [nanJet(), nanJet()] )[:2] 
-        fill_vector( event, "recoBj0", recoJet_write_varnames, recoBj0) 
+        fill_vector( event, "recoBj0", recoJet_write_varnames, recoBj0)
         fill_vector( event, "recoBj1", recoJet_write_varnames, recoBj1) 
 
         # read leptons
         allRecoLeps = delphesReader.muons() + delphesReader.electrons()
         allRecoLeps.sort( key = lambda p:-p['pt'] )
         recoLeps =  filter( isGoodRecoLepton, allRecoLeps )
-
         # Photons
         recoPhotons = filter( isGoodRecoPhoton, delphesReader.photons() )
 
@@ -734,7 +738,6 @@ while reader.run( ):
     #if abs(map( lambda p: p.daughter(0).pdgId(), filter( lambda p: p.pdgId()==23 and p.numberOfDaughters()==2, reader.products['gp']))[0])==13: 
     #    maker.run()
     #    break
-    print 'run'
     maker.run()
 
          
@@ -743,10 +746,6 @@ while reader.run( ):
 
 logger.info( "Done with running over %i events.", reader.nEvents )
 
-print 'test 7'
-print
-print
-         
 output_file.cd()
 maker.tree.Write()
 output_file.Close()
