@@ -86,7 +86,7 @@ if args.small: subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
 # Format WC input parameters
-colors = [ ROOT.kRed+1, ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue ]
+colors = [ ROOT.kRed+1, ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue,  ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+3,  ROOT.kGreen-7, ROOT.kGreen-10, ROOT.kGreen+3,  ROOT.kPink-7, ROOT.kPink-10, ROOT.kPink+3, ROOT.kGray+2, ROOT.kYellow-7 ]
 colorsBg = [ ROOT.kAzure-3, ROOT.kGreen-2, ROOT.kCyan-9, ROOT.kRed+2, ROOT.kGray+2, ROOT.kYellow-7, ROOT.kViolet+6, ROOT.kBlue+2 ]
 colorsNonInfo = [ ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+3, ROOT.kBlack]
 

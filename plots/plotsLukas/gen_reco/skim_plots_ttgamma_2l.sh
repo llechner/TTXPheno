@@ -9,8 +9,8 @@ ctW=$3
 ctWI=$4
 ctZ=$5
 ctZI=$6
-#ctG=$7
-#ctGI=$8
+ctG=$7
+ctGI=$8
 
 # declare samples to analyze
 declare -a samples2=('fwlite_ttgammaLarge_LO_order2_15weights_ref')
@@ -31,8 +31,8 @@ declare -a samples3=('')
 #declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-Zoff' )
 #declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt100-njet2p-nbjet1p-relIso0to0.12-met40-Zoff' 'lepSel2-gammapt200-njet2p-nbjet1p-relIso0to0.12-met40-Zoff')
 
-#declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-leptonIso2')
-declare -a selections=('lepSel2-gammapt20-leptonIso2' 'lepSel2-gammapt20-njet2p-leptonIso2' 'lepSel2-gammapt20-njet1-nbjet1-leptonIso2')
+declare -a selections=('lepSel2-gammapt40-njet2p-nbjet1p-relIso0to0.12-met40-leptonIso2')
+#declare -a selections=('lepSel2-gammapt20-leptonIso2' 'lepSel2-gammapt20-njet2p-leptonIso2' 'lepSel2-gammapt20-njet1-nbjet1-leptonIso2')
 
 # declare sample size to analyze
 #declare -a samplesizes=('--small' '')
@@ -45,12 +45,12 @@ declare -a samplesizes=('')
 declare -a reweightings=('')
 
 # declare scale
-#declare -a scales=('' '--scaleLumi')
-declare -a scales=('--scaleLumi')
+declare -a scales=('' '--scaleLumi')
+#declare -a scales=('--scaleLumi')
 #declare -a scales=('')
 
-#declare -a levels=('gen')
-declare -a levels=('reco')
+declare -a levels=('gen')
+#declare -a levels=('reco')
 #declare -a levels=('gen' 'reco')
 
 declare -a flavors=('all' 'same' 'opposite')
@@ -68,10 +68,17 @@ declare -a binThresholds=("100")
 declare -a fisherInfo=("")
 
 #declare -a backgrounds=("--backgrounds" "")
-declare -a backgrounds=("--backgrounds")
+#declare -a backgrounds=("--backgrounds")
+declare -a backgrounds=("")
 
-#version='TTXPheno_240818'
-version='2lcheckIso'
+#declare -a backgrounds=("--noninfoSignal")
+declare -a noninfoSignal=("")
+
+#declare -a detectors=("CMS" "ATLAS")
+declare -a detectors=("CMS")
+
+#version='TTXPheno_010918'
+version='spincorrelation'
 #version='paper_230818'
 luminosity='150'
 process='ttgamma_2l'
@@ -114,6 +121,9 @@ do
                            for background in "${backgrounds[@]}"
                            do
 
+                             for detector in "${detectors[@]}"
+                             do
+
                                order=2
                                for sample in "${samples2[@]}"
                                do
@@ -122,8 +132,9 @@ do
                                      continue
                                   fi
 
-                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
-#                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
+#                                  echo "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor} --detector ${detector} ${noninfoSignal}"
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ctG ${ctG} ctGI ${ctGI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}  --detector ${detector} ${noninfoSignal}"
+#                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}  --detector ${detector} ${noninfoSignal}"
 
                                done
 
@@ -135,10 +146,11 @@ do
                                      continue
                                   fi
 
-                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor}"
+                                  submitBatch.py --dpm "python ${prog} --processFile ${process} --luminosity ${luminosity} --version ${version} --level ${level} ${samplesize} ${reweight} ${scale} --sample ${sample} --order ${order} --selection ${selection} ${backgrounds} --leptonFlavor ${flavor} --parameters cpQM ${cpQM} cpt ${cpt} ctW ${ctW} ctWI ${ctWI} ctZ ${ctZ} ctZI ${ctZI} ${background} ${addFisher} --binThreshold ${binThreshold} --variables ${variable} --leptonFlavor ${flavor} --detector ${detector} ${noninfoSignal}"
 
                                done
-                            done
+                             done
+                           done
                         done
                      done
                   done

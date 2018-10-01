@@ -35,6 +35,24 @@ test.nEvents = 10
 test.xsec = 200
 
 
+# ttgamma reference point samples 15/2 CMS GEN-SIM
+MiniAOD_fwlite_ttgamma_LO_order2_15weights_ref              = FWLiteSample.fromDirectory("MiniAOD_fwlite_ttgamma_LO_order2_15weights_ref", "/afs/hephy.at/user/l/llechner/public/CMSSW_9_4_4/src/CMSTopEFT/setup_scripts/ttgamma2l/")
+MiniAOD_fwlite_ttgamma_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+MiniAOD_fwlite_ttgamma_LO_order2_15weights_ref.nEvents      = 10
+MiniAOD_fwlite_ttgamma_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+
+# ttgamma reference point samples 15/2 CMS GEN-SIM
+GEN_SIM_fwlite_ttgamma_LO_order2_15weights_ref              = FWLiteSample.fromDAS("GEN_SIM_fwlite_ttgamma_LO_order2_15weights_ref", "/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-order2_ttgamma_SIM_17Sept18_RAWSIMoutput-4f229964c705254b66e14e0374df2f2e/USER", "phys03", dbFile = dbFile, overwrite=overwrite, prefix='root://hephyse.oeaw.ac.at/')
+GEN_SIM_fwlite_ttgamma_LO_order2_15weights_ref.reweight_pkl = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+GEN_SIM_fwlite_ttgamma_LO_order2_15weights_ref.nEvents      = 1000
+GEN_SIM_fwlite_ttgamma_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+
+# reference point samples 4 fermion 18/2
+fwlite_ttZ_ll_LO_order2_18weights_4f_ref               = FWLiteSample.fromDAS("fwlite_ttZ_ll_LO_order2_18weights_4f_ref", "/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-order2_ttZ_4fermion_27Junet18-24fb8f969b27e1221b16d43d608d0cfc/USER", "phys03", dbFile = dbFile, overwrite=overwrite, prefix='root://hephyse.oeaw.ac.at/')
+fwlite_ttZ_ll_LO_order2_18weights_4f_ref.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/27062018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttZ_ll_LO_order2_18weights_4f_ref.nEvents       = 1000000
+fwlite_ttZ_ll_LO_order2_18weights_4f_ref.xsec          = 0.3275 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
+
 # no reference point samples 8/3
 fwlite_ttZ_ll_LO_order3_8weights               = FWLiteSample.fromDAS("fwlite_ttZ_ll_LO_order3_8weights", "/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball/llechner-ttZ0j_order3_8weights-7a5fde3f5bf89006ee3acec926ca87d8/USER", "phys03", dbFile = dbFile, overwrite=overwrite, prefix='root://hephyse.oeaw.ac.at/')
 fwlite_ttZ_ll_LO_order3_8weights.reweight_pkl  = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/07052018/ttZ/order3/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"

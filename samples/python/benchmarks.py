@@ -24,6 +24,32 @@ import glob
 
 gridpack_dir = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/"
 
+#gen_dir = "/afs/hephy.at/user/l/llechner/public/CMSSW_9_4_4/src/CMSTopEFT/setup_scripts/"
+
+#SIM_fwlite_ttgammaTest_LO_order2_15weights_ref              = Sample.fromDirectory("ttgamma2l", texName = "ttgamma",  directory = [os.path.join( gen_dir, "TOP-RunIIFall17MiniAOD-00189.root" )])
+#SIM_fwlite_ttgammaTest_LO_order2_15weights_ref.reweight_pkl = gridpack_dir + "18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+#SIM_fwlite_ttgammaTest_LO_order2_15weights_ref.nEvents      = 10
+#SIM_fwlite_ttgammaTest_LO_order2_15weights_ref.xsec         = 7.092 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+
+gen_dir = "/afs/hephy.at/data/llechner02/TTXPheno/skims/gen/v18/delphes_card_CMS/"
+
+##############################
+##############################
+##############################
+
+# 4 Fermion Operators
+
+##############################
+##############################
+##############################
+
+# reference point samples 4 fermion 18/2
+fwlite_ttZ_ll_LO_order2_18weights_4f_ref_CMS               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_18weights_4f_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_18weights_4f_ref" )]) 
+fwlite_ttZ_ll_LO_order2_18weights_4f_ref_CMS.reweight_pkl  = gridpack_dir + "27062018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttZ_ll_LO_order2_18weights_4f_ref_CMS.nEvents       = 1000000
+fwlite_ttZ_ll_LO_order2_18weights_4f_ref_CMS.xsec          = 0.3275 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
+
+#check
 ##############################
 ##############################
 ##############################
@@ -33,8 +59,6 @@ gridpack_dir = "/afs/hephy.at/data/llechner01/TTXPheno/gridpacks/"
 ##############################
 ##############################
 ##############################
-
-gen_dir = "/afs/hephy.at/data/llechner02/TTXPheno/skims/gen/v18/delphes_card_CMS/"
 
 # reference point samples 4/4, dim6 <= 2
 fwlite_ttZ_ll_LO_order4_4weights_2WC_ref_CMS               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order4_4weights_2WC_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order4_4weights_2WC_ref" )]) 

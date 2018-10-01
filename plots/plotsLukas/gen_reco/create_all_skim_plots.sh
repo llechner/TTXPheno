@@ -1,19 +1,19 @@
 #!/bin/bash
 
-cpQM=3
-cpt=3
-ctW=3
-ctWI=3
-ctZ=3
-ctZI=3
-ctG=1
-ctGI=1
+cpQM=7
+cpt=8
+ctW=6
+ctWI=6
+ctZ=6
+ctZI=6
+ctG=6
+ctGI=6
 
 #Run all skim plot scripts
 
-./skim_plots_ttgamma_1l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} #${ctG} ${ctGI}
-./skim_plots_ttgamma_2l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} #${ctG} ${ctGI}
-#./skim_plots_ttZ_3l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} #${ctG} ${ctGI}
+#./skim_plots_ttgamma_1l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} #${ctG} ${ctGI}
+#./skim_plots_ttgamma_2l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} ${ctG} ${ctGI}
+./skim_plots_ttZ_3l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} #${ctG} ${ctGI}
 #./skim_plots_ttZ_4l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} #${ctG} ${ctGI}
 #./skim_plots_ttW_2l.sh ${cpQM} ${cpt} ${ctW} ${ctWI} ${ctZ} ${ctZI} #${ctG} ${ctGI}
 
