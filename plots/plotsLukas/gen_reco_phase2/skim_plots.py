@@ -42,14 +42,14 @@ argParser.add_argument('--noninfoSignal',   action='store_true', help='include n
 argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--scaleLumi',       action='store_true', help='Scale lumi only?')
 argParser.add_argument('--reweightPtXToSM', action='store_true', help='Reweight Pt(X) to the SM for all the signals?')
-argParser.add_argument('--parameters',      action='store',     default = ['cpt', '3', 'cpQM', '3', 'ctW', '3', 'ctWI', '3', 'ctZ', '3', 'ctZI', '3'], type=str, nargs='+', help = "argument parameters")
+argParser.add_argument('--parameters',      action='store',     default = [], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
 argParser.add_argument('--leptonFlavor',    action='store',     default='all', nargs='?', choices=['all', 'same', 'opposite', 'e', 'mu', 'eee', 'mumumu', 'mumue', 'muee'], help='same flavor of nonZ leptons for ttZ 4l and ttgamma 2l? No effect on other processes') 
 argParser.add_argument('--variables',       action='store',     default = ['cpt'], type=str, nargs='+', help = "argument variables")
 argParser.add_argument('--binThreshold',    action='store',     default=100)
 argParser.add_argument('--addFisherInformation', action='store_true', help='include Fisher Information Plot in a.u.?')
 argParser.add_argument('--addFisherInformationBackground', action='store_true', help='include Fisher Information bg Plot in a.u.?')
-argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?') 
+argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS', 'phase2_CMS'], help='Which Delphes detector simulation?') 
 
 args = argParser.parse_args()
 
@@ -117,19 +117,20 @@ sequence = process.getSequenceList( args.level, args.leptonFlavor )
 sample_file = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
 loadedSamples = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
-#if args.processFile == 'ttgamma_1l': ttSampleName = 'fwlite_tt_nonhad_LO_order2_15weights'
-#else:                                ttSampleName = 'fwlite_tt_dilep_LO_order2_15weights'
+if args.processFile == 'ttgamma_1l': ttSampleName = 'fwlite_tt_nonhad_LO_order2_15weights'
+else:                                ttSampleName = 'fwlite_tt_dilep_LO_order2_15weights'
 
 ttXSample = getattr( loadedSamples, args.sample + '_%s' %args.detector)
 WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
 tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
 tWZSample = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
 tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
-ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
-ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
-ttgammaSample.name = 'fwlite_ttgamma__LO_order2_15weights_%s' %args.detector
-ttSample = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
-ttSample.name = 'fwlite_tt__LO_order2_15weights_%s' %args.detector
+#ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
+#ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
+#ttgammaSample.name = 'fwlite_ttgamma__LO_order2_15weights_%s' %args.detector
+if "ttgamma" in args.processFile:
+    ttSample = getattr( loadedSamples, ttSampeName + '_' + args.detector )
+    ttSample.name = 'fwlite_tt__LO_order2_15weights_%s' %args.detector
 
 # details of the categories are written in the postprocessing script
 if args.processFile.split('_')[0] == 'ttgamma':
@@ -155,7 +156,8 @@ elif args.processFile.split('_')[0] == 'ttZ':
 
 nonInfo = []
 if 'ttZ' in args.processFile.split('_'):
-    bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+#    bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+    bg = [ WZSample, tWZSample, tZqSample ]
     # be careful if you set nonInfo to empty list, especially with the FI plot
     if args.noninfoSignal or args.addFisherInformationBackground: nonInfo = [ ttZISRSample ]
 elif 'ttgamma' in args.processFile.split('_'):
@@ -177,7 +179,7 @@ def checkReferencePoint( sample ):
 # somehow this has to be done first, not in the next loop
 if args.small:
     for s in [ttXSample] + bg + nonInfo:
-        s.reduceFiles( to = 10 )
+        s.reduceFiles( to = 30 )
 
 
 # configure samples

@@ -109,9 +109,11 @@ else:
 
 #save data file
 filename = '_'.join( ['nll', args.detector ] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity) ] ) + '.data'
-
 #do the calculation
+print filename
+print not os.path.isfile('data/' + filename)
 if not os.path.isfile('data/' + filename) or args.overwrite:
+    exit()
     # Import samples
     sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
     loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
@@ -315,7 +317,7 @@ else:
     results = []
     for line in data:
         vals = map( float, line.split('\n')[0].split(',') )
-        if args.scale is not None: vals[0] = vals[0]*sqrt(sqrt(float(args.luminosity)/float(args.scale)))
+        if args.scale is not None: vals[2] = vals[2]*float(args.scale)/float(args.luminosity)/2
         results.append( tuple( vals ) )
 
 
@@ -402,8 +404,10 @@ hist.GetZaxis().SetTitle("-2 #Delta ln L")
 
 if not None in args.zRange:
     hist.GetZaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
-    hist.GetXaxis().SetRangeUser( -0.3 , 0.3 )
-    hist.GetYaxis().SetRangeUser( -0.3 , 0.3 )
+#    hist.GetXaxis().SetRangeUser( -0.3 , 0.3 )
+#    hist.GetYaxis().SetRangeUser( -0.3 , 0.3 )
+#    hist.GetXaxis().SetRangeUser( -1 , 1 )
+#    hist.GetYaxis().SetRangeUser( -1 , 1 )
 
 
 if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
@@ -436,8 +440,11 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]) + ' (' + args.detector + ')')
-latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )
+latex1.DrawLatex(0.15, 0.92, 'CMS Simulation'),
+latex1.DrawLatex(0.45, 0.92, 'L=%3.1f fb{}^{-1} (13 TeV)' % (float(args.luminosity) if not args.scale else float(args.scale)))
+
+#latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]) + ' (' + args.detector + ')')
+#latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )
 
 plot_directory_ = os.path.join(\
     plot_directory,

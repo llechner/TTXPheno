@@ -104,6 +104,8 @@ else:
 filename = '_'.join( ['nll', args.detector, 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
 
 if not os.path.isfile('data/' + filename) or args.overwrite:
+    exit()
+
     # Import samples
     sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
     loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
@@ -493,8 +495,12 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l (%s)'%args.detector)
-latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )
+
+latex1.DrawLatex(0.15, 0.92, 'CMS Simulation'),
+latex1.DrawLatex(0.45, 0.92, 'L=%3.1f fb{}^{-1} (13 TeV)' % float(args.luminosity))
+
+#latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l (%s)'%args.detector)
+#latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )
 
 plot_directory_ = os.path.join(\
     plot_directory,
