@@ -1,0 +1,18 @@
+2018-08-03 14:22:07,976 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_43.root
+2018-08-03 14:22:08,020 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_82.root
+2018-08-03 14:22:08,079 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_133.root
+2018-08-03 14:22:08,080 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_134.root
+2018-08-03 14:22:08,084 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_137.root
+2018-08-03 14:22:08,089 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_142.root
+2018-08-03 14:22:09,713 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_43.root
+2018-08-03 14:22:09,755 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_82.root
+2018-08-03 14:22:09,819 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_133.root
+2018-08-03 14:22:09,820 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_134.root
+2018-08-03 14:22:09,825 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_137.root
+2018-08-03 14:22:09,831 - RootTools.core.Sample - ERROR - Check of root file failed. Skipping. File: /afs/hephy.at/data/llechner01/TTXPheno/skims/gen/v18/fwlite_ttgamma_LO_order2_15weights_ref/fwlite_ttgamma_LO_order2_15weights_ref_142.root
+2018-08-03 14:22:10,425 - RootTools - ERROR - Uncaught exception:
+Traceback (most recent call last):
+  File "skim_plots.py", line 179, in <module>
+    s.event_factor = s.nEvents / float( s.chain.GetEntries() )
+KeyboardInterrupt
+[?1034h

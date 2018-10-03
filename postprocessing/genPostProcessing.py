@@ -136,7 +136,6 @@ variables  = ["run/I", "lumi/I", "evt/l"]
 
 # MET
 variables += ["genMet_pt/F", "genMet_phi/F"]
-
 # jet vector
 jet_read_vars       =  "pt/F,eta/F,phi/F,isMuon/I,isElectron/I,isPhoton/I"
 jet_read_varnames   =  varnames( jet_read_vars )
@@ -189,7 +188,11 @@ if args.delphes:
     variables += ["recoBj0_%s"%var for var in recoJet_vars.split(',')]
     variables += ["recoBj1_%s"%var for var in recoJet_vars.split(',')]
     recoJet_varnames= varnames( recoJet_vars )
-    
+    btagWPs = ["medium", "tight", "looswMTD", "mediumMTD", "tightMTD"]
+    for btagWP in btagWPs:
+        variables.append( "nBTag_"+btagWP+"/I" )
+        recoJet_vars+='bTag_'+btagWP+"/I"
+ 
     # associated jet indices
     variables += [ "recoBjNonZlep_index/I", "recoBjNonZhad_index/I" ]
     variables += [ "recoBjLeadlep_index/I", "recoBjLeadhad_index/I" ]
@@ -607,6 +610,15 @@ def filler( event ):
         recoJets.sort( key = lambda p:-p['pt'] )
         addIndex( recoJets )
 
+        for i_btagWP, btagWP in enumerate(btagWPs):
+            count = 0
+            for jet in recoJets:
+                btag = jet["bTag"] & (2**i_btagWP)
+                jet["bTag_"+btagWP] = btag
+                if btag: count += 1
+            setattr( event, "nBTag_"+btagWP, count )
+
+        
         # make reco b jets
         recoBJets    = filter( lambda j:j['bTag']==1, recoJets )
         recoNonBJets = filter( lambda j:not (j['bTag']==1), recoJets )

@@ -111,8 +111,8 @@ c = cardFileWriter.cardFileWriter()
 from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
 
 #binningX = binningY = [12, -12, 12]
-binningX = [24, -24-6, 24-6]
-binningY = [24, -24+16, 24+16]
+binningX = [48, -24-6, 24-6]
+binningY = [48, -24+16, 24+16]
 
 limit = ROOT.TH2F( 'limit', 'limit', *(binningX + binningY) )
 

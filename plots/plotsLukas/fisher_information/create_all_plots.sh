@@ -21,9 +21,9 @@ declare -a variables=("cpt cpQM ctZ ctZI" "cpt cpQM" "cpt cpQM ctW ctWI")
 #declare -a variables=("cpt" "cpQM")
 
 #declare -a levels=("reco" "genLep" "gen")
-#declare -a levels=("reco" "gen")
+declare -a levels=("reco" "gen")
 #declare -a levels=("gen")
-declare -a levels=("reco")
+#declare -a levels=("reco")
 
 # Scale bars to full event loop or to full pre-selection
 #declare -a fpsScales=("--fpsScaling" "")
@@ -32,9 +32,9 @@ declare -a fpsScales=("")
 
 #declare -a binThresholds=("400" "100")
 #declare -a binThresholds=("100" "0")
-declare -a binThresholds=("100")
+#declare -a binThresholds=("100")
 #declare -a binThresholds=("400" "100" "25" "0") #5% 10% relError
-#declare -a binThresholds=("0") #5% 10% relError
+declare -a binThresholds=("0") #5% 10% relError
 
 #declare -a parameters=("--parameters ctZ 3 ctZI 3" "")
 declare -a parameters=("")

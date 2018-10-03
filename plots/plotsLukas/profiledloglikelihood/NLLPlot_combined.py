@@ -47,6 +47,7 @@ argParser.add_argument('--variables' ,      action='store',     default = ['ctZ'
 argParser.add_argument('--binning',         action='store',     default = [1, -2, 2, 1, -2, 2], type=float, nargs=6, help = "argument parameters")
 argParser.add_argument('--zRange',          action='store',     default = [None, None], type=float, nargs=2, help = "argument parameters")
 argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
+argParser.add_argument('--scale',           action='store',     default=None, help='Luminosity for weighting the plots')
 argParser.add_argument('--contours',        action='store_true', help='draw 1sigma and 2sigma contour line?')
 argParser.add_argument('--smooth',          action='store_true', help='smooth histogram?')
 argParser.add_argument('--cores',           action='store',     default=8, type=int, help='number of cpu cores for multicore processing')
@@ -103,6 +104,8 @@ else:
 filename = '_'.join( ['nll', args.detector, 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
 
 if not os.path.isfile('data/' + filename) or args.overwrite:
+    exit()
+
     # Import samples
     sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
     loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
@@ -375,6 +378,7 @@ else:
     results = []
     for line in data:
         vals = map( float, line.split('\n')[0].split(',') )
+        if args.scale is not None: vals[0] = vals[0]*sqrt(sqrt(float(args.luminosity)/float(args.scale)))
         results.append( tuple( vals ) )
 
 #scale to SM
@@ -458,6 +462,8 @@ hist.GetZaxis().SetTitle("-2 #Delta ln L")
 
 if not None in args.zRange:
     hist.GetZaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
+#    hist.GetXaxis().SetRangeUser( -0.19, 0.19 )
+#    hist.GetYaxis().SetRangeUser( -0.19, 0.19 )
 
 if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
     hist.GetXaxis().SetTitle('C^{(33)}_{uB} [(#Lambda/TeV)^{2}]' )
@@ -489,8 +495,12 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l (%s)'%args.detector)
-latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%float(args.luminosity) )
+
+latex1.DrawLatex(0.15, 0.92, 'CMS Simulation'),
+latex1.DrawLatex(0.45, 0.92, 'L=%3.1f fb{}^{-1} (13 TeV)' % float(args.luminosity))
+
+#latex1.DrawLatex(0.15, 0.92, 'ttZ 3l + tt#gamma 1l / 2l (%s)'%args.detector)
+#latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )
 
 plot_directory_ = os.path.join(\
     plot_directory,
@@ -503,4 +513,4 @@ if not os.path.isdir( plot_directory_ ):
     os.makedirs( plot_directory_ )
 
 for e in [".png",".pdf",".root"]:
-    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity)]) + e)
+    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale)]) + e)

@@ -37,6 +37,7 @@ argParser.add_argument('--order',           action='store',     default=2, help=
 argParser.add_argument('--selection',       action='store',     default='lepSel3-njet3p-nbjet1p-onZ-Zpt0-mll12', help="Specify cut.")
 argParser.add_argument('--small',           action='store_true', help='Run only on a small subset of the data?') 
 argParser.add_argument('--backgrounds',     action='store_true', help='include backgrounds?')
+argParser.add_argument('--noninfoSignal',   action='store_true', help='include non-info signal?')
 #argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--scaleLumi',       action='store_true', help='Scale lumi only?')
@@ -47,6 +48,7 @@ argParser.add_argument('--leptonFlavor',    action='store',     default='all', n
 argParser.add_argument('--variables',       action='store',     default = ['cpt'], type=str, nargs='+', help = "argument variables")
 argParser.add_argument('--binThreshold',    action='store',     default=100)
 argParser.add_argument('--addFisherInformation', action='store_true', help='include Fisher Information Plot in a.u.?')
+argParser.add_argument('--addFisherInformationBackground', action='store_true', help='include Fisher Information bg Plot in a.u.?')
 argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?') 
 
 args = argParser.parse_args()
@@ -84,7 +86,7 @@ if args.small: subDirectory.append("small")
 subDirectory = '_'.join( subDirectory )
 
 # Format WC input parameters
-colors = [ ROOT.kRed+1, ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue ]
+colors = [ ROOT.kRed+1, ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue,  ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+3,  ROOT.kGreen-7, ROOT.kGreen-10, ROOT.kGreen+3,  ROOT.kPink-7, ROOT.kPink-10, ROOT.kPink+3, ROOT.kGray+2, ROOT.kYellow-7 ]
 colorsBg = [ ROOT.kAzure-3, ROOT.kGreen-2, ROOT.kCyan-9, ROOT.kRed+2, ROOT.kGray+2, ROOT.kYellow-7, ROOT.kViolet+6, ROOT.kBlue+2 ]
 colorsNonInfo = [ ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+3, ROOT.kBlack]
 
@@ -151,14 +153,15 @@ elif args.processFile.split('_')[0] == 'ttZ':
     ttZISRSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
     ttZISRSample.name = 'fwlite_ttZ_(non-info)_LO_order2_15weights_ref'
 
+nonInfo = []
 if 'ttZ' in args.processFile.split('_'):
     bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
     # be careful if you set nonInfo to empty list, especially with the FI plot
-    nonInfo = [ ttZISRSample ]
+    if args.noninfoSignal or args.addFisherInformationBackground: nonInfo = [ ttZISRSample ]
 elif 'ttgamma' in args.processFile.split('_'):
     bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
     # be careful if you set nonInfo to empty list, especially with the FI plot
-    nonInfo = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample, ttgammaFakeSample ]
+    if args.noninfoSignal or args.addFisherInformationBackground: nonInfo = [ ttgammaIsrSample, ttgammaLepSample, ttgammabSample, ttgammaFakeSample ]
 
 # Polynomial parametrization
 # ATTENTION IF U USE MORE THAN ONE SIGNAL SAMPLE!!!
@@ -183,6 +186,7 @@ for s in [ttXSample] + bg + nonInfo:
     s.event_factor = s.nEvents / float( s.chain.GetEntries() )
     s.setSelectionString( cutInterpreter.cutString(args.selection) )
     if checkReferencePoint( s ):
+        print s.name
         s.read_variables = ["ref_lumiweight1fb/F", VectorTreeVariable.fromString('p[C/F]', nMax=2000)]
 
 catPhoton_variables = [ "signalPhoton/I", "isrPhoton/I", "lepPhoton/I", "nonIsoPhoton/I", "fakePhoton/I"]
@@ -192,27 +196,31 @@ if args.processFile.split('_')[0] == 'ttgamma':
     # overlap removal + signal categorization for ttgamma
 
     ttXSample.read_variables         += catPhoton_variables
-    ttgammaIsrSample.read_variables  += catPhoton_variables
-    ttgammaLepSample.read_variables   = catPhoton_variables
-    ttSample.read_variables           = catPhoton_variables
-    ttgammabSample.read_variables     = catPhoton_variables
-    ttgammaFakeSample.read_variables  = catPhoton_variables
-
     ttXSample.addSelectionString(         "signalPhoton==1" ) #cat a1 <- the one and only signal
-    ttgammaIsrSample.addSelectionString(  "isrPhoton==1&&abs(genPhoton_motherPdgId[0])!=21"    ) #cat a2
-    ttgammaLepSample.addSelectionString(  "lepPhoton==1&&abs(genPhoton_motherPdgId[0])!=6"    ) #cat b
+
+    ttSample.read_variables           = catPhoton_variables
     ttSample.addSelectionString(          "nonIsoPhoton==1" ) #cat c1
-    ttgammabSample.addSelectionString(    "jetPhoton==1" ) #cat c2
-    ttgammaFakeSample.addSelectionString( "fakePhoton==1"   ) #cat d
+
+    if args.noninfoSignal or args.addFisherInformationBackground:
+        ttgammaIsrSample.read_variables  += catPhoton_variables
+        ttgammaLepSample.read_variables   = catPhoton_variables
+        ttgammabSample.read_variables     = catPhoton_variables
+        ttgammaFakeSample.read_variables  = catPhoton_variables
+
+        ttgammaIsrSample.addSelectionString(  "isrPhoton==1&&abs(genPhoton_motherPdgId[0])!=21"    ) #cat a2
+        ttgammaLepSample.addSelectionString(  "lepPhoton==1&&abs(genPhoton_motherPdgId[0])!=6"    ) #cat b
+        ttgammabSample.addSelectionString(    "jetPhoton==1" ) #cat c2
+        ttgammaFakeSample.addSelectionString( "fakePhoton==1"   ) #cat d
 
 elif args.processFile.split('_')[0] == 'ttZ':
     # signal categorization for ttZ
 
     ttXSample.read_variables += catZ_variables
-    ttZISRSample.read_variables += catZ_variables
-
     ttXSample.addSelectionString( "signalZ==1" ) #Z from gluon or top
-    ttZISRSample.addSelectionString( "signalZ==0" ) #Z from ISR or else
+
+    if args.noninfoSignal or args.addFisherInformationBackground:
+        ttZISRSample.read_variables += catZ_variables
+        ttZISRSample.addSelectionString( "signalZ==0" ) #Z from ISR or else
 
 
 
@@ -224,18 +232,20 @@ def legendtext( sample ):
 #first: draw all WC + SM as line
 stackList = [ [ttXSample] for param in params ]
 #second: draw all non-info signal red
-stackList += [ nonInfo ]
-nonInfoParams = [[ {'legendText':legendtext(s), 'WC':{}, 'color':colorsNonInfo[i]} for i, s in enumerate(nonInfo) ]]
+nonInfoParams = []
+if args.noninfoSignal or args.addFisherInformationBackground:
+    stackList += [ nonInfo ]
+    nonInfoParams = [[ {'legendText':legendtext(s), 'WC':{}, 'color':colorsNonInfo[i]} for i, s in enumerate(nonInfo) ]]
 #third: draw all bg filled
 bgParams = []
-if args.backgrounds:
+if args.backgrounds or args.addFisherInformationBackground:
     stackList += [ bg ]
     bgParams = [[ {'legendText':legendtext(s), 'WC':{}, 'color':colorsBg[i]} for i, s in enumerate(bg) ]]
 
 fisherParams = []
 if args.addFisherInformation:
     fisherParams = [[ {'legendText':'FI SM ideal [a.u.]', 'WC':fisherInfo_WC, 'color':ROOT.kGray+2} ]]
-    if args.backgrounds: fisherParams.append( [{'legendText':'FI SM real', 'WC':fisherInfo_WC, 'color':ROOT.kGray+2}] )
+    if args.addFisherInformationBackground: fisherParams.append( [{'legendText':'FI SM real', 'WC':fisherInfo_WC, 'color':ROOT.kGray+2}] )
     #forth: draw FI as line
     stackList += [ [ttXSample] for param in fisherParams ]
 #    allParams += fisherParams
@@ -317,15 +327,17 @@ def drawObjects( hasData = False ):
     tex.SetTextAlign(11) # align right
     tex.SetTextFont(42)
     lines = [
-      (0.15, 0.95, ' '.join(args.processFile.split('_')[:2]) + '(' + args.detector + ')'),
-      (offset, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
+      (0.15, 0.95, 'CMS Simulation'),
+      (offset, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)'% ( float(args.luminosity)) )
+#      (0.15, 0.95, ' '.join(args.processFile.split('_')[:2]) + '(' + args.detector + ')'),
+#      (offset, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
 def drawPlots(plots):
 
   # add nonInfo Signal to signal for stacked plot
-  if len(nonInfoParams) != 0:
+  if args.noninfoSignal and len(nonInfoParams) != 0:
     indexNonInfo = len(params)
     for plot in plots:
       for nonInfo_histo in plot.histos[indexNonInfo]:
@@ -343,10 +355,15 @@ def drawPlots(plots):
   for plot in plots:
 
     histoIndexSM      = len(params) - 1
-    histoIndexNonInfo = len(params) if len(nonInfoParams) != 0 else None
-    histoIndexBg      = len(params) + len(nonInfoParams) if len(bgParams) != 0 else None
+    histoIndexNonInfo = len(params) if len(nonInfoParams) != 0 or args.addFisherInformationBackground else float('inf')
+    histoIndexBg      = len(params) + len(nonInfoParams) if len(bgParams) != 0 or args.addFisherInformationBackground else float('inf')
 
     for i_h, h in enumerate(plot.histos):
+
+#      if args.addFisherInformation and args.addFisherInformationBackground:
+#        if not args.backgrounds and i_h == histoIndexBg: continue
+#        if not args.noninfoSignal and i_h == histoIndexNonInfo: continue
+
       for j_hi, hi in enumerate(h):
 
         if i_h == histoIndexBg:
@@ -364,9 +381,9 @@ def drawPlots(plots):
             hi.SetLineWidth(2)
             if i_h == histoIndexSM:
                 hi.SetLineWidth(3)
-            elif (args.addFisherInformation and i_h == histoIndexBg+1):
+            elif args.addFisherInformation and i_h == len(allParams)-2:
                 hi.SetLineWidth(2)
-            elif args.addFisherInformation and args.backgrounds and i_h == histoIndexBg+2:
+            elif args.addFisherInformation and args.addFisherInformationBackground and i_h == len(allParams)-1:
                 hi.SetLineStyle(2) #Fisher Info Bg
                 hi.SetLineWidth(2)
         
@@ -392,7 +409,17 @@ def drawPlots(plots):
     # plot the legend
     l_plot = copy.deepcopy(plots[0])
     for i_h, h in enumerate(l_plot.histos):
+
+#      if args.addFisherInformation and args.addFisherInformationBackground:
+#        if not args.backgrounds and i_h == histoIndexBg: continue
+#        if not args.noninfoSignal and i_h == histoIndexNonInfo: continue
+
       for j_hi, hi in enumerate(h):
+
+        if args.addFisherInformation and args.addFisherInformationBackground:
+          if not args.backgrounds and j_hi == histoIndexBg: continue
+          if not args.noninfoSignal and j_hi == histoIndexNonInfo: continue
+
           hi.legendText = allParams[i_h][j_hi]['legendText']
           if i_h == histoIndexNonInfo or i_h == histoIndexBg: hi.style = styles.fillStyle(allParams[i_h][j_hi]['color'])
           else: hi.style = styles.lineStyle(allParams[i_h][j_hi]['color'])
@@ -417,18 +444,28 @@ def drawPlots(plots):
     # plot the plots
     for p, plot in enumerate(plots):
       histoIndexSM      = len(params) - 1
-      histoIndexBg      = len(params) + len(nonInfoParams) if len(bgParams) != 0 else None
-      histoIndexNonInfo = len(params) if len(nonInfoParams) != 0 else None
-      histoIndexFI      = len(plot.histos) - 2 if args.backgrounds else len(plot.histos) - 1
+      histoIndexBg      = len(params) + len(nonInfoParams) if len(bgParams) != 0 or args.addFisherInformationBackground else float('inf')
+      histoIndexNonInfo = len(params) if len(nonInfoParams) != 0 or args.addFisherInformationBackground else float('inf')
+      histoIndexFI      = len(plot.histos) - 2 if args.addFisherInformationBackground else len(plot.histos) - 1
 
       if args.addFisherInformation:
         fi_Integral = plot.histos[histoIndexFI][0].Integral()
         fisherInfoScale = plot.histos[histoIndexSM][0].Integral() / fi_Integral if fi_Integral != 0 else 0 #scaling factor from SM histo
         fisherInfoScale *= 100 if log else 1.8 #offset
+        if not log and not args.scaleLumi: fisherInfoScale *= 1.5 #offset
 
       for i_h, h in enumerate(plot.histos):
+
+#        if args.addFisherInformation and args.addFisherInformationBackground:
+#          if not args.backgrounds and i_h == histoIndexBg: continue
+#          if not args.noninfoSignal and i_h == histoIndexNonInfo: continue
+
         for j_hi, hi in enumerate(h):
-          if args.addFisherInformation and (i_h == histoIndexFI or (i_h == histoIndexFI+1 and args.backgrounds)):
+#          if args.addFisherInformation and args.addFisherInformationBackground:
+#            if not args.backgrounds and j_hi == histoIndexBg: continue
+#            if not args.noninfoSignal and j_hi == histoIndexNonInfo: continue
+
+          if args.addFisherInformation and (i_h == histoIndexFI or (i_h == histoIndexFI+1 and args.addFisherInformationBackground)):
             if fisherInfoVariables[p] is not None: hi.Scale(fisherInfoScale) #signal
             else: hi.Scale(0) #no fisherInfo histo, only place holder
           hi.legendText = allParams[i_h][j_hi]['legendText']
@@ -443,6 +480,20 @@ def drawPlots(plots):
 
 
       if not max( max(li.GetMaximum() for li in l) for l in plot.histos): continue # Empty plot
+
+      for i_h, h in enumerate(plot.histos[::-1]):
+        if args.addFisherInformation and args.addFisherInformationBackground:
+          if not args.backgrounds and i_h == len(plot.histos)-histoIndexBg-1:
+            del plot.histos[i_h]
+          if not args.noninfoSignal and i_h == len(plot.histos)-histoIndexNonInfo-1:
+            del plot.histos[i_h]
+
+#      for i_h, h in enumerate(plot.stack[::-1]):
+#        if args.addFisherInformation and args.addFisherInformationBackground:
+#          if not args.backgrounds and i_h == len(plot.histos)-histoIndexBg:
+#            del plot.stack[i_h]
+#          if not args.noninfoSignal and i_h == len(plot.histos)-histoIndexNonInfo:
+#            del plot.stack[i_h]
 
       plotting.draw(plot,
 	    plot_directory = plot_directory_,
@@ -470,14 +521,14 @@ if args.addFisherInformation:
     for i, plot in enumerate(plots):
         if fisherInfoVariables[i] is None: continue
 
-        fiHistoListIndex = len(plot.histos)-2 if args.backgrounds else len(plot.histos)-1
+        fiHistoListIndex = len(plot.histos)-2 if args.addFisherInformationBackground else len(plot.histos)-1
         bins = plot.binning
         var = fisherInfoVariables[i] #replace with better solution than FI_plots!!
 
         hist = w.getFisherInformationHisto( ttXSample, var, bins, selectionString=cutInterpreter.cutString(args.selection), weightString=ttXWeightString, variables=args.variables, nEventsThresh = args.binThreshold, **fisherInfo_WC)
         plot.histos[fiHistoListIndex] = [plot.fromHisto( 'histo_%i'%i, hist ).histos]
 
-        if args.backgrounds:
+        if args.addFisherInformationBackground:
             #get list of contents of bg histo
             bgContentList = histo_to_list( plot.histos_added[len(params)+1][0] )
             #get list of contents of bg histo
