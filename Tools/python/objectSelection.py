@@ -32,8 +32,8 @@ def isGoodRecoMuon( l ):
 def isGoodRecoElectron( l ):
     return abs( l['pdgId'] ) == 11 and abs( l['eta'] ) < 2.5 and l['pt'] > 10
 
-def isGoodRecoJet( j ):
-    return  abs( j['eta'] ) < 2.4 and j['pt'] > 30 and j['nCharged']>1 and j['nNeutrals']>0
+def isGoodRecoJet( j, pt_var = 'pt'):
+    return  abs( j['eta'] ) < 2.4 and j[pt_var] > 30 and j['nCharged']>1 and j['nNeutrals']>0
 
 def isGoodRecoPhoton( g ):
     return  abs( g['eta'] ) < 2.1 and g['pt'] > 15
