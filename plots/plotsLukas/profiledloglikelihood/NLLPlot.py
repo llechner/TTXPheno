@@ -56,10 +56,10 @@ argParser.add_argument('--scale',           action='store',     default=None, he
 argParser.add_argument('--cores',           action='store',     default=8, type=int, help='number of cpu cores for multicore processing')
 argParser.add_argument('--overwrite',       action='store_true', help='overwrite datafile?')
 argParser.add_argument('--binMultiplier',   action='store',     default=3, type=int, help='bin multiplication factor')
-argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS'], help='Which Delphes detector simulation?')
+argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS', 'phase2_CMS'], help='Which Delphes detector simulation?')
+argParser.add_argument('--scale14TeV',      action='store_true', help='scale 13 TeV cross-sections to 14 Tev?')
 
 args = argParser.parse_args()
-
 
 if args.level == 'gen':
     if 'ttZ' in args.process.split('_'):
@@ -108,30 +108,30 @@ else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
 
 #save data file
-filename = '_'.join( ['nll', args.detector ] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity) ] ) + '.data'
+filename = '_'.join( ['nll', args.detector ] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity), "14TeV" if args.scale14TeV else "13TeV" ] ) + '.data'
 #do the calculation
 print filename
 print not os.path.isfile('data/' + filename)
 if not os.path.isfile('data/' + filename) or args.overwrite:
-    exit()
     # Import samples
     sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
     loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
     ttXSample       = getattr( loadedSamples, args.sample + '_%s' %args.detector )
     WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
-    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
-    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
+#    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
+#    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
     tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
     tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
-    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
-    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
+#    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
+#    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
 
     #if args.process.split('_')[0] == 'ttgamma':
     #    ttgammaIsrSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
     #    ttgammaIsrSample.name = 'fwlite_ttgamma_ISR_LO_order2_15weights_ref'
 
-    if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+#    if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+    if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample ]
     elif args.process == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
     elif args.process == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
     elif args.process == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
@@ -153,14 +153,15 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
     for s in [ttXSample] + bg:
 
         s.event_factor = s.nEvents / float( s.chain.GetEntries() )
+        s.xsecScaleFactor = s.xsec14 / s.xsec if args.scale14TeV else 1.
         s.weightInfo = WeightInfo( s.reweight_pkl )
         s.weightInfo.set_order( args.order )
         s.setSelectionString( selectionString )
 
         if checkReferencePoint( s ):
-            s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+            s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor), str(s.xsecScaleFactor) ) )
         else:
-            s.setWeightString( 'lumiweight1fb*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor) ) )
+            s.setWeightString( 'lumiweight1fb*(%s)*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor), str(s.xsecScaleFactor) ) )
 
     # overlap removal
     if args.process.split('_')[0] == 'ttgamma':
@@ -276,7 +277,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
                     c.specifyUncertainty( 'JEC', bin_name, '_'.join( background.name.split('_')[1:3] ), background_jec_uncertainty[region][background.name])
                     c.specifyUncertainty( 'fake',bin_name, '_'.join( background.name.split('_')[1:3] ), background_fakerate_uncertainty[region][background.name])
                     
-            nameList = ttXSample.name.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, args.selection, 'small' if args.small else 'full', var1, var2 ]
+            nameList = ttXSample.name.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, "14TeV" if args.scale14TeV else "13TeV", args.selection, 'small' if args.small else 'full', var1, var2 ]
             cardname = '%s_nll_card'%'_'.join( map( str, nameList ) )
             c.writeToFile( './tmp/%s.txt'%cardname )
 
@@ -408,14 +409,16 @@ if not None in args.zRange:
 #    hist.GetYaxis().SetRangeUser( -0.3 , 0.3 )
 #    hist.GetXaxis().SetRangeUser( -1 , 1 )
 #    hist.GetYaxis().SetRangeUser( -1 , 1 )
+#    hist.GetXaxis().SetRangeUser( -8 , 12 )
+#    hist.GetYaxis().SetRangeUser( -8 , 12 )
 
 
 if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
-    hist.GetXaxis().SetTitle('C^{(33)}_{uB} [(#Lambda/TeV)^{2}]' )
-    hist.GetYaxis().SetTitle('C^{(33)}_{uW} [(#Lambda/TeV)^{2}]' )
+    hist.GetXaxis().SetTitle('C^{(33)}_{uB} (#Lambda/TeV)^{2}' )
+    hist.GetYaxis().SetTitle('C^{(33)}_{uW} (#Lambda/TeV)^{2}' )
 else:
-    hist.GetXaxis().SetTitle('C_{' + args.variables[0].replace('c','').replace('p','#phi') + '} [(#Lambda/TeV)^{2}]' )
-    hist.GetYaxis().SetTitle('C_{' + args.variables[1].replace('c','').replace('p','#phi') + '} [(#Lambda/TeV)^{2}]' )
+    hist.GetXaxis().SetTitle('C_{' + args.variables[0].replace('c','').replace('p','#phi').replace('M','') + '} (#Lambda/TeV)^{2}' )
+    hist.GetYaxis().SetTitle('C_{' + args.variables[1].replace('c','').replace('p','#phi').replace('M','') + '} (#Lambda/TeV)^{2}' )
 
 hist.GetXaxis().SetTitleFont(42)
 hist.GetYaxis().SetTitleFont(42)
@@ -441,7 +444,7 @@ latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
 latex1.DrawLatex(0.15, 0.92, 'CMS Simulation'),
-latex1.DrawLatex(0.45, 0.92, 'L=%3.1f fb{}^{-1} (13 TeV)' % (float(args.luminosity) if not args.scale else float(args.scale)))
+latex1.DrawLatex(0.45, 0.92, 'L=%i fb{}^{-1} (%s TeV)' % (int(args.luminosity) if not args.scale else int(args.scale), "14" if args.scale14TeV else "13"))
 
 #latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]) + ' (' + args.detector + ')')
 #latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )
@@ -459,5 +462,5 @@ if not os.path.isdir( plot_directory_ ):
     os.makedirs( plot_directory_ )
 
 for e in [".png",".pdf",".root"]:
-    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale)]) + e)
+    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale), "14TeV" if args.scale14TeV else "13TeV"]) + e)
 

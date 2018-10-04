@@ -38,6 +38,7 @@ argParser.add_argument('--selection',       action='store',     default='lepSel3
 argParser.add_argument('--small',           action='store_true', help='Run only on a small subset of the data?') 
 argParser.add_argument('--backgrounds',     action='store_true', help='include backgrounds?')
 argParser.add_argument('--noninfoSignal',   action='store_true', help='include non-info signal?')
+argParser.add_argument('--scale14TeV',      action='store_true', help='scale 13 TeV cross-sections to 14 Tev?')
 #argParser.add_argument('--level',           action='store',     default='gen', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
 argParser.add_argument('--scaleLumi',       action='store_true', help='Scale lumi only?')
@@ -185,7 +186,8 @@ if args.small:
 # configure samples
 for s in [ttXSample] + bg + nonInfo:
     # Scale the plots with number of events used (implemented in ref_lumiweight1fb)
-    s.event_factor = s.nEvents / float( s.chain.GetEntries() )
+    s.event_factor    = s.nEvents / float( s.chain.GetEntries() )
+    s.xsecScaleFactor = s.xsec14 / s.xsec if args.scale14TeV else 1.
     s.setSelectionString( cutInterpreter.cutString(args.selection) )
     if checkReferencePoint( s ):
         print s.name
@@ -285,18 +287,18 @@ if args.reweightPtXToSM:
             bsm_rw = w.get_weight_func( **param['WC'] )
             def reweight(event, sample):
                 i_bin = histo.FindBin(getattr( event, varX ) )
-                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor) * float(sample.xsecScaleFactor)
 #                return histo.GetBinContent(i_bin)*bsm_rw( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
             return reweight
 
         else:
             def reweightRef(event, sample):
-                return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+                return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor) * float(sample.xsecScaleFactor)
 #                return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
             def reweightNoRef(event, sample):
-                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+                return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor) * float(sample.xsecScaleFactor)
 #                return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
 
             return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
@@ -307,18 +309,18 @@ else:
     def get_reweight( param , sample_ ):
 
         def reweightRef(event, sample):
-            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+            return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_lumiweight1fb * float(args.luminosity) * float(sample.event_factor) * float(sample.xsecScaleFactor)
 #            return w.get_weight_func( **param['WC'] )( event, sample ) * sample_.xsec * 1000 / sample_.nEvents / event.p_C[0] * float(args.luminosity) * float(sample.event_factor)
 
         def reweightNoRef(event, sample):
-            return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor)
+            return event.lumiweight1fb * float(args.luminosity) * float(sample.event_factor) * float(sample.xsecScaleFactor)
 #            return sample_.xsec * 1000 / sample_.nEvents * float(args.luminosity) * float(sample.event_factor)
 
         return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 
     weight = [ [ get_reweight( allParams[i][j], sample_ ) for j, sample_ in enumerate(stackComponent) ] for i, stackComponent in enumerate(stack) ]
 
-ttXWeightString = 'ref_lumiweight1fb*%s*%s*%s'%(str(args.luminosity), str(ttXSample.event_factor), w.get_weight_string( **fisherInfo_WC ))
+ttXWeightString = 'ref_lumiweight1fb*%s*%s*%s*%s'%(str(args.luminosity), str(ttXSample.event_factor), w.get_weight_string( **fisherInfo_WC ), str(ttXSample.xsecScaleFactor))
 
 def drawObjects( hasData = False ):
     offset = 0.5 if args.addFisherInformation else 0.6
@@ -330,7 +332,7 @@ def drawObjects( hasData = False ):
     tex.SetTextFont(42)
     lines = [
       (0.15, 0.95, 'CMS Simulation'),
-      (offset, 0.95, 'L=%3.1f fb{}^{-1} (13 TeV)'% ( float(args.luminosity)) )
+      (offset, 0.95, 'L=%i fb{}^{-1} (%s TeV)'% ( int(args.luminosity), '14' if args.scale14TeV else '13' ) )
 #      (0.15, 0.95, ' '.join(args.processFile.split('_')[:2]) + '(' + args.detector + ')'),
 #      (offset, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
     ]
@@ -406,7 +408,7 @@ def drawPlots(plots):
         WC_directory,
         '_'.join(args.variables) if args.addFisherInformation else '',
         '%sEventsPerBin'%str(args.binThreshold) if args.addFisherInformation else '',
-        "log" if log else "lin")
+        "log_%s"%('14TeV' if args.scale14TeV else '13TeV') if log else "lin_%s"%('14TeV' if args.scale14TeV else '13TeV'))
 
     # plot the legend
     l_plot = copy.deepcopy(plots[0])
