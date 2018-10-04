@@ -17,7 +17,7 @@ from RootTools.core.standard             import *
 #TTXPheno
 from TTXPheno.Tools.user                   import skim_output_directory
 from TTXPheno.Tools.GenSearch              import GenSearch
-from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cosThetaStar, closestOSDLMassToMZ, nanJet, nanLepton
+from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cosThetaStar, closestOSDLMassToMZ
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
@@ -67,7 +67,7 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=50 
+    maxEvents=1000 
     sample.files=sample.files[:1]
 
 xsec = sample.xsec
@@ -131,6 +131,11 @@ def addIndex( collection ):
     for i  in range(len(collection)):
         collection[i]['index'] = i
 
+# upgrade JEC
+def addJecInfo( jet ):
+    jet["pt_JEC_up"]   = 1.02 * jet["pt"]
+    jet["pt_JEC_down"] = 0.98 * jet["pt"]
+
 # standard variables
 variables  = ["run/I", "lumi/I", "evt/l"]
 
@@ -183,15 +188,18 @@ if args.delphes:
         
     # reconstructed jets
     recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F,bTagPhys/I,nCharged/I,nNeutrals/I' 
-    variables      += ["recoJet[%s]"%recoJet_vars]
-    recoJet_write_varnames = varnames( recoJet_vars )
-    variables += ["recoBj0_%s"%var for var in recoJet_vars.split(',')]
-    variables += ["recoBj1_%s"%var for var in recoJet_vars.split(',')]
-    recoJet_varnames= varnames( recoJet_vars )
-    btagWPs = ["medium", "tight", "looswMTD", "mediumMTD", "tightMTD"]
+
+    btagWPs = ["loose", "medium", "tight", "looswMTD", "mediumMTD", "tightMTD"]
+    default_btagWP = "medium"
+    variables.append( "nBTag/I" )
     for btagWP in btagWPs:
         variables.append( "nBTag_"+btagWP+"/I" )
-        recoJet_vars+='bTag_'+btagWP+"/I"
+        recoJet_vars += ',bTag_'+btagWP+"/I"
+
+    variables += ["recoJet[%s]"%recoJet_vars]
+    recoJet_varnames = varnames( recoJet_vars )
+    variables += ["recoBj0_%s"%var for var in recoJet_vars.split(',')]
+    variables += ["recoBj1_%s"%var for var in recoJet_vars.split(',')]
  
     # associated jet indices
     variables += [ "recoBjNonZlep_index/I", "recoBjNonZhad_index/I" ]
@@ -231,6 +239,9 @@ def fill_vector( event, collection_name, collection_varnames, obj):
         try:
             setattr(event, collection_name+"_"+var, obj[var] )
         except TypeError as e:
+            logger.error( "collection_name %s var %s obj[var] %r", collection_name, var,  obj[var] )
+            raise e
+        except KeyError as e:
             logger.error( "collection_name %s var %s obj[var] %r", collection_name, var,  obj[var] )
             raise e
 
@@ -546,12 +557,12 @@ def filler( event ):
     trueNonBjets = list( filter( lambda j: not j['matchBParton'], genJets ) )
 
     # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
-    genBj0, genBj1 = ( trueBjets + trueNonBjets + [nanJet(), nanJet()] )[:2]
-    if genBj0['pt']<float('inf'): fill_vector( event, "genBj0", jet_write_varnames, genBj0) 
-    if genBj1['pt']<float('inf'): fill_vector( event, "genBj1", jet_write_varnames, genBj1) 
+    genBj0, genBj1 = ( trueBjets + trueNonBjets + [None, None] )[:2]
+    if genBj0: fill_vector( event, "genBj0", jet_write_varnames, genBj0) 
+    if genBj1: fill_vector( event, "genBj1", jet_write_varnames, genBj1) 
 
     # reco-bjet/leading lepton association
-    if len(promptGenLeps)>0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
+    if len(promptGenLeps)>0 and genBj0 and genBj1:
         if vecSumPt( genBj0, promptGenLeps[0], genMet ) > vecSumPt( genBj1, promptGenLeps[0], genMet ):
             event.genBjLeadlep_index, event.genBjLeadhad_index = genBj0['index'], genBj1['index']
         else:
@@ -580,7 +591,7 @@ def filler( event ):
         event.genLepZ_cosThetaStar = cosThetaStar(event.genLepZ_mass, event.genLepZ_pt, event.genLepZ_eta, event.genLepZ_phi, promptGenLeps[genLepMinus_index]['pt'], promptGenLeps[genLepMinus_index]['eta'], promptGenLeps[genLepMinus_index]['phi'] )
 
     # reco-bjet/nonZ lepton association
-    if event.genLepNonZ_l1_index>=0 and genBj0['pt']<float('inf') and genBj1['pt']<float('inf'):
+    if event.genLepNonZ_l1_index>=0 and genBj0 and genBj1:
         if vecSumPt( genBj0, promptGenLeps[event.genLepNonZ_l1_index], genMet ) > vecSumPt( genBj1, promptGenLeps[event.genLepNonZ_l1_index], genMet ):
             event.genBjNonZlep_index, event.genBjNonZhad_index = genBj0['index'], genBj1['index']
         else:
@@ -602,8 +613,15 @@ def filler( event ):
 
     # Reco quantities
     if args.delphes:
-#        delphesReader.getEntry(reader.position-1 ) # Suchi-reader version
         delphesReader.event.GetEntry(reader.position-1 ) # RootTools reader version
+
+
+        allRecoJets = delphesReader.jets()
+        for jet in allRecoJets:
+            addJECInfo( jet )
+
+        event.nrecoJets_JEC_up = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_up'), allRecoJets ) ) 
+        event.nrecoJets_JEC_down = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_down'), allRecoJets ) ) 
 
         # read jets
         recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
@@ -613,18 +631,22 @@ def filler( event ):
         for i_btagWP, btagWP in enumerate(btagWPs):
             count = 0
             for jet in recoJets:
-                btag = jet["bTag"] & (2**i_btagWP)
+                btag = ( jet["bTag"] & (2**i_btagWP) > 0 ) # Read b-tag bitmap
                 jet["bTag_"+btagWP] = btag
                 if btag: count += 1
             setattr( event, "nBTag_"+btagWP, count )
+            if btagWP == default_btagWP:
+                setattr( event, "nBTag", count )
 
+        event.nBTag_JEC_up   = len( filter( lambda j: j["bTag_"+default_btagWP] and isGoodRecoJet(j, pt_var = 'pt_JEC_up'), allRecoJets ) )
+        event.nBTag_JEC_down = len( filter( lambda j: j["bTag_"+default_btagWP] and isGoodRecoJet(j, pt_var = 'pt_JEC_down'), allRecoJets ) )
         
         # make reco b jets
-        recoBJets    = filter( lambda j:j['bTag']==1, recoJets )
-        recoNonBJets = filter( lambda j:not (j['bTag']==1), recoJets )
-        recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [nanJet(), nanJet()] )[:2] 
-        fill_vector( event, "recoBj0", recoJet_write_varnames, recoBj0)
-        fill_vector( event, "recoBj1", recoJet_write_varnames, recoBj1) 
+        recoBJets    = filter( lambda j:j['bTag_'+default_btagWP], recoJets )
+        recoNonBJets = filter( lambda j:not j['bTag_'+default_btagWP], recoJets )
+        recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [None, None] )[:2] 
+        if recoBj0: fill_vector( event, "recoBj0", recoJet_varnames, recoBj0)
+        if recoBj1: fill_vector( event, "recoBj1", recoJet_varnames, recoBj1) 
 
         # read leptons
         allRecoLeps = delphesReader.muons() + delphesReader.electrons()
@@ -656,7 +678,7 @@ def filler( event ):
         recoMet = delphesReader.met()[0]
 
         # reco-bjet/leading lepton association
-        if len(recoLeps)>0 and recoBj0['pt']<float('inf') and recoBj1['pt']<float('inf'):
+        if len(recoLeps)>0 and recoBj0 and recoBj1:
             if vecSumPt( recoBj0, recoLeps[0], recoMet ) > vecSumPt( recoBj1, recoLeps[0], recoMet ):
                 event.recoBjLeadlep_index, event.recoBjLeadhad_index = recoBj0['index'], recoBj1['index']
             else:
@@ -705,7 +727,7 @@ def filler( event ):
             event.recoZ_cosThetaStar = cosThetaStar(event.recoZ_mass, event.recoZ_pt, event.recoZ_eta, event.recoZ_phi, recoLeps[lm_index]['pt'], recoLeps[lm_index]['eta'], recoLeps[lm_index]['phi'] )
 
             # reco-bjet/lepton association
-            if event.recoNonZ_l1_index>=0 and recoBj0['pt']<float('inf') and recoBj1['pt']<float('inf'):
+            if event.recoNonZ_l1_index>=0 and recoBj0 and recoBj1:
                 if vecSumPt( recoBj0, recoLeps[event.recoNonZ_l1_index], recoMet ) > vecSumPt( recoBj1, recoLeps[event.recoNonZ_l1_index], recoMet ):
                     event.recoBjNonZlep_index, event.recoBjNonZhad_index = recoBj0['index'], recoBj1['index']
                 else:
@@ -727,9 +749,9 @@ if os.path.exists( output_filename ) and args.overwrite =='none' :
 if args.delphes:
     delphes_file = os.path.join( output_directory, 'delphes', sample.name+'.root' )
     if not os.path.exists( delphes_file ) or args.overwrite in ['all']:
+        logger.debug( "Reproducing delphes file %s", delphes_file)
         delphesProducer = DelphesProducer( card = args.delphesCard )
         delphesProducer.produce( sample.files, delphes_file )
-#    delphesReader = DelphesReader( delphes_file ) # Suchi-reader version
     delphesReader = DelphesReader( Sample.fromFiles( delphes_file, delphes_file, treeName = "Delphes" ) ) # RootTools version
 
 output_file = ROOT.TFile( output_filename, 'recreate')
