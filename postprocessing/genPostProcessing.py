@@ -20,6 +20,7 @@ from TTXPheno.Tools.GenSearch              import GenSearch
 from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cosThetaStar, closestOSDLMassToMZ
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
+from TTXPheno.Tools.BtagEfficiency         import BtagEfficiency
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
 from TTXPheno.Tools.DelphesReaderCMSHLLHC  import DelphesReader
 #from TTXPheno.Tools.DelphesReader          import DelphesReader
@@ -132,10 +133,26 @@ def addIndex( collection ):
         collection[i]['index'] = i
 
 # upgrade JEC
-def addJecInfo( jet ):
+def addJECInfo( jet ):
     jet["pt_JEC_up"]   = 1.02 * jet["pt"]
     jet["pt_JEC_down"] = 0.98 * jet["pt"]
 
+# lepton reweights for phase2 (flat uncertainty)
+def getReweightLeptonId( leptons ):
+#    return 1.01**( len( filter( lambda l: abs(l['pdgId'])==11, leptons ) ) ) * 1.005**( len( filter( lambda l: abs(l['pdgId'])==13, leptons ) ) )
+    reweight = 1
+
+    for l in leptons:
+        if abs( l['pdgId'] ) == 11:
+            # electrons: 1% 
+            reweight *= 1.01
+        elif abs( l['pdgId'] ) == 13:
+            # muons: 0.5% 
+            reweight *= 1.005
+
+    print 'leptons ', reweight
+    return reweight
+    
 # standard variables
 variables  = ["run/I", "lumi/I", "evt/l"]
 
@@ -187,14 +204,22 @@ if args.delphes:
     recoLep_varnames  = varnames( recoLep_vars )
         
     # reconstructed jets
-    recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F,bTagPhys/I,nCharged/I,nNeutrals/I' 
+    recoJet_vars    = 'pt/F,eta/F,phi/F,bTag/F,bTagPhys/I,nCharged/I,nNeutrals/I,pt_JEC_up/F,pt_JEC_up/F' 
 
     btagWPs = ["loose", "medium", "tight", "looswMTD", "mediumMTD", "tightMTD"]
     default_btagWP = "medium"
     variables.append( "nBTag/I" )
+    variables.append( "nrecoJets_JEC_down/I" )
+    variables.append( "nrecoJets_JEC_up/I" )
+    variables.append( "nBTag_JEC_down/I" )
+    variables.append( "nBTag_JEC_up/I" )
     for btagWP in btagWPs:
         variables.append( "nBTag_"+btagWP+"/I" )
         recoJet_vars += ',bTag_'+btagWP+"/I"
+
+    btagEff = BtagEfficiency()
+    for var in btagEff.btagWeightNames:
+        variables.append( 'reweightBTag_'+var+'/F' )
 
     variables += ["recoJet[%s]"%recoJet_vars]
     recoJet_varnames = varnames( recoJet_vars )
@@ -204,6 +229,10 @@ if args.delphes:
     # associated jet indices
     variables += [ "recoBjNonZlep_index/I", "recoBjNonZhad_index/I" ]
     variables += [ "recoBjLeadlep_index/I", "recoBjLeadhad_index/I" ]
+
+    # flat lepton reweights
+    variables.append( "reweight_leptonId/F" )
+
     # reconstructed photons
     recoPhoton_vars = 'pt/F,eta/F,phi/F,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F,genIndex/I,minLeptonDR/F,minLeptonPt/F,minJetDR/F'
     variables      += ["recoPhoton[%s]"%recoPhoton_vars]
@@ -615,22 +644,11 @@ def filler( event ):
     if args.delphes:
         delphesReader.event.GetEntry(reader.position-1 ) # RootTools reader version
 
-
         allRecoJets = delphesReader.jets()
-        for jet in allRecoJets:
-            addJECInfo( jet )
-
-        event.nrecoJets_JEC_up = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_up'), allRecoJets ) ) 
-        event.nrecoJets_JEC_down = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_down'), allRecoJets ) ) 
-
-        # read jets
-        recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
-        recoJets.sort( key = lambda p:-p['pt'] )
-        addIndex( recoJets )
 
         for i_btagWP, btagWP in enumerate(btagWPs):
             count = 0
-            for jet in recoJets:
+            for jet in allRecoJets:
                 btag = ( jet["bTag"] & (2**i_btagWP) > 0 ) # Read b-tag bitmap
                 jet["bTag_"+btagWP] = btag
                 if btag: count += 1
@@ -638,15 +656,33 @@ def filler( event ):
             if btagWP == default_btagWP:
                 setattr( event, "nBTag", count )
 
+        for jet in allRecoJets:
+            addJECInfo( jet )
+            btagEff.addJetTagEffToJet( jet, default_btagWP )
+#            print 'jetSF', jet['jetSF']
+
+        event.nrecoJets_JEC_up = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_up'), allRecoJets ) ) 
+        event.nrecoJets_JEC_down = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_down'), allRecoJets ) ) 
+
         event.nBTag_JEC_up   = len( filter( lambda j: j["bTag_"+default_btagWP] and isGoodRecoJet(j, pt_var = 'pt_JEC_up'), allRecoJets ) )
         event.nBTag_JEC_down = len( filter( lambda j: j["bTag_"+default_btagWP] and isGoodRecoJet(j, pt_var = 'pt_JEC_down'), allRecoJets ) )
         
+        # read jets
+        recoJets =  filter( isGoodRecoJet, allRecoJets ) 
+        recoJets.sort( key = lambda p:-p['pt'] )
+        addIndex( recoJets )
+
         # make reco b jets
         recoBJets    = filter( lambda j:j['bTag_'+default_btagWP], recoJets )
         recoNonBJets = filter( lambda j:not j['bTag_'+default_btagWP], recoJets )
         recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [None, None] )[:2] 
         if recoBj0: fill_vector( event, "recoBj0", recoJet_varnames, recoBj0)
         if recoBj1: fill_vector( event, "recoBj1", recoJet_varnames, recoBj1) 
+
+        # add b-tagging uncertainty
+        for var in btagEff.btagWeightNames:
+            setattr(event, 'reweightBTag_'+var, btagEff.getBTagSF_1a( var, recoBJets, recoNonBJets ) )
+#            print 'btag sf', var, btagEff.getBTagSF_1a( var, recoBJets, recoNonBJets ) 
 
         # read leptons
         allRecoLeps = delphesReader.muons() + delphesReader.electrons()
@@ -708,6 +744,12 @@ def filler( event ):
         event.recoZ_l2_index    = recoLeps[recoZ_l2_index]['index'] if recoZ_l2_index>=0 else -1
         event.recoNonZ_l1_index = recoLeps[recoNonZ_indices[0]]['index'] if len(recoNonZ_indices)>0 else -1
         event.recoNonZ_l2_index = recoLeps[recoNonZ_indices[1]]['index'] if len(recoNonZ_indices)>1 else -1
+
+        # add flat lepton ID reweights
+        if recoZ_l1_index >= 0 and recoZ_l2_index >= 0 and len(recoNonZ_indices) > 0:
+            event.reweight_leptonId = getReweightLeptonId( [ recoLeps[recoZ_l1_index], recoLeps[recoZ_l2_index], recoLeps[recoNonZ_indices[0]] ] )
+        else:
+            event.reweight_leptonId = -1
 
         # Store Z information 
         if event.recoZ_mass>=0:
