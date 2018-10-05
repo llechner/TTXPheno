@@ -51,7 +51,7 @@ class DelphesReader( DelphesReaderBase ): # version RootTools reader
     def jets( self ):
         return self.read_collection( 'Jet', 
             [   ('PT', 'pt'), ( 'Eta', 'eta'), ('Phi', 'phi'),
-                ('BTag', 'bTag'), ( 'BTagPhys', 'bTagPhys')
+                ('BTag', 'bTag'), ( 'BTagPhys', 'bTagPhys'),
             ])
 
     def photons( self ):

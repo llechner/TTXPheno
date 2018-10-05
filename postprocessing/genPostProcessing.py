@@ -67,7 +67,7 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=1000 
+    maxEvents=200 
     sample.files=sample.files[:1]
 
 xsec = sample.xsec
@@ -132,7 +132,7 @@ def addIndex( collection ):
         collection[i]['index'] = i
 
 # upgrade JEC
-def addJecInfo( jet ):
+def addJECInfo( jet ):
     jet["pt_JEC_up"]   = 1.02 * jet["pt"]
     jet["pt_JEC_down"] = 0.98 * jet["pt"]
 
@@ -210,6 +210,10 @@ if args.delphes:
     recoPhoton_varnames = varnames( recoPhoton_vars )
 
     variables      += ["recoMet_pt/F", "recoMet_phi/F"]
+
+    from TTXPheno.Tools.bTagEff.delphesBTaggingEff import getBTagSF_1a
+    variables      += ["reweight_BTag_B/F", "reweight_BTag_L/F"]
+    variables      += ["reweight_id_mu/F", "reweight_id_ele/F"]
  
 # Lumi weight 1fb
 variables += ["lumiweight1fb/F"]
@@ -615,39 +619,47 @@ def filler( event ):
     if args.delphes:
         delphesReader.event.GetEntry(reader.position-1 ) # RootTools reader version
 
-
+        # add JEC info
         allRecoJets = delphesReader.jets()
         for jet in allRecoJets:
             addJECInfo( jet )
+        # add btag info
+        for i_btagWP, btagWP in enumerate(btagWPs):
+            count = 0
+            for jet in allRecoJets:
+                btag = ( jet["bTag"] & (2**i_btagWP) > 0 ) # Read b-tag bitmap
+                jet["bTag_"+btagWP] = btag
 
         event.nrecoJets_JEC_up = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_up'), allRecoJets ) ) 
         event.nrecoJets_JEC_down = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_down'), allRecoJets ) ) 
 
         # read jets
-        recoJets =  filter( isGoodRecoJet, delphesReader.jets()) 
+        recoJets =  filter( isGoodRecoJet, allRecoJets) 
         recoJets.sort( key = lambda p:-p['pt'] )
         addIndex( recoJets )
 
+        # count b-tag multiplicities
         for i_btagWP, btagWP in enumerate(btagWPs):
             count = 0
             for jet in recoJets:
-                btag = ( jet["bTag"] & (2**i_btagWP) > 0 ) # Read b-tag bitmap
-                jet["bTag_"+btagWP] = btag
-                if btag: count += 1
+                if jet["bTag_"+btagWP]: count += 1
             setattr( event, "nBTag_"+btagWP, count )
             if btagWP == default_btagWP:
                 setattr( event, "nBTag", count )
 
+        # count JEC varied jet multiplicities
         event.nBTag_JEC_up   = len( filter( lambda j: j["bTag_"+default_btagWP] and isGoodRecoJet(j, pt_var = 'pt_JEC_up'), allRecoJets ) )
         event.nBTag_JEC_down = len( filter( lambda j: j["bTag_"+default_btagWP] and isGoodRecoJet(j, pt_var = 'pt_JEC_down'), allRecoJets ) )
         
         # make reco b jets
         recoBJets    = filter( lambda j:j['bTag_'+default_btagWP], recoJets )
         recoNonBJets = filter( lambda j:not j['bTag_'+default_btagWP], recoJets )
-        recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [None, None] )[:2] 
+        recoBj0, recoBj1 = ( recoBJets + recoNonBJets + [None, None] )[:2]
         if recoBj0: fill_vector( event, "recoBj0", recoJet_varnames, recoBj0)
         if recoBj1: fill_vector( event, "recoBj1", recoJet_varnames, recoBj1) 
-
+        # add b-tag reweights
+        event.reweight_BTag_B = getBTagSF_1a(default_btagWP, 'B', recoBJets, recoNonBJets )
+        event.reweight_BTag_L = getBTagSF_1a(default_btagWP, 'L', recoBJets, recoNonBJets )
         # read leptons
         allRecoLeps = delphesReader.muons() + delphesReader.electrons()
         allRecoLeps.sort( key = lambda p:-p['pt'] )
@@ -673,7 +685,15 @@ def filler( event ):
         recoLeps = filter( lambda l: (min([999]+[deltaR2(l, j) for j in recoJets if j['pt']>30]) > 0.3**2 ), recoLeps )
         # give index to leptons
         addIndex( recoLeps )
-
+    
+        # lepton uncertainties
+        event.reweight_id_mu = 1.
+        event.reweight_id_ele = 1.
+        for l in recoLeps:
+            if abs(l['pdgId'])==11:
+                event.reweight_id_ele*=1.01
+            elif abs(l['pdgId'])==13:
+                event.reweight_id_mu*=1.005
         # MET
         recoMet = delphesReader.met()[0]
 
