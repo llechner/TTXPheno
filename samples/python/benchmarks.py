@@ -261,10 +261,11 @@ fwlite_tWZ_LO_order2_15weights_phase2_CMS.xsec14        = 0.01035 * 0.01123 / 0.
 #fwlite_Zgamma_LO_order2_15weights_phase2_CMS.xsec          = 131.3 #pb ZGTo2LG_ext Daniel
 #check?
 
-#fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_ttgamma_bg_LO_order2_15weights",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_bg_LO_order2_15weights" )]) 
-#fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/ttgamma/order2/ttgamma_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-#fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
-#fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.xsec          = 2.179 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_ttgamma_bg_LO_order2_15weights",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_bg_LO_order2_15weights" )]) 
+fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/ttgamma/order2/ttgamma_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
+fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.xsec          = 2.179 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.xsec14        = 2.179 * 3.697 / 2.302 * 0.6231 / 0.607#pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 #check
 
 fwlite_WZ_lep_LO_order2_15weights_phase2_CMS                   = Sample.fromDirectory("fwlite_WZ_lep_LO_order2_15weights",     texName = "WZ",      directory = [os.path.join( gen_dir, "fwlite_WZ_lep_LO_order2_15weights" )])
