@@ -98,12 +98,12 @@ if args.parameters is not None:
     vals = list( map( float, str_vals ) )
     for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
         params.append( [{
-            'legendText': ' '.join([coeff,str_val]).replace('gamma','#gamma'),
+            'legendText': ' '.join([coeff,str_val]).replace('gamma','#gamma').replace('c','C_{').replace(' ','} = ').replace('p','#phi').replace('M','').replace('I','}^{[Im]') + '  ',
             'WC' : { coeff:val },
             'color' : colors[i_param],
             }])
 
-params.append( [{'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack}] )
+params.append( [{'legendText':args.processFile.split('_')[0].replace('gamma','#gamma'), 'WC':{}, 'color':ROOT.kBlack}] )
 
 # Import process specific variables
 process_file = os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'addons', '%s.py'%args.processFile )
@@ -123,12 +123,12 @@ else:                                ttSampleName = 'fwlite_tt_dilep_LO_order2_1
 
 ttXSample = getattr( loadedSamples, args.sample + '_%s' %args.detector)
 WZSample = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
-tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
+#tWSample = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
 tWZSample = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
 tZqSample = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
 #ZgammaSample = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
-#ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
-#ttgammaSample.name = 'fwlite_ttgamma__LO_order2_15weights_%s' %args.detector
+ttgammaSample = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
+ttgammaSample.name = 'fwlite_ttgamma__LO_order2_15weights_%s' %args.detector
 if "ttgamma" in args.processFile:
     ttSample = getattr( loadedSamples, ttSampeName + '_' + args.detector )
     ttSample.name = 'fwlite_tt__LO_order2_15weights_%s' %args.detector
@@ -157,8 +157,8 @@ elif args.processFile.split('_')[0] == 'ttZ':
 
 nonInfo = []
 if 'ttZ' in args.processFile.split('_'):
-#    bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-    bg = [ WZSample, tWZSample, tZqSample ]
+    bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+#    bg = [ WZSample, tWZSample, tZqSample ]
     # be careful if you set nonInfo to empty list, especially with the FI plot
     if args.noninfoSignal or args.addFisherInformationBackground: nonInfo = [ ttZISRSample ]
 elif 'ttgamma' in args.processFile.split('_'):
@@ -440,7 +440,7 @@ def drawPlots(plots):
         plot_directory = plot_directory_,
         ratio = None,
         logX = False, logY = log, sorting = True,
-        legend = ( (0.17,0.9-0.05*sum(map(len, l_plot.histos))/3,0.9,0.9), 3),
+        legend = ( (0.5,0.88-0.05*sum(map(len, l_plot.histos))/2,0.9,0.88), 2),
         drawObjects = drawObjects(),
         copyIndexPHP = True,
     )
@@ -482,6 +482,7 @@ def drawPlots(plots):
           hi.GetXaxis().SetTitleSize(0.035)
           hi.GetYaxis().SetTitleSize(0.035)
 
+#          ROOT.gStyle.SetLegendTextSize(2)
 
       if not max( max(li.GetMaximum() for li in l) for l in plot.histos): continue # Empty plot
 
@@ -506,7 +507,8 @@ def drawPlots(plots):
 	    yRange = (0.03, "auto") if log else (0., "auto"),
 #        scaling = {i:(len(params)-1) for i in range(len(params)-1)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
         scaling = {i:(histoIndexSM) for i in range(histoIndexSM)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
-	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,0.9,0.9), 3),
+        legend = ( (0.5,0.88-0.05*sum(map(len, l_plot.histos))/2,0.9,0.88), 2),
+#	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,0.9,0.9), 3),
 	    drawObjects = drawObjects(),
         copyIndexPHP = True,
       )

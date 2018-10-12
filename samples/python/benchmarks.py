@@ -165,7 +165,7 @@ fwlite_WZ_lep_LO_order2_15weights_CMS.xsec              = 4.666 #WZTo3LNu_amcatn
 
 # signal samples with reference point
 
-gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v19/"
+gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v21/"
 
 #fwlite_ttgammaLarge_LO_order2_15weights_ref_phase2_CMS              = Sample.fromDirectory("fwlite_ttgammaLarge_LO_order2_15weights_ref", texName = "ttgamma",  directory = [os.path.join( gen_dir, "fwlite_ttgammaLarge_LO_order2_15weights_ref" )])
 #fwlite_ttgammaLarge_LO_order2_15weights_ref_phase2_CMS.reweight_pkl = gridpack_dir + "18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
@@ -204,16 +204,16 @@ fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.xsec14        = 0.5205 * 0.0915
 
 # backgrounds without reference point
 # leptonic decays W > lnu, Z > ll, t > Wb
-fwlite_tt_dilep_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tt_dilep_LO_order2_15weights",  texName = "ttdilep",      directory = [os.path.join( gen_dir, "fwlite_tt_dilep_LO_order2_15weights" )]) 
-fwlite_tt_dilep_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tt/order2/tt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-fwlite_tt_dilep_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
-fwlite_tt_dilep_LO_order2_15weights_phase2_CMS.xsec          = 45.71 * 831.76 / 485.8 #tt dilep gridpack * tt NLO Daniel / tt LO run.py UFO
+#fwlite_tt_dilep_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tt_dilep_LO_order2_15weights",  texName = "ttdilep",      directory = [os.path.join( gen_dir, "fwlite_tt_dilep_LO_order2_15weights" )]) 
+#fwlite_tt_dilep_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tt/order2/tt_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+#fwlite_tt_dilep_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
+#fwlite_tt_dilep_LO_order2_15weights_phase2_CMS.xsec          = 45.71 * 831.76 / 485.8 #tt dilep gridpack * tt NLO Daniel / tt LO run.py UFO
 #check
 
-fwlite_tt_nonhad_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tt_nonhad_LO_order2_15weights",  texName = "ttnonhad",      directory = [os.path.join( gen_dir, "fwlite_tt_nonhad_LO_order2_15weights" )]) 
-fwlite_tt_nonhad_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tt_semilep/order2/tt_semilep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-fwlite_tt_nonhad_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
-fwlite_tt_nonhad_LO_order2_15weights_phase2_CMS.xsec          = 300.7 * 831.76 / 485.8 #tt nonhad gridpack * tt NLO Daniel / tt LO run.py UFO
+#fwlite_tt_nonhad_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tt_nonhad_LO_order2_15weights",  texName = "ttnonhad",      directory = [os.path.join( gen_dir, "fwlite_tt_nonhad_LO_order2_15weights" )]) 
+#fwlite_tt_nonhad_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tt_semilep/order2/tt_semilep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+#fwlite_tt_nonhad_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
+#fwlite_tt_nonhad_LO_order2_15weights_phase2_CMS.xsec          = 300.7 * 831.76 / 485.8 #tt nonhad gridpack * tt NLO Daniel / tt LO run.py UFO
 #check
 
 #fwlite_tt_full_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tt_full_LO_order2_15weights",  texName = "tt",      directory = [os.path.join( gen_dir, "fwlite_tt_full_LO_order2_15weights" )]) 
@@ -242,10 +242,10 @@ fwlite_tZq_LO_order2_15weights_phase2_CMS.xsec14        = 0.06774 * 0.0758 / 0.0
 #check
 #12% 14 TeV correction
 
-fwlite_tW_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tW_LO_order2_15weights",  texName = "tW",      directory = [os.path.join( gen_dir, "fwlite_tW_LO_order2_15weights" )]) 
-fwlite_tW_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tW/order2/tW_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
-fwlite_tW_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
-fwlite_tW_LO_order2_15weights_phase2_CMS.xsec          = 15.82 * 19.55 / 18.09 #pb tW gridpack * tW NLO Daniel / tW LO run.py UFO
+#fwlite_tW_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tW_LO_order2_15weights",  texName = "tW",      directory = [os.path.join( gen_dir, "fwlite_tW_LO_order2_15weights" )]) 
+#fwlite_tW_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tW/order2/tW_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+#fwlite_tW_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
+#fwlite_tW_LO_order2_15weights_phase2_CMS.xsec          = 15.82 * 19.55 / 18.09 #pb tW gridpack * tW NLO Daniel / tW LO run.py UFO
 #check
 
 fwlite_tWZ_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tWZ_LO_order2_15weights",  texName = "tWZ",      directory = [os.path.join( gen_dir, "fwlite_tWZ_LO_order2_15weights" )]) 

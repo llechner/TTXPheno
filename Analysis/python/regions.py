@@ -17,12 +17,12 @@ def getRegions2D(varOne, varOneThresholds, varTwo, varTwoThresholds):
 #Put all sets of regions that are used in the analysis, closure, tables, etc.
 
 ## 3l signal regions
-regions = getRegions2D("genZ_pt", [0,100,200,400], "genZ_cosThetaStar", [-1,-0.6, 0.6, 1]) + [Region("genZ_pt", (400, -1))]
-genttZRegions = getRegions2D("genZ_pt", [0,100,200,400], "genZ_cosThetaStar", [-1,-0.6, 0.6, 1]) + [Region("genZ_pt", (400, -1))]
-genttgammaRegions = getRegionsFromThresholds("genPhoton_pt[0]", [0,100,200,300]) + [Region("genPhoton_pt[0]", (300, -1))]
+regions = getRegions2D("genZ_pt", [0,100,200,400,-1], "genZ_cosThetaStar", [-1,-0.6, 0.6, 1])# + [Region("genZ_pt", (400, -1))]
+genttZRegions = getRegions2D("genZ_pt", [0,100,200,400,-1], "genZ_cosThetaStar", [-1,-0.6, 0.6, 1])# + [Region("genZ_pt", (400, -1))]
+genttgammaRegions = getRegionsFromThresholds("genPhoton_pt[0]", [0,100,200,300,-1])# + [Region("genPhoton_pt[0]", (300, -1))]
 
-recottZRegions = getRegions2D("recoZ_pt", [0,100,200,400], "recoZ_cosThetaStar", [-1,-0.6, 0.6, 1]) + [Region("recoZ_pt", (400, -1))]
-recottgammaRegions = getRegionsFromThresholds("recoPhoton_pt[0]", [0,100,200,300]) + [Region("recoPhoton_pt[0]", (300, -1))]
+recottZRegions = getRegions2D("recoZ_pt", [0,100,200,400,-1], "recoZ_cosThetaStar", [-1,-0.6, 0.6, 1])# + [Region("recoZ_pt", (400, -1))]
+recottgammaRegions = getRegionsFromThresholds("recoPhoton_pt[0]", [0,100,200,300,-1])# + [Region("recoPhoton_pt[0]", (300, -1))]
 
 genttZRegionsSmall = getRegions2D("genZ_pt", [200,400], "genZ_cosThetaStar", [-1,-0.6])# + [Region("genZ_pt", (400, -1))]
 genttgammaRegionsSmall = getRegionsFromThresholds("genPhoton_pt[0]", [200,300])# + [Region("genPhoton_pt[0]", (300, -1))]

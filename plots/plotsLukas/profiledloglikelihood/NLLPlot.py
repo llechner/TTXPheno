@@ -6,6 +6,8 @@ import sys
 import ROOT
 import imp
 import pickle
+import ctypes
+import numpy as np
 
 from math import sqrt
 # turn off graphics
@@ -14,9 +16,7 @@ ROOT.gROOT.SetBatch( True )
 # RootTools
 from RootTools.core.standard import *
 
-import numpy as np
-import ctypes
-
+from plot_helpers import getUncertaintyValue, getObservationValue
 from multiprocessing import Pool
 
 # Logger
@@ -27,7 +27,7 @@ logger_rt = logger_rt.get_logger('INFO', logFile = None)
 
 # TTXPheno
 from TTXPheno.samples.benchmarks import * 
-from TTXPheno.Tools.user import plot_directory
+from TTXPheno.Tools.user import plot_directory, cardfileLocation
 
 # get the reweighting function
 from TTXPheno.Tools.WeightInfo import WeightInfo
@@ -38,26 +38,34 @@ ROOT.gStyle.SetNumberContours(255)
 import argparse
 
 argParser = argparse.ArgumentParser(description = "Argument parser")
-argParser.add_argument('--version',         action='store',     default='test', help='Appendix to plot directory')
-argParser.add_argument('--process',         action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttgamma_1l', 'ttgamma_2l'], help="which process to calculate?")
-argParser.add_argument('--fit',             action='store',     default='SM', nargs='?', choices=['SM', 'BestFit'], help="compare to SM or BestFit?")
-argParser.add_argument('--sample',          action='store',     default='fwlite_ttZ_ll_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
-argParser.add_argument('--order',           action='store',     default=2, help='Polynomial order of weight string (e.g. 2)')
-argParser.add_argument('--selection',       action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
-argParser.add_argument('--small',           action='store_true', help='Run only on a small subset of the data?')
-argParser.add_argument('--contours',        action='store_true', help='draw 1sigma and 2sigma contour line?')
-argParser.add_argument('--smooth',          action='store_true', help='smooth histogram?')
-argParser.add_argument('--level',           action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
-argParser.add_argument('--variables' ,      action='store',     default = ['ctZ', 'ctZI'], type=str, nargs=2, help = "argument plotting variables")
-argParser.add_argument('--binning',         action='store',     default = [1, -2, 2, 1, -2, 2], type=float, nargs=6, help = "argument parameters")
-argParser.add_argument('--zRange',          action='store',     default = [None, None], type=float, nargs=2, help = "argument parameters")
-argParser.add_argument('--luminosity',      action='store',     default=150, help='Luminosity for weighting the plots')
-argParser.add_argument('--scale',           action='store',     default=None, help='Luminosity for weighting the plots')
-argParser.add_argument('--cores',           action='store',     default=8, type=int, help='number of cpu cores for multicore processing')
-argParser.add_argument('--overwrite',       action='store_true', help='overwrite datafile?')
-argParser.add_argument('--binMultiplier',   action='store',     default=3, type=int, help='bin multiplication factor')
-argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS', 'phase2_CMS'], help='Which Delphes detector simulation?')
-argParser.add_argument('--scale14TeV',      action='store_true', help='scale 13 TeV cross-sections to 14 Tev?')
+argParser.add_argument('--version',            action='store',     default='test', help='Appendix to plot directory')
+argParser.add_argument('--process',            action='store',     default='ttZ_3l', nargs='?', choices=['ttZ_3l', 'ttZ_4l', 'ttgamma_1l', 'ttgamma_2l'], help="which process to calculate?")
+argParser.add_argument('--bestFit',            action='store_true', help='Run combine with bestFit scenario (wide r ranges)')
+argParser.add_argument('--removeCardFiles',    action='store_true', help='remove cardfiles after calculation?')
+argParser.add_argument('--useCombine',         action='store_true', help='use Higgs Combine Tool?')
+argParser.add_argument('--fitOnly',            action='store_true', help='do you already have the cardfiles?')
+argParser.add_argument('--sample',             action='store',     default='fwlite_ttZ_ll_LO_order2_15weights_ref', help='Sample name specified in sample/python/benchmarks.py, e.g. fwlite_ttZ_ll_LO_order2_15weights_ref')
+argParser.add_argument('--order',              action='store',     default=2, help='Polynomial order of weight string (e.g. 2)')
+argParser.add_argument('--selection',          action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
+argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
+argParser.add_argument('--contours',           action='store_true', help='draw 1sigma and 2sigma contour line?')
+argParser.add_argument('--smooth',             action='store_true', help='smooth histogram?')
+argParser.add_argument('--level',              action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
+argParser.add_argument('--variables' ,         action='store',     default = ['ctZ', 'ctZI'], type=str, nargs=2, help = "argument plotting variables")
+argParser.add_argument('--binning',            action='store',     default = [1, -2, 2, 1, -2, 2], type=float, nargs=6, help = "argument parameters")
+argParser.add_argument('--zRange',             action='store',     default = [None, None], type=float, nargs=2, help = "argument parameters")
+argParser.add_argument('--luminosity',         action='store',     default=150, help='Luminosity for weighting the plots')
+argParser.add_argument('--scale',              action='store',     default=None, help='Luminosity for weighting the plots')
+argParser.add_argument('--cores',              action='store',     default=8, type=int, help='number of cpu cores for multicore processing')
+argParser.add_argument('--overwrite',          action='store_true', help='overwrite datafile?')
+argParser.add_argument('--binMultiplier',      action='store',     default=3, type=int, help='bin multiplication factor')
+argParser.add_argument('--detector',           action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS', 'phase2_CMS'], help='Which Delphes detector simulation?')
+argParser.add_argument('--scale14TeV',         action='store_true', help='scale 13 TeV cross-sections to 14 Tev?')
+argParser.add_argument('--additionalCardFile', action='store',     default='TopEFTCardFile.txt', help='Cardfile where additional uncertainties are taken from')
+argParser.add_argument('--addNonPrompt',       action='store_true', help='add nonPrompt?')
+argParser.add_argument('--addUncertainties',   action='store',     default = ['trigger_2016','scale','scale_sig','PDF','PartonShower','nonprompt','WZ_xsec', 'ttX'], type=str, help = "add additional uncertainties from cardFile")
+argParser.add_argument('--addBinNumberShift',  action='store',     default = 0, type=int, help = "which bin number does the region start in the additional card file?")
+argParser.add_argument('--uncertaintyScale',   action='store',     default = 0.5, type=float, help = "scale factor for additional uncertainties")
 
 args = argParser.parse_args()
 
@@ -83,14 +91,6 @@ elif args.level == 'reco':
     # Import additional functions/classes specified for the level of reconstruction
     from TTXPheno.Tools.cutInterpreterReco import cutInterpreter
 
-
-if args.fit == 'SM':
-    rmin=0.99
-    rmax=1.01
-elif args.fit == 'BestFit':
-    rmin=0.01
-    rmax=2
-
 #binning range
 binningX = args.binning[:3]
 binningY = args.binning[3:]
@@ -109,114 +109,182 @@ else:
 
 #save data file
 filename = '_'.join( ['nll', args.detector ] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity), "14TeV" if args.scale14TeV else "13TeV" ] ) + '.data'
+
 #do the calculation
-print filename
-print not os.path.isfile('data/' + filename)
 if not os.path.isfile('data/' + filename) or args.overwrite:
-    # Import samples
-    sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
-    loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
-    ttXSample       = getattr( loadedSamples, args.sample + '_%s' %args.detector )
-    WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
-#    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
-#    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
-    tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
-    tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
-#    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
-#    ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
+    if not args.fitOnly:
 
-    #if args.process.split('_')[0] == 'ttgamma':
-    #    ttgammaIsrSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
-    #    ttgammaIsrSample.name = 'fwlite_ttgamma_ISR_LO_order2_15weights_ref'
+        # Import samples
+        sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
+        loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
 
-#    if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-    if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample ]
-    elif args.process == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
-    elif args.process == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
-    elif args.process == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+        ttXSample       = getattr( loadedSamples, args.sample + '_%s' %args.detector )
+        WZSample        = getattr( loadedSamples, 'fwlite_WZ_lep_LO_order2_15weights_%s' %args.detector )
+    #    ttSample        = getattr( loadedSamples, 'fwlite_tt_full_LO_order2_15weights_%s' %args.detector )
+    #    tWSample        = getattr( loadedSamples, 'fwlite_tW_LO_order2_15weights_%s' %args.detector )
+        tWZSample       = getattr( loadedSamples, 'fwlite_tWZ_LO_order2_15weights_%s' %args.detector )
+        tZqSample       = getattr( loadedSamples, 'fwlite_tZq_LO_order2_15weights_%s' %args.detector )
+    #    ZgammaSample    = getattr( loadedSamples, 'fwlite_Zgamma_LO_order2_15weights_%s' %args.detector )
+        ttgammaSample   = getattr( loadedSamples, 'fwlite_ttgamma_bg_LO_order2_15weights_%s' %args.detector )
 
-    def checkReferencePoint( sample ):
-        ''' check if sample is simulated with a reference point
-        '''
-        return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
+        #if args.process.split('_')[0] == 'ttgamma':
+        #    ttgammaIsrSample  = copy.deepcopy( ttXSample ) #select ttgamma events with isolated gamma from ISR (cat a2)
+        #    ttgammaIsrSample.name = 'fwlite_ttgamma_ISR_LO_order2_15weights_ref'
 
-    # set selection string
-    selectionString = cutInterpreter.cutString(args.selection)
+        if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+    #    if args.process == 'ttZ_3l': bg = [ WZSample, tWZSample, tZqSample ]
+        elif args.process == 'ttZ_4l': bg = [ WZSample, tWZSample, tZqSample, ttgammaSample ]
+        elif args.process == 'ttgamma_1l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
+        elif args.process == 'ttgamma_2l': bg = [ ttSample, tWSample, tWZSample, tZqSample, ZgammaSample ]
 
-    # somehow has to be separate from the next loop
-    if args.small:
+        def checkReferencePoint( sample ):
+            ''' check if sample is simulated with a reference point
+            '''
+            return pickle.load(file(sample.reweight_pkl))['ref_point'] != {}
+
+        # set selection string
+        selectionString      = cutInterpreter.cutString(args.selection)
+        selectionString_up   = selectionString.replace('nBTag','nBTag_JEC_up').replace('nrecoJet','nrecoJets_JEC_up')
+        selectionString_down = selectionString.replace('nBTag','nBTag_JEC_down').replace('nrecoJet','nrecoJets_JEC_down')
+
+        # somehow has to be separate from the next loop
+        if args.small:
+            for s in [ttXSample] + bg:
+                s.reduceFiles( to = 15 )
+
+        # configure samples
         for s in [ttXSample] + bg:
-            s.reduceFiles( to = 5 )
 
-    # configure samples
-    for s in [ttXSample] + bg:
+            s.event_factor = s.nEvents / float( s.chain.GetEntries() )
+            s.xsecScaleFactor = s.xsec14 / s.xsec if args.scale14TeV else 1.
+            s.weightInfo = WeightInfo( s.reweight_pkl )
+            s.weightInfo.set_order( args.order )
+            s.setSelectionString( selectionString )
 
-        s.event_factor = s.nEvents / float( s.chain.GetEntries() )
-        s.xsecScaleFactor = s.xsec14 / s.xsec if args.scale14TeV else 1.
-        s.weightInfo = WeightInfo( s.reweight_pkl )
-        s.weightInfo.set_order( args.order )
-        s.setSelectionString( selectionString )
+            if checkReferencePoint( s ):
+                s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor), str(s.xsecScaleFactor) ) )
+            else:
+                s.setWeightString( 'lumiweight1fb*(%s)*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor), str(s.xsecScaleFactor) ) )
 
-        if checkReferencePoint( s ):
-            s.setWeightString( 'ref_lumiweight1fb*(%s)*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor), str(s.xsecScaleFactor) ) )
-        else:
-            s.setWeightString( 'lumiweight1fb*(%s)*(%s)*(%s)'%( str(args.luminosity), str(s.event_factor), str(s.xsecScaleFactor) ) )
+        # overlap removal
+        if args.process.split('_')[0] == 'ttgamma':
+            ttXSample.addSelectionString( "(nonIsoPhoton!=1)" ) 
+            ttSample.addSelectionString(  "(nonIsoPhoton==1)" ) 
 
-    # overlap removal
-    if args.process.split('_')[0] == 'ttgamma':
-        ttXSample.addSelectionString( "(nonIsoPhoton!=1)" ) 
-        ttSample.addSelectionString(  "(nonIsoPhoton==1)" ) 
+        for var in args.variables:
+            if var not in ttXSample.weightInfo.variables and not (args.variables[0] == 'cuB' and args.variables[1] == 'cuW'):
+                raise ValueError('Input variable not in gridpack: %s' %var)
 
-    for var in args.variables:
-        if var not in ttXSample.weightInfo.variables and not (args.variables[0] == 'cuB' and args.variables[1] == 'cuW'):
-            raise ValueError('Input variable not in gridpack: %s' %var)
+        observation                    = {}
 
-    observation                  = {}
+        signal_btagging_uncertainty    = {}
+        signal_mistagging_uncertainty  = {}
+        signal_jes_uncertainty         = {}
+        signal_electronId_uncertainty  = {}
+        signal_muonId_uncertainty      = {}
 
-    signal_jec_uncertainty       = {}
-    signal_fakerate_uncertainty  = {}
+        ttX_SM_rate                  = {}
+        ttX_coeffList                = {}
 
-    ttX_SM_rate                  = {}
-    ttX_coeffList                = {}
+        ttX_coeffList_reweighted_btagging   = {}
+        ttX_coeffList_reweighted_mistagging = {}
+        ttX_coeffList_reweighted_muonId     = {}
+        ttX_coeffList_reweighted_electronId = {}
+        ttX_coeffList_reweighted_jes_up     = {}
+        ttX_coeffList_reweighted_jes_down   = {}
 
-    background_rate                 = {}
-    background_jec_uncertainty      = {}
-    background_fakerate_uncertainty = {}
+        background_rate                   = {}
+        background_btagging_uncertainty   = {}
+        background_mistagging_uncertainty = {}
+        background_jes_uncertainty        = {}
+        background_electronId_uncertainty = {}
+        background_muonId_uncertainty     = {}
 
-    for i_region, region in enumerate(regions):
-        # compute signal yield for this region (this is the final code)
+        nonPromptObservation              = {}
 
-        logger.info( "At region %s", region )
+        for i_region, region in enumerate(regions):
+            # compute signal yield for this region (this is the final code)
 
-        # ttX SM
-        ttX_coeffList[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
-        ttX_SM_rate[region]   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region] )
+            logger.info( "At region %s", region )
 
-        # signal uncertainties
-        signal_jec_uncertainty      [region] = 1.05
-    #    signal_jec_uncertainty      [region] = 1.09
-        signal_fakerate_uncertainty [region] = 1.0  # signal has no FR uncertainty
+            # ttX SM
+            ttX_coeffList[region]  = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
+            ttX_SM_rate[region]    = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region] )
 
-        background_rate[region]                 = {}
-        background_fakerate_uncertainty[region] = {}
-        background_jec_uncertainty[region]      = {}
+            # uncertainty coeffLists
+            ttX_coeffList_reweighted_btagging[region]   = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_BTag_B" )
+            ttX_coeffList_reweighted_mistagging[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_BTag_L" )
+            ttX_coeffList_reweighted_muonId[region]     = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_id_mu" )
+            ttX_coeffList_reweighted_electronId[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_id_ele" )
 
-        for i_background, background in enumerate(bg):
-            # compute bg yield for this region (this is the final code)
+            ttXSample.setSelectionString( selectionString_up )
+            ttX_coeffList_reweighted_jes_up[region]     = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
 
-            background_rate                 [region][background.name] = background.getYieldFromDraw( selectionString=region.cutString() )['val']
-            background_fakerate_uncertainty [region][background.name] = min( [ 1 + 0.03*(i_region+1), 1.12 ] ) #*(i_background+1) #change that
-            background_jec_uncertainty  [region][background.name] = max( [ 1.05, min( [ 1.12 - 0.01*(i_region+1), 1.12 ] ) ] ) #1.2 - 0.02*(i_region+1) #*(i_background+1) #change that
+            ttXSample.setSelectionString( selectionString_down )
+            ttX_coeffList_reweighted_jes_down[region]   = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
 
-        # Our expected observation :-)
-        observation[region] = int( sum( background_rate[region].values() ) + ttX_SM_rate[region] )
+            # reset selectionstring
+            ttXSample.setSelectionString( selectionString )
+
+            background_rate[region]                   = {}
+            background_btagging_uncertainty[region]   = {}
+            background_mistagging_uncertainty[region] = {}
+            background_jes_uncertainty[region]        = {}
+            background_muonId_uncertainty[region]     = {}
+            background_electronId_uncertainty[region] = {}
+
+            for i_background, background in enumerate(bg):
+                # compute bg yield for this region (this is the final code)
+
+                background_rate                 [region][background.name] = background.getYieldFromDraw( selectionString=region.cutString() )['val']
+
+                #calculate btagging uncert.
+                background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_BTag_B" )['val']
+                background_btagging_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
+
+                #calculate mistagging uncert.
+                background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_BTag_L" )['val']
+                background_mistagging_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
+
+                #calculate muon Id uncert.
+                background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_id_mu" )['val']
+                background_muonId_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
+
+                background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_id_ele" )['val']
+                #calculate electron Id uncert.
+                background_electronId_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
+
+                # set selectionstring to JES_up
+                background.setSelectionString( selectionString_up )
+                background_rate_reweighted_up                             = background.getYieldFromDraw( selectionString=region.cutString() )['val']
+                # set selectionstring to JES_up
+                background.setSelectionString( selectionString_down )
+                background_rate_reweighted_down                           = background.getYieldFromDraw( selectionString=region.cutString() )['val']
+                # reset selectionstring
+                background.setSelectionString( selectionString )
+                #calculate JES uncert.
+                background_jes_uncertainty      [region][background.name] = 1 + (( background_rate_reweighted_up - background_rate_reweighted_down ) / (2*background_rate[region][background.name])) if background_rate[region][background.name] > 0 else 1.
+
+            nonPromptObservation[region] = 0.
+            if args.addNonPrompt:
+                # scale nonprompt observation value from Run2 to args.luminosity
+                nonPromptObservation[region] = getObservationValue( args.additionalCardFile, args.addBinNumberShift + i_region, 'nonPromptDD' ) * float(args.luminosity) / 35.9
+
+            # Our expected observation :-)
+            # add nonPrompt observation to total observation
+            observation[region] = int( round( sum( background_rate[region].values() ) + ttX_SM_rate[region] + nonPromptObservation[region] ) )
 
 
     # Write temporary card file
     from TTXPheno.Tools.cardFileWriter import cardFileWriter
-    c = cardFileWriter.cardFileWriter()
-
+#    c = cardFileWriter.cardFileWriter()
+    if args.useCombine:
+        from TTXPheno.Tools.user import combineReleaseLocation
+#        c.releaseLocation = combineReleaseLocation
+    else:
+        # non CMS NLL plot
+        from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
 
     def cuBWtoctWZ( cuB, cuW ):
         ''' transforms C_tZ and C_tW to C_uB and C_uW
@@ -236,70 +304,146 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
     def calculation( variables ):
     #def calculation( var1, var2 ):
 
-            if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
-                var1, var2 = variables #cuB cuW
-                ctZ, ctW = cuBWtoctWZ( var1, var2 )
-                kwargs = { 'ctZ':ctZ, 'ctW':ctW }
-            else:
-                var1, var2 = variables
-                kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
+        if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
+            var1, var2 = variables #cuB cuW
+            ctZ, ctW = cuBWtoctWZ( var1, var2 )
+            kwargs = { 'ctZ':ctZ, 'ctW':ctW }
+        else:
+            var1, var2 = variables
+            kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
+
+        nameList = args.sample.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, "14TeV" if args.scale14TeV else "13TeV", args.selection, 'small' if args.small else 'full', var1, var2 ]
+        cardname = '%s_nll_card'%'_'.join( map( str, nameList ) )
+        cardFilePath = os.path.join( cardfileLocation, cardname + '.txt' )
+
+        c = cardFileWriter.cardFileWriter()
+        if args.useCombine:
+            c.releaseLocation = combineReleaseLocation
+
+        if not args.fitOnly:
 
             # uncertainties
-            c.reset()
+#            c.reset()
             c.addUncertainty('lumi',        'lnN')
-            c.addUncertainty('JEC',         'lnN')
-            c.addUncertainty('fake',        'lnN')
+            c.addUncertainty('JES',         'lnN')
+            c.addUncertainty('btagging',    'lnN')
+            c.addUncertainty('mistagging',  'lnN')
+            c.addUncertainty('muonId',      'lnN')
+            c.addUncertainty('electronId',  'lnN')
+            for unc in args.addUncertainties:
+                c.addUncertainty(unc,  'lnN')
 
             signal_rate                  = {}
             for i_region, region in enumerate(regions):
 
                 signal_rate[region] = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region], **kwargs)
 
+                # signal uncertainties
+                # btagging
+                signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_btagging[region], **kwargs )
+                signal_btagging_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
+
+                # mistagging
+                signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_mistagging[region], **kwargs )
+                signal_mistagging_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
+
+                # muonId
+                signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_muonId[region], **kwargs )
+                signal_muonId_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
+
+                # electronId
+                signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_electronId[region], **kwargs )
+                signal_electronId_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
+
+                # JES
+                signal_rate_reweighted_JES_up   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_jes_up[region], **kwargs )
+                signal_rate_reweighted_JES_down = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_jes_down[region], **kwargs )
+                signal_jes_uncertainty[region] = 1 + (( signal_rate_reweighted_JES_up - signal_rate_reweighted_JES_down ) / (2*signal_rate[region])) if signal_rate[region] > 0 else 1.
+
                 bin_name = "Region_%i" % i_region
                 nice_name = region.__str__()
-                c.addBin(bin_name, ['_'.join(s.name.split('_')[1:3]) for s in bg], nice_name)
+                c.addBin(bin_name, ['_'.join(s.name.split('_')[1:3]) for s in bg] + ['nonPrompt'] if args.addNonPrompt else ['_'.join(s.name.split('_')[1:3]) for s in bg], nice_name)
+
                 c.specifyObservation( bin_name, observation[region] )
 
-    #            c.specifyFlatUncertainty( 'lumi', 1.05 )
-    #            c.specifyFlatUncertainty( 'lumi', 1.026 )
-                c.specifyFlatUncertainty( 'lumi', 1.05 )
+                c.specifyFlatUncertainty( 'lumi', 1.01 )
 
-                c.specifyExpectation( bin_name, 'signal', signal_rate[region] )
-                c.specifyUncertainty( 'JEC', bin_name, 'signal', signal_jec_uncertainty[region])
-                c.specifyUncertainty( 'fake',bin_name, 'signal', signal_fakerate_uncertainty[region])
+                c.specifyExpectation( bin_name, 'signal', signal_rate[region]                                 )
+                c.specifyUncertainty( 'JES',        bin_name, 'signal', signal_jes_uncertainty[region]        )
+                c.specifyUncertainty( 'btagging',   bin_name, 'signal', signal_btagging_uncertainty[region]   )
+                c.specifyUncertainty( 'mistagging', bin_name, 'signal', signal_mistagging_uncertainty[region] )
+                c.specifyUncertainty( 'muonId',     bin_name, 'signal', signal_muonId_uncertainty[region]     )
+                c.specifyUncertainty( 'electronId', bin_name, 'signal', signal_electronId_uncertainty[region] )
+
+                for unc in args.addUncertainties:
+                    c.specifyUncertainty( unc,      bin_name, 'signal', 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, 'signal', unc )-1)*args.uncertaintyScale )
+
+                if args.addNonPrompt:
+                    # for nonpromt only nonpromt uncertainty is important
+                    c.specifyExpectation( bin_name, 'nonPrompt', nonPromptObservation[region] )
+                    c.specifyUncertainty( 'nonprompt',      bin_name, 'nonPrompt', 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, 'nonPromptDD', 'nonprompt' )-1)*args.uncertaintyScale )
 
                 #c.specifyExpectation( bin_name, 'ttX_SM', ttX_SM_rate[region] )
-                #c.specifyUncertainty( 'JEC', bin_name, 'ttX_SM', ttX_SM_jec_uncertainty[region])
-                #c.specifyUncertainty( 'fake',bin_name, 'ttX_SM', ttX_SM_fakerate_uncertainty[region])
+                #c.specifyUncertainty( 'JES', bin_name, 'ttX_SM', ttX_SM_jes_uncertainty[region])
+                #c.specifyUncertainty( 'btagging',bin_name, 'ttX_SM', ttX_SM_btagging_uncertainty[region])
 
                 for background in bg:
                     c.specifyExpectation( bin_name, '_'.join( background.name.split('_')[1:3] ), background_rate[region][background.name] )
-                    c.specifyUncertainty( 'JEC', bin_name, '_'.join( background.name.split('_')[1:3] ), background_jec_uncertainty[region][background.name])
-                    c.specifyUncertainty( 'fake',bin_name, '_'.join( background.name.split('_')[1:3] ), background_fakerate_uncertainty[region][background.name])
+                    c.specifyUncertainty( 'JES',        bin_name, '_'.join( background.name.split('_')[1:3] ), background_jes_uncertainty[region][background.name])
+                    c.specifyUncertainty( 'btagging',   bin_name, '_'.join( background.name.split('_')[1:3] ), background_btagging_uncertainty[region][background.name])
+                    c.specifyUncertainty( 'mistagging', bin_name, '_'.join( background.name.split('_')[1:3] ), background_mistagging_uncertainty[region][background.name])
+                    c.specifyUncertainty( 'muonId',     bin_name, '_'.join( background.name.split('_')[1:3] ), background_muonId_uncertainty[region][background.name])
+                    c.specifyUncertainty( 'electronId', bin_name, '_'.join( background.name.split('_')[1:3] ), background_electronId_uncertainty[region][background.name])
+                    for unc in args.addUncertainties:
+                        if 'tZq' in background.name.split('_') or 'ttgamma' in background.name.split('_') or 'tWZ' in background.name.split('_'): proc = 'TTX'
+                        elif 'WZ' in background.name.split('_'): proc = 'WZ'
+                        else: raise ValueError('Background not found: %s' %background.name)
+                        c.specifyUncertainty( unc,      bin_name, '_'.join( background.name.split('_')[1:3] ), 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, proc, unc )-1)*args.uncertaintyScale )
                     
-            nameList = ttXSample.name.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, "14TeV" if args.scale14TeV else "13TeV", args.selection, 'small' if args.small else 'full', var1, var2 ]
-            cardname = '%s_nll_card'%'_'.join( map( str, nameList ) )
-            c.writeToFile( './tmp/%s.txt'%cardname )
+            c.writeToFile( cardFilePath )
 
-            profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( './tmp/%s.txt'%cardname )
-            profiledLoglikelihoodFit.make_workspace(rmin=rmin, rmax=rmax)
-            #expected_limit = profiledLoglikelihoodFit.calculate_limit( calculator = "frequentist" )
+        else:
+            logger.info( "Running only NLL Fit with given CardFile %s"%cardFilePath)
+
+        if not os.path.isfile( cardFilePath ):
+            raise ValueError('CardFiles not found! Run script without --fitOnly!')
+
+        if args.useCombine:
+            # use the official cms combine tool
+#                c.calcNuisances( cardFilePath, bestFit=args.bestFit )
+            nll = c.calcNLL( cardFilePath, bestFit=args.bestFit )
+            print 'result', nll
+#            nll = nll['nll0'] #pre-fit
+            nll = nll['nll_abs'] #post-fit
+
+            if args.removeCardFiles:
+                for file in os.listdir( cardfileLocation ):
+                    if file.startswith( cardname ):
+                        os.remove( os.path.join( cardfileLocation, file ) )
+
+        else:
+            if args.bestFit: r = (0.99, 1.01)
+            else: r = (0., 2.)
+
+            profiledLoglikelihoodFit = ProfiledLoglikelihoodFit( cardFilePath )
+            profiledLoglikelihoodFit.make_workspace(rmin=r[0], rmax=r[1])
             nll = profiledLoglikelihoodFit.likelihoodTest()
-            logger.info( "NLL: %f", nll)
-            profiledLoglikelihoodFit.cleanup(removeFiles=True)
+            profiledLoglikelihoodFit.cleanup(removeFiles=args.removeCardFiles)
             del profiledLoglikelihoodFit
-            ROOT.gDirectory.Clear()
 
-            # in very large WC regions, the fit fails, not relevant for the interesting regions
-            if nll is None or abs(nll) > 1000000: nll = 999
+        logger.info( "NLL: %f", nll)
+        ROOT.gDirectory.Clear()
 
-            return var1, var2, nll
+        # in very large WC regions, the fit fails, not relevant for the interesting regions
+        if nll is None or abs(nll) > 1000000: nll = 999
 
+        del c
 
-    # Limit plot
-    from TTXPheno.Analysis.ProfiledLoglikelihoodFit import ProfiledLoglikelihoodFit
+        return var1, var2, nll
 
     results = []
+
+    SM = calculation( (0, 0) )
 
     for varX in xRange:
         # do not run all calc in one pool, memory leak!!!
@@ -308,7 +452,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
         del pool
 
     with open('tmp/'+filename, 'w') as f:
-        for item in results:
+        for item in [SM]+results:
             f.write( "%s\n" % ','.join( map( str, list(item) ) ) )
 
 else:
@@ -316,17 +460,21 @@ else:
         data = f.readlines()
 
     results = []
-    for line in data:
+    for i, line in enumerate(data):
         vals = map( float, line.split('\n')[0].split(',') )
         if args.scale is not None: vals[2] = vals[2]*float(args.scale)/float(args.luminosity)/2
-        results.append( tuple( vals ) )
+        if i == 0:
+            if vals[0] != 0 or vals[1] != 0:
+                raise ValueError('SM Point in data file is not valid!')
+            SM = tuple( vals )
+        else: results.append( tuple( vals ) )
 
 
 #Plot
 
 #scale to SM
 results.sort( key = lambda res: ( abs(res[0]), abs(res[1]), res[2] ) )
-nll_SM = results[0][2]
+nll_SM = SM[2]
 
 results = [ (x, y, 2*(result - nll_SM)) for x, y, result in results ]
 
@@ -462,5 +610,5 @@ if not os.path.isdir( plot_directory_ ):
     os.makedirs( plot_directory_ )
 
 for e in [".png",".pdf",".root"]:
-    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale), "14TeV" if args.scale14TeV else "13TeV"]) + e)
+    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale), "14TeV" if args.scale14TeV else "13TeV", "CMScombine" if args.useCombine else "privateFit"]) + e)
 

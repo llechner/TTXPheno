@@ -16,6 +16,8 @@ if os.environ['USER'] in ['llechner']:
     results_directory      = "/afs/hephy.at/data/llechner01/TTXPheno/results/" #for analysis results and cache files
     skim_output_directory  = "/afs/hephy.at/data/llechner02/TTXPheno/skims/"
     plot_directory         = "/afs/hephy.at/user/l/llechner/www/TTXPheno"
+    combineReleaseLocation = '/afs/hephy.at/user/l/llechner/public/CMSSW_8_1_0/src'
+    cardfileLocation       = '/afs/hephy.at/data/llechner01/TTXPheno/results/cardfiles/'
 
 
 if os.environ['USER'] in ['grohsjea']:

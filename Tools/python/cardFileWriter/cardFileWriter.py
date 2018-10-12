@@ -249,7 +249,7 @@ class cardFileWriter:
         shutil.rmtree(uniqueDirname)
         return res
 
-    def calcNuisances(self, fname=None, options=""):
+    def calcNuisances(self, fname=None, options="", bestFit=False):
         import uuid, os
         ustr          = str(uuid.uuid4())
         uniqueDirname = os.path.join(self.releaseLocation, ustr)
@@ -262,26 +262,28 @@ class cardFileWriter:
         else:
           filename = fname if fname else os.path.join(uniqueDirname, ustr+".txt")
           self.writeToFile(filename)
-        filePostfixes  = [ 'nuisances_r1.txt', 'nuisances_r1_full.txt', 'nuisances_r1.tex', 'nuisances_r1_full.tex' ]
-        filePostfixes += [ 'nuisances_bestfit.txt', 'nuisances_bestfit_full.txt', 'nuisances_bestfit.tex', 'nuisances_bestfit_full.tex' ]
 
         assert os.path.exists(filename), "File not found: %s"%filename
 
         # create the workspace
         combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;text2workspace.py %s -o myWorkspace.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:defaultModel"%filename
-        # get the nuisances for r = 1
-        combineCommand += ";combine -M FitDiagnostics myWorkspace.root --forceRecreateNLL --setParameterRanges r=0.99,1.01"
-        combineCommand +=";python diffNuisances.py  fitDiagnostics.root &> nuisances_r1.txt"
-        combineCommand +=";python diffNuisances.py -a fitDiagnostics.root &> nuisances_r1_full.txt"
-        combineCommand +=";python diffNuisances.py -f latex fitDiagnostics.root &> nuisances_r1.tex"
-        combineCommand +=";python diffNuisances.py -af latex fitDiagnostics.root &> nuisances_r1_full.tex"
-        
-        #get the nuisances for bestfit
-        combineCommand += ";combine -M FitDiagnostics myWorkspace.root --forceRecreateNLL --setParameterRanges r=0.,5."
-        combineCommand +=";python diffNuisances.py  fitDiagnostics.root &> nuisances_bestfit.txt"
-        combineCommand +=";python diffNuisances.py -a fitDiagnostics.root &> nuisances_bestfit_full.txt"
-        combineCommand +=";python diffNuisances.py -f latex fitDiagnostics.root &> nuisances_bestfit.tex"
-        combineCommand +=";python diffNuisances.py -af latex fitDiagnostics.root &> nuisances_bestfit_full.tex"
+
+        if bestFit:
+            filePostfixes = [ 'nuisances_bestfit.txt', 'nuisances_bestfit_full.txt', 'nuisances_bestfit.tex', 'nuisances_bestfit_full.tex' ]
+            #get the nuisances for bestfit
+            combineCommand += ";combine -M FitDiagnostics myWorkspace.root --forceRecreateNLL --setParameterRanges r=0.,2."
+            combineCommand +=";python diffNuisances.py  fitDiagnostics.root &> nuisances_bestfit.txt"
+            combineCommand +=";python diffNuisances.py -a fitDiagnostics.root &> nuisances_bestfit_full.txt"
+            combineCommand +=";python diffNuisances.py -f latex fitDiagnostics.root &> nuisances_bestfit.tex"
+            combineCommand +=";python diffNuisances.py -af latex fitDiagnostics.root &> nuisances_bestfit_full.tex"
+        else:
+            filePostfixes  = [ 'nuisances_r1.txt', 'nuisances_r1_full.txt', 'nuisances_r1.tex', 'nuisances_r1_full.tex' ]
+            # get the nuisances for r = 1
+            combineCommand += ";combine -M FitDiagnostics myWorkspace.root --forceRecreateNLL --setParameterRanges r=0.99,1.01"
+            combineCommand +=";python diffNuisances.py  fitDiagnostics.root &> nuisances_r1.txt"
+            combineCommand +=";python diffNuisances.py -a fitDiagnostics.root &> nuisances_r1_full.txt"
+            combineCommand +=";python diffNuisances.py -f latex fitDiagnostics.root &> nuisances_r1.tex"
+            combineCommand +=";python diffNuisances.py -af latex fitDiagnostics.root &> nuisances_r1_full.tex"
 
         os.system(combineCommand)
 
@@ -293,9 +295,8 @@ class cardFileWriter:
         shutil.rmtree(uniqueDirname)
         return
 
-    def calcNLL(self, fname=None, options=""):
-        '''
-        Does max likelihood fits, both with r=1 and a best-fit value
+    def calcNLL(self, fname=None, options="", bestFit=False):
+        ''' Does max likelihood fits, both with r=1 and a best-fit value
         '''
         import uuid, os
         ustr          = str(uuid.uuid4())
@@ -308,21 +309,23 @@ class cardFileWriter:
           filename = fname if fname else os.path.join(uniqueDirname, ustr+".txt")
           self.writeToFile(filename)
 
+        if bestFit:
+            r = (0., 2.)
+            points = 100
+        else:
+            r = (0.99, 1.01)
+            points = 1
+
         # too tight constraints lead to failing fits
         #combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points 1 --rMin 1.000 --rMax 1.001 -n Nominal --saveNLL --forceRecreateNLL "+filename
-        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points 1 --rMin 0.99 --rMax 1.01 -n Nominal --saveNLL --forceRecreateNLL "+filename
+#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points 1 --rMin 0.99 --rMax 1.01 -n Nominal --saveNLL --forceRecreateNLL "+filename
+        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points %i --rMin %f --rMax %f -n Nominal --saveNLL --forceRecreateNLL %s"%(points,r[0],r[1],filename)
         print combineCommand
         os.system(combineCommand)
         nll = self.readNLLFile(uniqueDirname+"/higgsCombineNominal.MultiDimFit.mH120.root")
-        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points 100 --rMin 0. --rMax 2.0 -n Nominal %s --saveNLL --forceRecreateNLL %s > log.txt"%(options, filename)
-        os.system(combineCommand)
-        nll2 = self.readNLLFile(uniqueDirname+"/higgsCombineNominal.MultiDimFit.mH120.root")
-        
-        nll["bestfit"] = nll2["nll"]
-        #print "Comparing the two fits"
-        #print nll["nll0"], nll2["nll0"]
-
-        #print nll
+#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points 100 --rMin 0. --rMax 2.0 -n Nominal %s --saveNLL --forceRecreateNLL %s > log.txt"%(options, filename)
+#        os.system(combineCommand)
+#        nll2 = self.readNLLFile(uniqueDirname+"/higgsCombineNominal.MultiDimFit.mH120.root")
         
         shutil.rmtree(uniqueDirname)
         
