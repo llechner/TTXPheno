@@ -24,7 +24,7 @@ from TTXPheno.Tools.DelphesProducer        import DelphesProducer
 from TTXPheno.Tools.DelphesReaderCMSHLLHC  import DelphesReader
 #from TTXPheno.Tools.DelphesReader          import DelphesReader
 from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoLepton, isGoodRecoJet, isGoodRecoPhoton, genJetId
-
+from TTXPheno.Tools.UpgradeJECUncertainty  import UpgradeJECUncertainty 
 #
 # Arguments
 # 
@@ -132,9 +132,7 @@ def addIndex( collection ):
         collection[i]['index'] = i
 
 # upgrade JEC
-def addJECInfo( jet ):
-    jet["pt_JEC_up"]   = 1.02 * jet["pt"]
-    jet["pt_JEC_down"] = 0.98 * jet["pt"]
+upgradeJECUncertainty = UpgradeJECUncertainty()
 
 # standard variables
 variables  = ["run/I", "lumi/I", "evt/l"]
@@ -627,8 +625,6 @@ def filler( event ):
 
         # add JEC info
         allRecoJets = delphesReader.jets()
-        for jet in allRecoJets:
-            addJECInfo( jet )
         # add btag info
         for i_btagWP, btagWP in enumerate(btagWPs):
             count = 0
@@ -650,10 +646,12 @@ def filler( event ):
             if btagWP == default_btagWP:
                 setattr( event, "nBTag", count )
 
-        # count JEC varied jet multiplicities
+        # upgrade JEC are flavor dependent
         for jet in allRecoJets:
-            addJECInfo( jet )
-
+            btag_ = jet ["bTag_"+default_btagWP]
+            upgradeJECUncertainty.applyJECInfo( jet, flavor = 5 if btag else 0 )
+        
+        # count JEC varied jet multiplicities
         event.nrecoJets_JEC_up = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_up'), allRecoJets ) ) 
         event.nrecoJets_JEC_down = len( filter( lambda j: isGoodRecoJet(j, pt_var = 'pt_JEC_down'), allRecoJets ) ) 
 
