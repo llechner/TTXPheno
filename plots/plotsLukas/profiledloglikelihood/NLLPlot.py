@@ -66,6 +66,8 @@ argParser.add_argument('--addNonPrompt',       action='store_true', help='add no
 argParser.add_argument('--addUncertainties',   action='store',     default = ['trigger_2016','scale','scale_sig','PDF','PartonShower','nonprompt','WZ_xsec', 'ttX'], type=str, help = "add additional uncertainties from cardFile")
 argParser.add_argument('--addBinNumberShift',  action='store',     default = 0, type=int, help = "which bin number does the region start in the additional card file?")
 argParser.add_argument('--uncertaintyScale',   action='store',     default = 0.5, type=float, help = "scale factor for additional uncertainties")
+argParser.add_argument('--statOnly',           action='store_true', help='use only statistical uncertainties')
+argParser.add_argument('--noSystUnc',          action='store_true', help='use only statistical and theory uncertainties')
 
 args = argParser.parse_args()
 
@@ -212,20 +214,21 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             ttX_coeffList[region]  = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
             ttX_SM_rate[region]    = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region] )
 
-            # uncertainty coeffLists
-            ttX_coeffList_reweighted_btagging[region]   = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_BTag_B" )
-            ttX_coeffList_reweighted_mistagging[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_BTag_L" )
-            ttX_coeffList_reweighted_muonId[region]     = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_id_mu" )
-            ttX_coeffList_reweighted_electronId[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_id_ele" )
+            if not args.statOnly:
+                # uncertainty coeffLists
+                ttX_coeffList_reweighted_btagging[region]   = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_BTag_B" )
+                ttX_coeffList_reweighted_mistagging[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_BTag_L" )
+                ttX_coeffList_reweighted_muonId[region]     = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_id_mu" )
+                ttX_coeffList_reweighted_electronId[region] = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString(), weightString="reweight_id_ele" )
 
-            ttXSample.setSelectionString( selectionString_up )
-            ttX_coeffList_reweighted_jes_up[region]     = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
+                ttXSample.setSelectionString( selectionString_up )
+                ttX_coeffList_reweighted_jes_up[region]     = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
+    
+                ttXSample.setSelectionString( selectionString_down )
+                ttX_coeffList_reweighted_jes_down[region]   = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
 
-            ttXSample.setSelectionString( selectionString_down )
-            ttX_coeffList_reweighted_jes_down[region]   = ttXSample.weightInfo.getCoeffListFromDraw( ttXSample, selectionString = region.cutString() )
-
-            # reset selectionstring
-            ttXSample.setSelectionString( selectionString )
+                # reset selectionstring
+                ttXSample.setSelectionString( selectionString )
 
             background_rate[region]                   = {}
             background_btagging_uncertainty[region]   = {}
@@ -239,32 +242,33 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
                 background_rate                 [region][background.name] = background.getYieldFromDraw( selectionString=region.cutString() )['val']
 
-                #calculate btagging uncert.
-                background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_BTag_B" )['val']
-                background_btagging_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
+                if not args.statOnly and not args.noSystUnc:
+                    #calculate btagging uncert.
+                    background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_BTag_B" )['val']
+                    background_btagging_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
 
-                #calculate mistagging uncert.
-                background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_BTag_L" )['val']
-                background_mistagging_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
+                    #calculate mistagging uncert.
+                    background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_BTag_L" )['val']
+                    background_mistagging_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
 
-                #calculate muon Id uncert.
-                background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_id_mu" )['val']
-                background_muonId_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
+                    #calculate muon Id uncert.
+                    background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_id_mu" )['val']
+                    background_muonId_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
 
-                background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_id_ele" )['val']
-                #calculate electron Id uncert.
-                background_electronId_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
+                    background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_id_ele" )['val']
+                    #calculate electron Id uncert.
+                    background_electronId_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
 
-                # set selectionstring to JES_up
-                background.setSelectionString( selectionString_up )
-                background_rate_reweighted_up                             = background.getYieldFromDraw( selectionString=region.cutString() )['val']
-                # set selectionstring to JES_up
-                background.setSelectionString( selectionString_down )
-                background_rate_reweighted_down                           = background.getYieldFromDraw( selectionString=region.cutString() )['val']
-                # reset selectionstring
-                background.setSelectionString( selectionString )
-                #calculate JES uncert.
-                background_jes_uncertainty      [region][background.name] = 1 + (( background_rate_reweighted_up - background_rate_reweighted_down ) / (2*background_rate[region][background.name])) if background_rate[region][background.name] > 0 else 1.
+                    # set selectionstring to JES_up
+                    background.setSelectionString( selectionString_up )
+                    background_rate_reweighted_up                             = background.getYieldFromDraw( selectionString=region.cutString() )['val']
+                    # set selectionstring to JES_up
+                    background.setSelectionString( selectionString_down )
+                    background_rate_reweighted_down                           = background.getYieldFromDraw( selectionString=region.cutString() )['val']
+                    # reset selectionstring
+                    background.setSelectionString( selectionString )
+                    #calculate JES uncert.
+                    background_jes_uncertainty      [region][background.name] = 1 + (( background_rate_reweighted_up - background_rate_reweighted_down ) / (2*background_rate[region][background.name])) if background_rate[region][background.name] > 0 else 1.
 
             nonPromptObservation[region] = 0.
             if args.addNonPrompt:
@@ -312,7 +316,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             var1, var2 = variables
             kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
 
-        nameList = args.sample.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, "14TeV" if args.scale14TeV else "13TeV", args.selection, 'small' if args.small else 'full', var1, var2 ]
+        nameList = args.sample.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, "14TeV" if args.scale14TeV else "13TeV", args.selection, 'small' if args.small else 'full', 'statOnly' if args.statOnly else 'fullUnc' if not args.noSystUnc else 'noSystUnc', var1, var2 ]
         cardname = '%s_nll_card'%'_'.join( map( str, nameList ) )
         cardFilePath = os.path.join( cardfileLocation, cardname + '.txt' )
 
@@ -321,44 +325,48 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             c.releaseLocation = combineReleaseLocation
 
         if not args.fitOnly:
+#            print 'run cardfile'
 
             # uncertainties
-#            c.reset()
-            c.addUncertainty('lumi',        'lnN')
-            c.addUncertainty('JES',         'lnN')
-            c.addUncertainty('btagging',    'lnN')
-            c.addUncertainty('mistagging',  'lnN')
-            c.addUncertainty('muonId',      'lnN')
-            c.addUncertainty('electronId',  'lnN')
-            for unc in args.addUncertainties:
-                c.addUncertainty(unc,  'lnN')
+            c.reset()
+            if not args.statOnly:
+                if not args.noSystUnc:
+                    c.addUncertainty('lumi',        'lnN')
+                    c.addUncertainty('JES',         'lnN')
+                    c.addUncertainty('btagging',    'lnN')
+                    c.addUncertainty('mistagging',  'lnN')
+                    c.addUncertainty('muonId',      'lnN')
+                    c.addUncertainty('electronId',  'lnN')
+                for unc in args.addUncertainties:
+                    c.addUncertainty(unc,  'lnN')
 
             signal_rate                  = {}
             for i_region, region in enumerate(regions):
 
                 signal_rate[region] = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region], **kwargs)
 
-                # signal uncertainties
-                # btagging
-                signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_btagging[region], **kwargs )
-                signal_btagging_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
+                if not args.statOnly and not args.noSystUnc:
+                    # signal uncertainties
+                    # btagging
+                    signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_btagging[region], **kwargs )
+                    signal_btagging_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
 
-                # mistagging
-                signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_mistagging[region], **kwargs )
-                signal_mistagging_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
+                    # mistagging
+                    signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_mistagging[region], **kwargs )
+                    signal_mistagging_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
 
-                # muonId
-                signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_muonId[region], **kwargs )
-                signal_muonId_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
+                    # muonId
+                    signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_muonId[region], **kwargs )
+                    signal_muonId_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
 
-                # electronId
-                signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_electronId[region], **kwargs )
-                signal_electronId_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
+                    # electronId
+                    signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_electronId[region], **kwargs )
+                    signal_electronId_uncertainty [region] = 1 + (( signal_rate_reweighted - signal_rate[region] ) / signal_rate[region]) if signal_rate[region] > 0 else 1.
 
-                # JES
-                signal_rate_reweighted_JES_up   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_jes_up[region], **kwargs )
-                signal_rate_reweighted_JES_down = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_jes_down[region], **kwargs )
-                signal_jes_uncertainty[region] = 1 + (( signal_rate_reweighted_JES_up - signal_rate_reweighted_JES_down ) / (2*signal_rate[region])) if signal_rate[region] > 0 else 1.
+                    # JES
+                    signal_rate_reweighted_JES_up   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_jes_up[region], **kwargs )
+                    signal_rate_reweighted_JES_down = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_jes_down[region], **kwargs )
+                    signal_jes_uncertainty[region] = 1 + (( signal_rate_reweighted_JES_up - signal_rate_reweighted_JES_down ) / (2*signal_rate[region])) if signal_rate[region] > 0 else 1.
 
                 bin_name = "Region_%i" % i_region
                 nice_name = region.__str__()
@@ -366,22 +374,24 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
                 c.specifyObservation( bin_name, observation[region] )
 
-                c.specifyFlatUncertainty( 'lumi', 1.01 )
-
                 c.specifyExpectation( bin_name, 'signal', signal_rate[region]                                 )
-                c.specifyUncertainty( 'JES',        bin_name, 'signal', signal_jes_uncertainty[region]        )
-                c.specifyUncertainty( 'btagging',   bin_name, 'signal', signal_btagging_uncertainty[region]   )
-                c.specifyUncertainty( 'mistagging', bin_name, 'signal', signal_mistagging_uncertainty[region] )
-                c.specifyUncertainty( 'muonId',     bin_name, 'signal', signal_muonId_uncertainty[region]     )
-                c.specifyUncertainty( 'electronId', bin_name, 'signal', signal_electronId_uncertainty[region] )
 
-                for unc in args.addUncertainties:
-                    c.specifyUncertainty( unc,      bin_name, 'signal', 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, 'signal', unc )-1)*args.uncertaintyScale )
+                if not args.statOnly:
+                    if not args.noSystUnc:
+                        c.specifyFlatUncertainty( 'lumi', 1.01 )
+                        c.specifyUncertainty( 'JES',        bin_name, 'signal', signal_jes_uncertainty[region]        )
+                        c.specifyUncertainty( 'btagging',   bin_name, 'signal', signal_btagging_uncertainty[region]   )
+                        c.specifyUncertainty( 'mistagging', bin_name, 'signal', signal_mistagging_uncertainty[region] )
+                        c.specifyUncertainty( 'muonId',     bin_name, 'signal', signal_muonId_uncertainty[region]     )
+                        c.specifyUncertainty( 'electronId', bin_name, 'signal', signal_electronId_uncertainty[region] )
+
+                    for unc in args.addUncertainties:
+                        c.specifyUncertainty( unc,      bin_name, 'signal', 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, 'signal', unc )-1)*args.uncertaintyScale )
 
                 if args.addNonPrompt:
                     # for nonpromt only nonpromt uncertainty is important
                     c.specifyExpectation( bin_name, 'nonPrompt', nonPromptObservation[region] )
-                    c.specifyUncertainty( 'nonprompt',      bin_name, 'nonPrompt', 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, 'nonPromptDD', 'nonprompt' )-1)*args.uncertaintyScale )
+                    if not args.statOnly: c.specifyUncertainty( 'nonprompt',      bin_name, 'nonPrompt', 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, 'nonPromptDD', 'nonprompt' )-1)*args.uncertaintyScale )
 
                 #c.specifyExpectation( bin_name, 'ttX_SM', ttX_SM_rate[region] )
                 #c.specifyUncertainty( 'JES', bin_name, 'ttX_SM', ttX_SM_jes_uncertainty[region])
@@ -389,16 +399,18 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
                 for background in bg:
                     c.specifyExpectation( bin_name, '_'.join( background.name.split('_')[1:3] ), background_rate[region][background.name] )
-                    c.specifyUncertainty( 'JES',        bin_name, '_'.join( background.name.split('_')[1:3] ), background_jes_uncertainty[region][background.name])
-                    c.specifyUncertainty( 'btagging',   bin_name, '_'.join( background.name.split('_')[1:3] ), background_btagging_uncertainty[region][background.name])
-                    c.specifyUncertainty( 'mistagging', bin_name, '_'.join( background.name.split('_')[1:3] ), background_mistagging_uncertainty[region][background.name])
-                    c.specifyUncertainty( 'muonId',     bin_name, '_'.join( background.name.split('_')[1:3] ), background_muonId_uncertainty[region][background.name])
-                    c.specifyUncertainty( 'electronId', bin_name, '_'.join( background.name.split('_')[1:3] ), background_electronId_uncertainty[region][background.name])
-                    for unc in args.addUncertainties:
-                        if 'tZq' in background.name.split('_') or 'ttgamma' in background.name.split('_') or 'tWZ' in background.name.split('_'): proc = 'TTX'
-                        elif 'WZ' in background.name.split('_'): proc = 'WZ'
-                        else: raise ValueError('Background not found: %s' %background.name)
-                        c.specifyUncertainty( unc,      bin_name, '_'.join( background.name.split('_')[1:3] ), 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, proc, unc )-1)*args.uncertaintyScale )
+                    if not args.statOnly:
+                        if not args.noSystUnc:
+                            c.specifyUncertainty( 'JES',        bin_name, '_'.join( background.name.split('_')[1:3] ), background_jes_uncertainty[region][background.name])
+                            c.specifyUncertainty( 'btagging',   bin_name, '_'.join( background.name.split('_')[1:3] ), background_btagging_uncertainty[region][background.name])
+                            c.specifyUncertainty( 'mistagging', bin_name, '_'.join( background.name.split('_')[1:3] ), background_mistagging_uncertainty[region][background.name])
+                            c.specifyUncertainty( 'muonId',     bin_name, '_'.join( background.name.split('_')[1:3] ), background_muonId_uncertainty[region][background.name])
+                            c.specifyUncertainty( 'electronId', bin_name, '_'.join( background.name.split('_')[1:3] ), background_electronId_uncertainty[region][background.name])
+                        for unc in args.addUncertainties:
+                            if 'tZq' in background.name.split('_') or 'ttgamma' in background.name.split('_') or 'tWZ' in background.name.split('_'): proc = 'TTX'
+                            elif 'WZ' in background.name.split('_'): proc = 'WZ'
+                            else: raise ValueError('Background not found: %s' %background.name)
+                            c.specifyUncertainty( unc,      bin_name, '_'.join( background.name.split('_')[1:3] ), 1+(getUncertaintyValue( args.additionalCardFile, args.addBinNumberShift + i_region, proc, unc )-1)*args.uncertaintyScale )
                     
             c.writeToFile( cardFilePath )
 
@@ -412,7 +424,6 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             # use the official cms combine tool
 #                c.calcNuisances( cardFilePath, bestFit=args.bestFit )
             nll = c.calcNLL( cardFilePath, bestFit=args.bestFit )
-            print 'result', nll
 #            nll = nll['nll0'] #pre-fit
             nll = nll['nll_abs'] #post-fit
 
@@ -435,7 +446,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
         ROOT.gDirectory.Clear()
 
         # in very large WC regions, the fit fails, not relevant for the interesting regions
-        if nll is None or abs(nll) > 1000000: nll = 999
+        if nll is None or abs(nll) > 10000 or abs(nll) < 1: nll = 999
 
         del c
 
@@ -449,6 +460,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
         # do not run all calc in one pool, memory leak!!!
         pool = Pool( processes = args.cores )
         results += pool.map( calculation, [ (varX, varY) for varY in yRange ] )
+        pool.close()
         del pool
 
     with open('tmp/'+filename, 'w') as f:
@@ -565,8 +577,12 @@ if args.variables[0] == 'cuB' and args.variables[1] == 'cuW':
     hist.GetXaxis().SetTitle('C^{(33)}_{uB} (#Lambda/TeV)^{2}' )
     hist.GetYaxis().SetTitle('C^{(33)}_{uW} (#Lambda/TeV)^{2}' )
 else:
-    hist.GetXaxis().SetTitle('C_{' + args.variables[0].replace('c','').replace('p','#phi').replace('M','') + '} (#Lambda/TeV)^{2}' )
-    hist.GetYaxis().SetTitle('C_{' + args.variables[1].replace('c','').replace('p','#phi').replace('M','') + '} (#Lambda/TeV)^{2}' )
+    xTitle = args.variables[0].replace('c','C_{').replace('p','#phi').replace('M','') + '}' 
+    if 'I' in xTitle: xTitle = xTitle.replace('I','') + '^{[Im]}'
+    yTitle = args.variables[1].replace('c','C_{').replace('p','#phi').replace('M','') + '}' 
+    if 'I' in yTitle: yTitle = yTitle.replace('I','') + '^{[Im]}'
+    hist.GetXaxis().SetTitle( xTitle + ' (#Lambda/TeV)^{2}' )
+    hist.GetYaxis().SetTitle( yTitle + ' (#Lambda/TeV)^{2}' )
 
 hist.GetXaxis().SetTitleFont(42)
 hist.GetYaxis().SetTitleFont(42)
@@ -591,8 +607,16 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.92, 'CMS Simulation'),
-latex1.DrawLatex(0.45, 0.92, 'L=%i fb{}^{-1} (%s TeV)' % (int(args.luminosity) if not args.scale else int(args.scale), "14" if args.scale14TeV else "13"))
+latex1.DrawLatex(0.15, 0.95, 'CMS Simulation'),
+latex1.DrawLatex(0.45, 0.95, 'L=%i fb{}^{-1} (%s TeV)' % (int(args.luminosity), "14" if args.scale14TeV else "13"))
+
+latex2 = ROOT.TLatex()
+latex2.SetNDC()
+latex2.SetTextSize(0.04)
+latex2.SetTextFont(42)
+latex2.SetTextAlign(11)
+
+latex2.DrawLatex(0.15, 0.9, 'with Stat. uncert. only' if args.statOnly else 'with YR18 syst. uncert.' if not args.noSystUnc else 'with Stat. and Theory uncert. only'),
 
 #latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]) + ' (' + args.detector + ')')
 #latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )
@@ -610,5 +634,5 @@ if not os.path.isdir( plot_directory_ ):
     os.makedirs( plot_directory_ )
 
 for e in [".png",".pdf",".root"]:
-    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale), "14TeV" if args.scale14TeV else "13TeV", "CMScombine" if args.useCombine else "privateFit"]) + e)
+    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale), "14TeV" if args.scale14TeV else "13TeV", "CMScombine" if args.useCombine else "privateFit", "bestFit" if args.bestFit else "r1", 'statOnly' if args.statOnly else 'fullUnc' if not args.noSystUnc else 'noSystUnc']) + e)
 

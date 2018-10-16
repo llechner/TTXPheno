@@ -51,6 +51,7 @@ argParser.add_argument('--binThreshold',    action='store',     default=100)
 argParser.add_argument('--addFisherInformation', action='store_true', help='include Fisher Information Plot in a.u.?')
 argParser.add_argument('--addFisherInformationBackground', action='store_true', help='include Fisher Information bg Plot in a.u.?')
 argParser.add_argument('--detector',        action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS', 'phase2_CMS'], help='Which Delphes detector simulation?') 
+argParser.add_argument('--wideLegendStyle', action='store_true', help='Legend in 4 columns') 
 
 args = argParser.parse_args()
 
@@ -98,7 +99,8 @@ if args.parameters is not None:
     vals = list( map( float, str_vals ) )
     for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
         params.append( [{
-            'legendText': ' '.join([coeff,str_val]).replace('gamma','#gamma').replace('c','C_{').replace(' ','} = ').replace('p','#phi').replace('M','').replace('I','}^{[Im]') + '  ',
+#            'legendText': ' '.join([coeff,str_val]).replace('gamma','#gamma').replace('c','C_{').replace(' ','} = ').replace('p','#phi').replace('M','').replace('I','}^{[Im]') + '  ',
+            'legendText': ' '.join([coeff]).replace('gamma','#gamma').replace('c','C_{').replace('p','#phi').replace('M','').replace('I','}^{[Im]') + '}  ',
             'WC' : { coeff:val },
             'color' : colors[i_param],
             }])
@@ -440,7 +442,7 @@ def drawPlots(plots):
         plot_directory = plot_directory_,
         ratio = None,
         logX = False, logY = log, sorting = True,
-        legend = ( (0.5,0.88-0.05*sum(map(len, l_plot.histos))/2,0.9,0.88), 2),
+        legend = ( (0.55,0.88-0.05*sum(map(len, l_plot.histos))/2,0.9,0.88), 2) if not args.wideLegendStyle else ( (0.22,0.88-0.05*sum(map(len, l_plot.histos))/4,0.9,0.88), 4),
         drawObjects = drawObjects(),
         copyIndexPHP = True,
     )
@@ -507,7 +509,7 @@ def drawPlots(plots):
 	    yRange = (0.03, "auto") if log else (0., "auto"),
 #        scaling = {i:(len(params)-1) for i in range(len(params)-1)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
         scaling = {i:(histoIndexSM) for i in range(histoIndexSM)} if args.scaleLumi else {}, #Scale BSM shapes to SM (last in list)
-        legend = ( (0.5,0.88-0.05*sum(map(len, l_plot.histos))/2,0.9,0.88), 2),
+        legend = ( (0.55,0.88-0.05*sum(map(len, l_plot.histos))/2,0.9,0.88), 2)  if not args.wideLegendStyle else ( (0.22,0.88-0.05*sum(map(len, l_plot.histos))/4,0.9,0.88), 4),
 #	    legend = ( (0.17,0.9-0.05*sum(map(len, plot.histos))/3,0.9,0.9), 3),
 	    drawObjects = drawObjects(),
         copyIndexPHP = True,

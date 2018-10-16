@@ -242,7 +242,7 @@ def getPlotList( scaleLumi, level ):
     
 
     plots.append( Plot( name = "nonZl0_isovar",
-      texX = 'IsoVar(non-Z l_{0}) [GeV]', texY = y_label + ' / bin',
+      texX = 'IsoVar(non-Z l_{0}) [GeV]', texY = y_label,
       attribute = lambda event, sample: event.NonZ_l0['isolationVar'] if event.passing_checks else float('nan'),
       binning=[20,0,0.06],
     ) )
@@ -263,14 +263,14 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = "jet0_eta",
-      texX = '#eta(jet_{0})', texY = y_label + ' / bin',
+      texX = '#eta(jet_{0})', texY = y_label,
       attribute = lambda event, sample: event.jets[0]['eta'] if event.passing_checks and len(event.jets)>0 else float('nan'),
       binning=[10,-3,3],
     ) )
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = "jet1_eta",
-      texX = '#eta(jet_{1})', texY = y_label + ' / bin',
+      texX = '#eta(jet_{1})', texY = y_label,
       attribute = lambda event, sample: event.jets[1]['eta'] if event.passing_checks and len(event.jets)>1 else float('nan'),
       binning=[10,-3,3],
     ) )
@@ -278,14 +278,14 @@ def getPlotList( scaleLumi, level ):
 
 
     plots.append( Plot( name = "jet0_nCharged",
-      texX = 'N_{charged}(jet_{0})', texY = y_label + ' / bin',
+      texX = 'N_{charged}(jet_{0})', texY = y_label,
       attribute = lambda event, sample: event.jets[0]['nCharged'] if event.passing_checks and len(event.jets)>0 else float('nan'),
       binning=[20,0,20],
     ) )
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = "jet1_nCharged",
-      texX = 'N_{charged}(jet_{1})', texY = y_label + ' / bin',
+      texX = 'N_{charged}(jet_{1})', texY = y_label,
       attribute = lambda event, sample: event.jets[1]['nCharged'] if event.passing_checks and len(event.jets)>1 else float('nan'),
       binning=[20,0,20],
     ) )
@@ -293,14 +293,14 @@ def getPlotList( scaleLumi, level ):
 
 
     plots.append( Plot( name = "jet0_nNeutrals",
-      texX = 'N_{neutral}(jet_{0})', texY = y_label + ' / bin',
+      texX = 'N_{neutral}(jet_{0})', texY = y_label,
       attribute = lambda event, sample: event.jets[0]['nNeutrals'] if event.passing_checks and len(event.jets)>0 else float('nan'),
       binning=[20,0,20],
     ) )
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = "jet1_nNeutrals",
-      texX = 'N_{neutral}(jet_{1})', texY = y_label + ' / bin',
+      texX = 'N_{neutral}(jet_{1})', texY = y_label,
       attribute = lambda event, sample: event.jets[1]['nNeutrals'] if event.passing_checks and len(event.jets)>1 else float('nan'),
       binning=[20,0,20],
     ) )
@@ -327,7 +327,7 @@ def getPlotList( scaleLumi, level ):
 
     # for gen use genLepZ_lldPhi
     plots.append( Plot( name = 'Z_deltaPhi_ll',
-      texX = '#Delta#phi(ll)', texY = y_label + ' / bin',
+      texX = '#Delta#phi(ll)', texY = y_label,
 #      texX = '#Delta#phi(ll)', texY = labelAddon + 'd#sigma/d#Delta#phi(ll)'+unit,
 #      texX = '#Delta#phi(ll)', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_lldPhi'%tag ) if event.passing_checks else float('nan'),
@@ -337,7 +337,7 @@ def getPlotList( scaleLumi, level ):
 
     # for gen use genLepZ_lldR
     plots.append( Plot( name = 'Z_deltaR_ll',
-      texX = '#DeltaR(ll)', texY = y_label + ' / bin',
+      texX = '#DeltaR(ll)', texY = y_label,
 #      texX = '#DeltaR(ll)', texY = labelAddon + 'd#sigma/d#DeltaR(ll)'+unit,
 #      texX = '#DeltaR(ll)', texY = labelAddon + '#frac{d#sigma}{d #DeltaR(ll)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_lldR'%tag ) if event.passing_checks else float('nan'),
@@ -346,7 +346,7 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_lldR'%tag)
         
     plots.append( Plot( name = "Z_cosThetaStar10",
-      texX = 'cos(#theta*)', texY = y_label + ' / bin',
+      texX = 'cos(#theta*_{Z})', texY = y_label,
 #      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
 #      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
@@ -355,7 +355,7 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
 
     plots.append( Plot( name = "Z_cosThetaStar20",
-      texX = 'cos(#theta*)', texY = y_label + ' / bin',
+      texX = 'cos(#theta*_{Z})', texY = y_label,
 #      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
 #      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
@@ -364,7 +364,7 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
 
     plots.append( Plot( name = "Z_cosThetaStar5",
-      texX = 'cos(#theta*)', texY = y_label + ' / bin',
+      texX = 'cos(#theta*_{Z})', texY = y_label,
 #      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
 #      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
@@ -373,7 +373,7 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
     
     plots.append( Plot( name = 'deltaPhi_bb',
-      texX = '#Delta#phi(bb)', texY = y_label + ' / bin',
+      texX = '#Delta#phi(bb)', texY = y_label,
 #      texX = '#Delta#phi(bb)', texY = labelAddon + 'd#sigma/d#Delta#phi(bb)'+unit,
 #      texX = '#Delta#phi(bb)', texY = labelAddon + '#frac{d#sigma}{d #Delta#phi(bb)}'+unit,
       attribute = lambda event, sample: event.bbdPhi if event.passing_checks else float('nan'),
@@ -382,7 +382,7 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = 'deltaR_bb',
-      texX = '#DeltaR(bb)', texY = y_label + ' / bin',
+      texX = '#DeltaR(bb)', texY = y_label,
 #      texX = '#DeltaR(bb)', texY = labelAddon + 'd#sigma/d#DeltaR(bb)'+unit,
 #      texX = '#DeltaR(bb)', texY = labelAddon + '#frac{d#sigma}{d #DeltaR(bb)}'+unit,
       attribute = lambda event, sample: event.bbdR if event.passing_checks else float('nan'),
