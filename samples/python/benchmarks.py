@@ -177,8 +177,8 @@ gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v22/"
 fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights_ref" )]) 
 fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.reweight_pkl  = gridpack_dir + "18052018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.nEvents       = 990000
-fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.xsec          = 0.5205 * 0.0915 / 0.0565 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
-fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.xsec14        = 0.5205 * 0.0915 / 0.0565 * 0.7152 / 0.616 #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO * ttZ jets 14 TeV / ttZ jets 13 TeV
+fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.xsec          = 0.5205 * (0.0915 / 0.0565) #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
+fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.xsec14        = 0.5205 * (0.0915 / 0.0565) * (0.7152 / 0.616) #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO * ttZ jets 14 TeV / ttZ jets 13 TeV
 #check
 #16% 14 TeV correction
 
@@ -237,8 +237,8 @@ fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.xsec14        = 0.5205 * 0.0915
 fwlite_tZq_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tZq_LO_order2_15weights",  texName = "tZq",      directory = [os.path.join( gen_dir, "fwlite_tZq_LO_order2_15weights" )]) 
 fwlite_tZq_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tZq/order2/tZq_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_tZq_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
-fwlite_tZq_LO_order2_15weights_phase2_CMS.xsec          = 0.06774 * 0.0758 / 0.06148 #pb tZq gridpack * tZq NLO Daniel / tZq LO run.py DIM6
-fwlite_tZq_LO_order2_15weights_phase2_CMS.xsec14        = 0.06774 * 0.0758 / 0.06148 * 0.085 / 0.0758 #pb tZq gridpack * tZq NLO Daniel / tZq LO run.py DIM6 * tZq ll 14TeV / tZq ll 13 TeV
+fwlite_tZq_LO_order2_15weights_phase2_CMS.xsec          = 0.06774 * (0.0758 / 0.06148) #pb tZq gridpack * tZq NLO Daniel / tZq LO run.py DIM6
+fwlite_tZq_LO_order2_15weights_phase2_CMS.xsec14        = 0.06774 * (0.0758 / 0.06148) * (0.085 / 0.0758) #pb tZq gridpack * tZq NLO Daniel / tZq LO run.py DIM6 * tZq ll 14TeV / tZq ll 13 TeV
 #check
 #12% 14 TeV correction
 
@@ -251,8 +251,8 @@ fwlite_tZq_LO_order2_15weights_phase2_CMS.xsec14        = 0.06774 * 0.0758 / 0.0
 fwlite_tWZ_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tWZ_LO_order2_15weights",  texName = "tWZ",      directory = [os.path.join( gen_dir, "fwlite_tWZ_LO_order2_15weights" )]) 
 fwlite_tWZ_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tWZ/order2/tWZ_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_tWZ_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
-fwlite_tWZ_LO_order2_15weights_phase2_CMS.xsec          = 0.01035 * 0.01123 / 0.01225 #tWZ gridpack * tWll NLO Daniel / tWll LO run.py UFO
-fwlite_tWZ_LO_order2_15weights_phase2_CMS.xsec14        = 0.01035 * 0.01123 / 0.01225 #tWZ gridpack * tWll NLO Daniel / tWll LO run.py UFO #not scaled!
+fwlite_tWZ_LO_order2_15weights_phase2_CMS.xsec          = 0.01035 * (0.01123 / 0.01225) #tWZ gridpack * tWll NLO Daniel / tWll LO run.py UFO
+fwlite_tWZ_LO_order2_15weights_phase2_CMS.xsec14        = 0.01035 * (0.01123 / 0.01225) * 1.12 #tWZ gridpack * tWll NLO Daniel / tWll LO run.py UFO #scaled with 12% similar to tZq, no SF found for 14TeV
 #check
 
 #fwlite_Zgamma_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_Zgamma_LO_order2_15weights",  texName = "Zgamma",      directory = [os.path.join( gen_dir, "fwlite_Zgamma_LO_order2_15weights" )]) 
@@ -264,15 +264,15 @@ fwlite_tWZ_LO_order2_15weights_phase2_CMS.xsec14        = 0.01035 * 0.01123 / 0.
 fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_ttgamma_bg_LO_order2_15weights",  texName = "ttgamma",      directory = [os.path.join( gen_dir, "fwlite_ttgamma_bg_LO_order2_15weights" )]) 
 fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/ttgamma/order2/ttgamma_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.nEvents       = 1000000 
-fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.xsec          = 2.179 * 3.697 / 2.302 #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
-fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.xsec14        = 2.179 * 3.697 / 2.302 * 0.6231 / 0.607#pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.xsec          = 2.179 * (3.697 / 2.302) #pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
+fwlite_ttgamma_bg_LO_order2_15weights_phase2_CMS.xsec14        = 2.179 * (3.697 / 2.302) * (0.6231 / 0.607)#pb ttgamma gridpack * ttgamma NLO Daniel / ttgamma LO run.py UFO
 #check
 
 fwlite_WZ_lep_LO_order2_15weights_phase2_CMS                   = Sample.fromDirectory("fwlite_WZ_lep_LO_order2_15weights",     texName = "WZ",      directory = [os.path.join( gen_dir, "fwlite_WZ_lep_LO_order2_15weights" )])
 fwlite_WZ_lep_LO_order2_15weights_phase2_CMS.reweight_pkl      = gridpack_dir + "06072018/WZ/order2/WZ_lep_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
 fwlite_WZ_lep_LO_order2_15weights_phase2_CMS.nEvents           = 1000000 
 fwlite_WZ_lep_LO_order2_15weights_phase2_CMS.xsec              = 4.666 #WZTo3LNu_amcatnlo  #47.13*(3*0.108)*(3*0.0336) #pb WZ NLO Daniel * BR(Wlep) * BR(Zlep)
-fwlite_WZ_lep_LO_order2_15weights_phase2_CMS.xsec14             = 4.666 * 3.721 / 3.22 #WZTo3LNu_amcatnlo  #pb WZ NLO Daniel 13 TeV * ZZTo2l2Q 14 TeV / ZZTo2l2Q 13 TeV
+fwlite_WZ_lep_LO_order2_15weights_phase2_CMS.xsec14             = 4.666 * (3.721 / 3.22) #WZTo3LNu_amcatnlo  #pb WZ NLO Daniel 13 TeV * ZZTo2l2Q 14 TeV / ZZTo2l2Q 13 TeV
 #check?
 #15.5% 14 TeV correction
 

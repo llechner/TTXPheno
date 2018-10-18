@@ -67,7 +67,7 @@ else:
 maxEvents = -1
 if args.small: 
     args.targetDir += "_small"
-    maxEvents=200 
+    maxEvents=5000 
     sample.files=sample.files[:1]
 
 xsec = sample.xsec
@@ -705,7 +705,7 @@ def filler( event ):
         event.reweight_id_ele = 1.
         for l in recoLeps:
             if abs(l['pdgId'])==11:
-                event.reweight_id_ele*=1.01
+                event.reweight_id_ele*=1.005
             elif abs(l['pdgId'])==13:
                 event.reweight_id_mu*=1.005
         # MET
