@@ -67,9 +67,12 @@ argParser.add_argument('--addUncertainties',   action='store',     default = ['t
 argParser.add_argument('--addBinNumberShift',  action='store',     default = 0, type=int, help = "which bin number does the region start in the additional card file?")
 argParser.add_argument('--uncertaintyScale',   action='store',     default = 0.5, type=float, help = "scale factor for additional uncertainties")
 argParser.add_argument('--statOnly',           action='store_true', help='use only statistical uncertainties')
-argParser.add_argument('--noSystUnc',          action='store_true', help='use only statistical and theory uncertainties')
+argParser.add_argument('--noExpUnc',          action='store_true', help='use only statistical and theory uncertainties')
 
 args = argParser.parse_args()
+
+for unc in ['trigger_2016', 'nonprompt']:
+    if unc in args.addUncertainties and args.noExpUnc: args.addUncertainties.remove(unc)
 
 if args.level == 'gen':
     if 'ttZ' in args.process.split('_'):
@@ -242,7 +245,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
                 background_rate                 [region][background.name] = background.getYieldFromDraw( selectionString=region.cutString() )['val']
 
-                if not args.statOnly and not args.noSystUnc:
+                if not args.statOnly and not args.noExpUnc:
                     #calculate btagging uncert.
                     background_rate_reweighted                                = background.getYieldFromDraw( selectionString=region.cutString(), weightString="reweight_BTag_B" )['val']
                     background_btagging_uncertainty [region][background.name] = 1 + (( background_rate_reweighted - background_rate[region][background.name] ) / background_rate[region][background.name]) if background_rate[region][background.name] > 0 else 1.
@@ -316,7 +319,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             var1, var2 = variables
             kwargs = { args.variables[0]:var1, args.variables[1]:var2 }
 
-        nameList = args.sample.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, "14TeV" if args.scale14TeV else "13TeV", args.selection, 'small' if args.small else 'full', 'statOnly' if args.statOnly else 'fullUnc' if not args.noSystUnc else 'noSystUnc', var1, var2 ]
+        nameList = args.sample.split('_')[1:3] + args.variables + args.binning + [ args.level, args.version, args.order, args.luminosity, "14TeV" if args.scale14TeV else "13TeV", args.selection, 'small' if args.small else 'full', 'statOnly' if args.statOnly else 'fullUnc' if not args.noExpUnc else 'noExpUnc', var1, var2 ]
         cardname = '%s_nll_card'%'_'.join( map( str, nameList ) )
         cardFilePath = os.path.join( cardfileLocation, cardname + '.txt' )
 
@@ -330,7 +333,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             # uncertainties
             c.reset()
             if not args.statOnly:
-                if not args.noSystUnc:
+                if not args.noExpUnc:
                     c.addUncertainty('lumi',        'lnN')
                     c.addUncertainty('JES',         'lnN')
                     c.addUncertainty('btagging',    'lnN')
@@ -345,7 +348,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
                 signal_rate[region] = ttXSample.weightInfo.get_weight_yield( ttX_coeffList[region], **kwargs)
 
-                if not args.statOnly and not args.noSystUnc:
+                if not args.statOnly and not args.noExpUnc:
                     # signal uncertainties
                     # btagging
                     signal_rate_reweighted   = ttXSample.weightInfo.get_weight_yield( ttX_coeffList_reweighted_btagging[region], **kwargs )
@@ -377,7 +380,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
                 c.specifyExpectation( bin_name, 'signal', signal_rate[region]                                 )
 
                 if not args.statOnly:
-                    if not args.noSystUnc:
+                    if not args.noExpUnc:
                         c.specifyFlatUncertainty( 'lumi', 1.01 )
                         c.specifyUncertainty( 'JES',        bin_name, 'signal', signal_jes_uncertainty[region]        )
                         c.specifyUncertainty( 'btagging',   bin_name, 'signal', signal_btagging_uncertainty[region]   )
@@ -400,7 +403,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
                 for background in bg:
                     c.specifyExpectation( bin_name, '_'.join( background.name.split('_')[1:3] ), background_rate[region][background.name] )
                     if not args.statOnly:
-                        if not args.noSystUnc:
+                        if not args.noExpUnc:
                             c.specifyUncertainty( 'JES',        bin_name, '_'.join( background.name.split('_')[1:3] ), background_jes_uncertainty[region][background.name])
                             c.specifyUncertainty( 'btagging',   bin_name, '_'.join( background.name.split('_')[1:3] ), background_btagging_uncertainty[region][background.name])
                             c.specifyUncertainty( 'mistagging', bin_name, '_'.join( background.name.split('_')[1:3] ), background_mistagging_uncertainty[region][background.name])
@@ -616,7 +619,7 @@ latex2.SetTextSize(0.04)
 latex2.SetTextFont(42)
 latex2.SetTextAlign(11)
 
-latex2.DrawLatex(0.15, 0.9, 'with Stat. uncert. only' if args.statOnly else 'with YR18 syst. uncert.' if not args.noSystUnc else 'with Stat. and Theory uncert. only'),
+latex2.DrawLatex(0.15, 0.9, 'with Stat. uncert. only' if args.statOnly else 'with YR18 syst. uncert.' if not args.noExpUnc else 'with Stat. and Theory uncert. only'),
 
 #latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]) + ' (' + args.detector + ')')
 #latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )
@@ -634,5 +637,5 @@ if not os.path.isdir( plot_directory_ ):
     os.makedirs( plot_directory_ )
 
 for e in [".png",".pdf",".root"]:
-    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale), "14TeV" if args.scale14TeV else "13TeV", "CMScombine" if args.useCombine else "privateFit", "bestFit" if args.bestFit else "r1", 'statOnly' if args.statOnly else 'fullUnc' if not args.noSystUnc else 'noSystUnc']) + e)
+    cans.Print( plot_directory_ + '/' + '_'.join(args.variables + ['lumi'+str(args.luminosity) if args.scale is None else 'lumi'+str(args.scale), "14TeV" if args.scale14TeV else "13TeV", "CMScombine" if args.useCombine else "privateFit", "bestFit" if args.bestFit else "r1", 'statOnly' if args.statOnly else 'fullUnc' if not args.noExpUnc else 'noExpUnc']) + e)
 

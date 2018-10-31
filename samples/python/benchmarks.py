@@ -166,6 +166,18 @@ fwlite_WZ_lep_LO_order2_15weights_CMS.xsec              = 4.666 #WZTo3LNu_amcatn
 # signal samples with reference point
 
 gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v22/"
+# reference point 15/2
+fwlite_ttZ_ll_LO_order2_15weights_ref_v22_phase2_CMS               = Sample.fromDirectory("fwlite_ttZ_ll_LO_order2_15weights_ref",  texName = "ttZ",      directory = [os.path.join( gen_dir, "fwlite_ttZ_ll_LO_order2_15weights_ref" )]) 
+fwlite_ttZ_ll_LO_order2_15weights_ref_v22_phase2_CMS.reweight_pkl  = gridpack_dir + "18052018_ref/ttZ/order2/ttZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
+fwlite_ttZ_ll_LO_order2_15weights_ref_v22_phase2_CMS.nEvents       = 990000
+fwlite_ttZ_ll_LO_order2_15weights_ref_v22_phase2_CMS.xsec          = 0.5205 * (0.0915 / 0.0565) #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO
+fwlite_ttZ_ll_LO_order2_15weights_ref_v22_phase2_CMS.xsec14        = 0.5205 * (0.0915 / 0.0565) * (0.7152 / 0.616) #pb ttZ, Z->ll, ttZ gridpack * ttZ NLO Daniel / ttZ LO run.py UFO * ttZ jets 14 TeV / ttZ jets 13 TeV
+#check
+
+
+#gen_dir = "/afs/hephy.at/data/llechner02/TTXPheno/skims/gen/v23/"
+#gen_dir = "/afs/hephy.at/data/llechner02/TTXPheno/skims/gen/v23/"
+gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v23/"
 
 #fwlite_ttgammaLarge_LO_order2_15weights_ref_phase2_CMS              = Sample.fromDirectory("fwlite_ttgammaLarge_LO_order2_15weights_ref", texName = "ttgamma",  directory = [os.path.join( gen_dir, "fwlite_ttgammaLarge_LO_order2_15weights_ref" )])
 #fwlite_ttgammaLarge_LO_order2_15weights_ref_phase2_CMS.reweight_pkl = gridpack_dir + "18052018_ref/ttgamma/order2/ttgamma0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"
@@ -233,6 +245,8 @@ fwlite_ttZ_ll_LO_order2_15weights_ref_phase2_CMS.xsec14        = 0.5205 * (0.091
 ##############################
 ##############################
 ##############################
+#gen_dir = "/afs/hephy.at/data/llechner02/TTXPheno/skims/gen/v23/"
+#gen_dir = "/afs/hephy.at/data/rschoefbeck01/TTXPheno/skims/gen/v22/"
 
 fwlite_tZq_LO_order2_15weights_phase2_CMS               = Sample.fromDirectory("fwlite_tZq_LO_order2_15weights",  texName = "tZq",      directory = [os.path.join( gen_dir, "fwlite_tZq_LO_order2_15weights" )]) 
 fwlite_tZq_LO_order2_15weights_phase2_CMS.reweight_pkl  = gridpack_dir + "06072018/tZq/order2/tZq_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.pkl"

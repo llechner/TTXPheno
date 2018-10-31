@@ -17,7 +17,7 @@ ROOT.gROOT.SetBatch( True )
 # RootTools
 from RootTools.core.standard import *
 from plot_helpers            import getUncertaintyValue, getObservationValue
-from TTXPheno.samples.color    import color
+from TTXPheno.samples.color  import color
 
 # Logger
 import TTXPheno.Tools.logger as logger
@@ -56,6 +56,8 @@ argParser.add_argument('--combineTTX',         action='store_true', help='combin
 argParser.add_argument('--parameters',         action='store',     default = [], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--topEFTcolors',       action='store_true', help='use comparable colors to TopEFT?')
 argParser.add_argument('--nonInfoSignal',      action='store_true', help='add nonInfo Signal?')
+argParser.add_argument('--addUncertainties',   action='store_true', help='add uncertainties?')
+argParser.add_argument('--noTheoryUnc',        action='store_true', help='add uncertainties?')
 
 args = argParser.parse_args()
 
@@ -65,6 +67,13 @@ if len(args.parameters) < 2: args.parameters = None
 #color = [ ROOT., ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue,  ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+3,  ROOT.kGreen-7, ROOT.kGreen-10 ]
 colors = { 'WZ':ROOT.kAzure-3, 'tWZ':ROOT.kGreen-2, 'tZq':ROOT.kCyan-9, 'ttgamma':ROOT.kRed+2, 'ttZ':ROOT.kOrange, 'nonInfo':ROOT.kRed-7 }
 #if args.nonInfoSignal: colors['ttZ']=ROOT.kOrange#41#ROOT.kWhite
+
+if args.addUncertainties:
+    if not os.path.isfile('TTXPhenoCardFile.txt'):
+        raise Exception('Cardfile TTXPhenoCardFile.txt not found! Cannot add uncertainties!')
+    if args.noTheoryUnc: uncertainties = [ 'lumi', 'JES', 'btagging', 'mistagging', 'muonId', 'electronId', 'trigger_2016', 'nonprompt' ]
+    else: uncertainties = [ 'lumi', 'JES', 'btagging', 'mistagging', 'muonId', 'electronId', 'trigger_2016', 'scale', 'scale_sig', 'PDF', 'PartonShower', 'nonprompt', 'WZ_xsec', 'ttX' ]
+    #uncertainties = []
 
 params = {}
 if args.parameters is not None:
@@ -130,7 +139,7 @@ selectionString_down = selectionString.replace('nBTag','nBTag_JEC_down').replace
 # somehow has to be separate from the next loop
 if args.small:
     for s in [ttXSample] + bg + nonInfo:
-        s.reduceFiles( to = 5 )
+        s.reduceFiles( to = 30 )
 
 # configure samples
 for i, s in enumerate([ttXSample] + bg + nonInfo):
@@ -206,11 +215,17 @@ for i_region, region in enumerate(regions):
 
 for i_region, region in enumerate(regions):
 
+    totalUncertainty = 0
+
     for s in [ttXSample] + bg:
         hists[s.shortname].SetBinContent(i_region+1, rate[region][s.shortname])
         hists[s.shortname].SetBinError(i_region+1,0)
         hists[s.shortname].legendText = s.shortname.replace('gamma', '#gamma')
         hists[s.shortname].style = styles.fillStyle( s.color, lineColor=s.color, errors=False )
+
+        if args.addUncertainties and s.name != ttXSample.name:
+            for unc in uncertainties:
+                totalUncertainty += (abs(getUncertaintyValue( 'TTXPhenoCardFile.txt', i_region, '_'.join(s.name.split('_')[1:3]), unc ) - 1) * rate[region][s.shortname])**2
 
     if args.nonInfoSignal:
         hists['nonInfo'].SetBinContent(i_region+1, rate[region]['nonInfo'])
@@ -226,6 +241,10 @@ for i_region, region in enumerate(regions):
         hists['nonPrompt'].SetBinError(i_region+1,0)
         hists['nonPrompt'].legendText = 'nonPrompt'
         hists['nonPrompt'].style = styles.fillStyle( getattr(color, 'nonprompt'), lineColor=getattr(color, 'nonprompt'), errors=False )
+
+        if args.addUncertainties:
+            for unc in uncertainties:
+                totalUncertainty += (abs(getUncertaintyValue( 'TTXPhenoCardFile.txt', i_region, 'nonPrompt', unc ) - 1) * rate[region]['nonPrompt'])**2
 
     if args.addOthers:
         hists['rare'].SetBinContent(i_region+1, rate[region]['rare'])
@@ -248,6 +267,11 @@ for i_region, region in enumerate(regions):
         hists['ZG'].legendText = 'Z#gamma'
         hists['ZG'].style = styles.fillStyle( getattr(color, 'ZG'), lineColor=getattr(color, 'ZG'), errors=False )
 
+        if args.addUncertainties:
+            for unc in uncertainties:
+                for p in ['rare', 'ttW', 'ZZ', 'ZG']:
+                    totalUncertainty += (abs(getUncertaintyValue( 'TTXPhenoCardFile.txt', i_region, p, unc ) - 1) * rate[region][p])**2
+
     if args.combineTTX:
         hists['ttX'].SetBinContent(i_region+1, rate[region]['tWZ'] + rate[region]['ttgamma'] + rate[region]['tZq'])
         hists['ttX'].SetBinError(i_region+1,0)
@@ -264,6 +288,13 @@ for i_region, region in enumerate(regions):
     hists['SM'].SetBinError(i_region+1,0)
     hists['SM'].legendText = 'SM'
     hists['SM'].style = styles.lineStyle( ROOT.kBlack, width=2 )
+
+    if args.addUncertainties:
+        for unc in uncertainties:
+            totalUncertainty += (abs(getUncertaintyValue( 'TTXPhenoCardFile.txt', i_region, 'signal', unc ) - 1) * (rate[region][ttXSample.shortname] + rate[region]['nonInfo'] if args.nonInfoSignal else rate[region][ttXSample.shortname]))**2
+
+    totalUncertainty = sqrt(totalUncertainty)
+    hists['SM'].SetBinError(i_region+1,totalUncertainty)
 
 def drawDivisions(regions):
     min = 0.15
@@ -349,7 +380,6 @@ if args.parameters is not None:
 else:
     plots = SM + [ bkgHists, [hists['SM']] ]
 
-
 #histos =  bkgHists  + [hists["total"]]
 #if options.signal:
 #    plots = [ [hists['BSM']], bkgHists, [hists['observed']] ]
@@ -376,6 +406,7 @@ plotNameList = ['regions', 'lumi'+str(args.luminosity), "14TeV" if args.scale14T
 if args.combineTTX: plotNameList.append('ttXcombined')
 if args.addNonPrompt: plotNameList.append('nonPrompt')
 if args.addOthers: plotNameList.append('others')
+if args.noTheoryUnc: plotNameList.append('noTheoryUnc')
 plotName = '_'.join(plotNameList)
 
 plot = Plot.fromHisto(plotName, plots, texX = "Signal Regions", texY = "Number of Events" )
@@ -385,35 +416,71 @@ for bgHisto in plot.histos[bgHistIndex]:
     for signalHisto in plot.histos[:bgHistIndex] + plot.histos[bgHistIndex+1:]:
         signalHisto[-1].Add(bgHisto)
 
-ymax = 30000 * float(args.luminosity)/77.
-if args.scale14TeV: ymax *= 1.15
+boxes = []
+ratio_boxes = []
+tot = 0
+tot_val = 0
+for ib in range(1, 1 + hists['SM'].GetNbinsX() ):
+    val = hists['SM'].GetBinContent(ib)
+    if val<0: continue
+    sys = hists['SM'].GetBinError(ib)
+    sys_rel = sys/val
+    # uncertainty box in main histogram
+    box = ROOT.TBox( hists['SM'].GetXaxis().GetBinLowEdge(ib),  max([0.006, val-sys]), hists['SM'].GetXaxis().GetBinUpEdge(ib), max([0.006, val+sys]) )
+    box.SetLineColor(ROOT.kBlack)
+    box.SetFillStyle(3444)
+    box.SetFillColor(ROOT.kBlack)
 
+    print 'region', ib, 'yield', val, 'unc', sys, 'rel unc', sys_rel, 'stat+sys', sqrt(sys**2+val), 'stat+sys rel', sqrt(sys**2+val)/val
+    tot += sys**2+val 
+    tot_val += val
+    # uncertainty box in ratio histogram
+    r_box = ROOT.TBox( hists['SM'].GetXaxis().GetBinLowEdge(ib),  max(0.1, 1-sys_rel), hists['SM'].GetXaxis().GetBinUpEdge(ib), min(1.9, 1+sys_rel) )
+    r_box.SetLineColor(ROOT.kBlack)
+    r_box.SetFillStyle(3444)
+    r_box.SetFillColor(ROOT.kBlack)
 
-def histmodification(h):
-    h.GetXaxis().SetTitleOffset( 1.06 )
-    h.GetYaxis().SetTitleOffset( 1.08 )
+    boxes.append( box )
+    hists['SM'].SetBinError(ib, 0)
+    ratio_boxes.append( r_box )
 
-    h.GetXaxis().SetTitleSize( 0.042 )
-    h.GetYaxis().SetTitleSize( 0.042 )
+print 'tot', sqrt(tot), 'tot_rel', sqrt(tot)/tot_val
 
-    h.GetXaxis().SetLabelSize( 0.055 )
-    h.GetYaxis().SetLabelSize( 0.04 )
+def histmodification(log):
+    def histmod(h):
+        h.GetXaxis().SetTitleOffset( 1.06 )
+        h.GetYaxis().SetTitleOffset( 1.08 if log else 1.5 )
 
+        h.GetXaxis().SetTitleSize( 0.042 )
+        h.GetYaxis().SetTitleSize( 0.042 )
+
+        h.GetXaxis().SetLabelSize( 0.055 )
+        h.GetYaxis().SetLabelSize( 0.04 )
+    return histmod
 
 def legendmodification(l):
     l.SetTextSize(.03)
 
+for logY in [True, False]:
 
-plotting.draw(
-    plot,
-    plot_directory = plot_directory_,
-    logX = False, logY = True, sorting = False,
-    legend = (0.76,0.54, 0.95, 0.81),
-    widths = {'x_width':750, 'y_width':600},
-    yRange = (0.7,ymax),
-    drawObjects = drawObjects() + drawDivisions( regions ) + drawLabels( regions ) ,
-    histModifications = [histmodification],
-    legendModifications = [legendmodification],
-    copyIndexPHP = True,
-)
+    if logY:
+        ymax = 30000 * float(args.luminosity)/77.
+        if args.scale14TeV: ymax *= 1.15
+    else:
+        ymax = 12000
+
+    plotting.draw(
+        plot,
+        plot_directory = os.path.join(plot_directory_, 'log' if logY else 'lin'),
+        logX = False, logY = logY, sorting = False,
+        legend = (0.76,0.54, 0.95, 0.81),
+        widths = {'x_width':750, 'y_width':600},
+        yRange = (0.7,ymax),
+#       ratio = {'yRange': (0.6, 1.4), 'drawObjects':boxes},
+        drawObjects = drawObjects() + drawDivisions( regions ) + drawLabels( regions ) + boxes ,
+        histModifications = [histmodification(logY)],
+        legendModifications = [legendmodification],
+        copyIndexPHP = True,
+    )
+
 
