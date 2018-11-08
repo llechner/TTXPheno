@@ -52,13 +52,13 @@ def getVariableList( level ):
     if level == 'reco':
         read_variables_gen    = [ variable.replace('gen', 'reco') for variable in read_variables_gen ]
         read_variables_genLep = [ variable.replace('genLep', 'reco') for variable in read_variables_genLep ]
-        read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag/F,nNeutrals/I,nCharged/I]")
+        read_variables_gen.append("recoJet[pt/F,eta/F,phi/F,bTag_medium/I,nNeutrals/I,nCharged/I]")
         read_variables_gen.append("recoLep[pt/F,eta/F,phi/F,pdgId/I,isolationVar/F,isolationVarRhoCorr/F,sumPtCharged/F,sumPtNeutral/F,sumPtChargedPU/F,sumPt/F,ehadOverEem/F]")
     else:
         read_variables_gen.append("genJet[pt/F,eta/F,phi/F,matchBParton/I]")
         read_variables_gen.append("genLep[pt/F,phi/F,eta/F,pdgId/I]")
 
-    read_variables = read_variables_gen + read_variables_genLep
+    read_variables = read_variables_gen + read_variables_genLep + ['nBTag/I']
     read_variables = list( set( read_variables ) ) # remove double entries
 #    read_variables.append( VectorTreeVariable.fromString('p[C/F]', nMax=2000) )
 
@@ -76,16 +76,9 @@ def makeJets( event, sample, level ):
     else:               from TTXPheno.Tools.objectSelection      import isGoodGenJet      as isGoodJet
 
     # load jets
-    btag = 'bTag' if level == 'reco' else 'matchBParton'
+    btag = 'bTag_medium' if level == 'reco' else 'matchBParton'
     event.jets = getCollection( event, '%sJet'%preTag, ['pt', 'eta', 'phi', btag, 'nNeutrals', 'nCharged' ], 'n%sJet'%preTag )
-    event.jets = list( filter( lambda j: isGoodJet(j), event.jets ) )
-    event.bjets = list( filter( lambda j: j[btag], event.jets ) )
-    event.bjets_0 = list( filter( lambda j: int(j[btag])&int(2**0) and j[btag] is not None, event.jets ) )
-    event.bjets_1 = list( filter( lambda j: int(j[btag])&int(2**1) and j[btag] is not None, event.jets ) )
-    event.bjets_2 = list( filter( lambda j: int(j[btag])&int(2**2) and j[btag] is not None, event.jets ) )
-    event.bjets_3 = list( filter( lambda j: int(j[btag])&int(2**3) and j[btag] is not None, event.jets ) )
-    event.bjets_4 = list( filter( lambda j: int(j[btag])&int(2**4) and j[btag] is not None, event.jets ) )
-    event.bjets_5 = list( filter( lambda j: int(j[btag])&int(2**5) and j[btag] is not None, event.jets ) )
+#    event.jets = list( filter( lambda j: isGoodJet(j), event.jets ) )
 
     # Define leptonic b-jets
     event.bj0lep = getObjDict( event, '%sJet_'%preTag, ['pt', 'eta', 'phi', 'nNeutrals', 'nCharged'], getattr( event, '%sBjLeadlep_index'%preTag ) ) if getattr( event, '%sBjLeadlep_index'%preTag ) >= 0 else nanJet()
@@ -105,10 +98,11 @@ def makeJets( event, sample, level ):
         addTLorentzVector( p )
 
     # selection checks
-    event.foundBj0       = isGoodJet( event.bj0 )
+#    event.foundBj0       = isGoodJet( event.bj0 )
 
     # choose your selection on b-jets
-    event.passing_bjets = event.foundBj0
+#    event.passing_bjets = event.foundBj0
+#    event.passing_jets  = len( list( filter( lambda j: abs(j['eta'])>2.4, event.jets ) ) ) >= 1
 
 
 def makeMET( event, sample, level ):
@@ -161,10 +155,10 @@ def makeLeps( event, sample, level, leptonFlavor ):
     else:               from TTXPheno.Tools.objectSelection      import isGoodGenLepton   as isGoodLepton
 
     # We may loose some events by cross-cleaning or by thresholds.
-    event.foundZl0     = getattr( event, '%sZ_l1_index'%tag ) >= 0 and isGoodLepton( event.Z_l0 )
-    event.foundZl1     = getattr( event, '%sZ_l2_index'%tag ) >= 0 and isGoodLepton( event.Z_l1 )
+    event.foundZl0     = getattr( event, '%sZ_l1_index'%tag ) >= 0 #and isGoodLepton( event.Z_l0 )
+    event.foundZl1     = getattr( event, '%sZ_l2_index'%tag ) >= 0 #and isGoodLepton( event.Z_l1 )
     event.foundZ       = event.Z_l0['pdgId'] * event.Z_l1['pdgId'] < 0 and abs(event.Z_l0['pdgId']) == abs(event.Z_l1['pdgId'])
-    event.found3lep    = getattr( event, '%sNonZ_l1_index'%tag ) >= 0 and isGoodLepton( event.NonZ_l0 )
+    event.found3lep    = getattr( event, '%sNonZ_l1_index'%tag ) >= 0 #and isGoodLepton( event.NonZ_l0 )
 
     # choose your selection on leptons
     event.passing_leptons = event.found3lep and event.foundZl0 and event.foundZl1 and event.foundZ
@@ -205,7 +199,7 @@ def makeObservables( event, sample, level):
     event.getnonZlepchargept = event.NonZ_l0['pt'] if event.NonZ_l0['pdgId']>0 else -event.NonZ_l0['pt']
 
     # choose your final selection
-    event.passing_checks = event.passing_leptons and event.passing_bjets
+    event.passing_checks = event.passing_leptons #and event.recoZ_lldPhi<1 and event.recoZ_lldR<1.5 #and event.passing_bjets
 
 
 def getSequenceList( level, leptonFlavor ):
@@ -241,10 +235,87 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables = []
     
 
-    plots.append( Plot( name = "nonZl0_isovar",
-      texX = 'IsoVar(non-Z l_{0}) [GeV]', texY = y_label,
+    plots.append( Plot( name = "nonZl0_isolationVar",
+      texX = '#isolationVar(l_{0}^{non-Z})', texY = y_label,
       attribute = lambda event, sample: event.NonZ_l0['isolationVar'] if event.passing_checks else float('nan'),
-      binning=[20,0,0.06],
+      binning=[50,0,0.2],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Zl0_isolationVar",
+      texX = '#isolationVar(l_{0}^{Z})', texY = y_label,
+      attribute = lambda event, sample: event.Z_l0['isolationVar'] if event.passing_checks else float('nan'),
+      binning=[50,0,0.2],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Zl1_isolationVar",
+      texX = '#isolationVar(l_{1}^{Z})', texY = y_label,
+      attribute = lambda event, sample: event.Z_l1['isolationVar'] if event.passing_checks else float('nan'),
+      binning=[50,0,0.2],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "nonZl0_sumPtCharged",
+      texX = '#sumPtCharged(l_{0}^{non-Z})', texY = y_label,
+      attribute = lambda event, sample: event.NonZ_l0['sumPtCharged'] if event.passing_checks else float('nan'),
+      binning=[50,0,10],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Zl0_sumPtCharged",
+      texX = '#sumPtCharged(l_{0}^{Z})', texY = y_label,
+      attribute = lambda event, sample: event.Z_l0['sumPtCharged'] if event.passing_checks else float('nan'),
+      binning=[50,0,10],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Zl1_sumPtCharged",
+      texX = '#sumPtCharged(l_{1}^{Z})', texY = y_label,
+      attribute = lambda event, sample: event.Z_l1['sumPtCharged'] if event.passing_checks else float('nan'),
+      binning=[50,0,10],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "nonZl0_sumPtNeutral",
+      texX = '#sumPtNeutral(l_{0}^{non-Z})', texY = y_label,
+      attribute = lambda event, sample: event.NonZ_l0['sumPtNeutral'] if event.passing_checks else float('nan'),
+      binning=[50,0,10],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Zl0_sumPtNeutral",
+      texX = '#sumPtNeutral(l_{0}^{Z})', texY = y_label,
+      attribute = lambda event, sample: event.Z_l0['sumPtNeutral'] if event.passing_checks else float('nan'),
+      binning=[50,0,10],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Zl1_sumPtNeutral",
+      texX = '#sumPtNeutral(l_{1}^{Z})', texY = y_label,
+      attribute = lambda event, sample: event.Z_l1['sumPtNeutral'] if event.passing_checks else float('nan'),
+      binning=[50,0,10],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "nonZl0_eta",
+      texX = '#eta(l_{0}^{non-Z})', texY = y_label,
+      attribute = lambda event, sample: event.NonZ_l0['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-4,4],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Zl0_eta",
+      texX = '#eta(l_{0}^{Z})', texY = y_label,
+      attribute = lambda event, sample: event.Z_l0['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-4,4],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Zl1_eta",
+      texX = '#eta(l_{1}^{Z})', texY = y_label,
+      attribute = lambda event, sample: event.Z_l1['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-4,4],
     ) )
     fisherInfoVariables.append(None)
 
@@ -263,19 +334,47 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = "jet0_eta",
-      texX = '#eta(jet_{0})', texY = y_label,
+      texX = '#eta(j_{0})', texY = y_label,
       attribute = lambda event, sample: event.jets[0]['eta'] if event.passing_checks and len(event.jets)>0 else float('nan'),
-      binning=[10,-3,3],
+      binning=[20,-4,4],
     ) )
     fisherInfoVariables.append(None)
 
     plots.append( Plot( name = "jet1_eta",
-      texX = '#eta(jet_{1})', texY = y_label,
+      texX = '#eta(j_{1})', texY = y_label,
       attribute = lambda event, sample: event.jets[1]['eta'] if event.passing_checks and len(event.jets)>1 else float('nan'),
-      binning=[10,-3,3],
+      binning=[20,-4,4],
     ) )
     fisherInfoVariables.append(None)
 
+    plots.append( Plot( name = "jet2_eta",
+      texX = '#eta(j_{2})', texY = y_label,
+      attribute = lambda event, sample: event.jets[2]['eta'] if event.passing_checks and len(event.jets)>2 else float('nan'),
+      binning=[20,-4,4],
+    ) )
+    fisherInfoVariables.append(None)
+
+
+    plots.append( Plot( name = "b0_eta",
+      texX = '#eta(b_{0})', texY = y_label,
+      attribute = lambda event, sample: event.bj0['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-4,4],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "b1_eta",
+      texX = '#eta(b_{1})', texY = y_label,
+      attribute = lambda event, sample: event.bj1['eta'] if event.passing_checks else float('nan'),
+      binning=[20,-4,4],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "Z_eta",
+      texX = '#eta(Z)', texY = y_label,
+      attribute = lambda event, sample: getattr( event, '%sZ_eta'%level ) if event.passing_checks else float('nan'),
+      binning=[20,-4,4],
+    ) )
+    fisherInfoVariables.append(None)
 
     plots.append( Plot( name = "jet0_nCharged",
       texX = 'N_{charged}(jet_{0})', texY = y_label,
@@ -346,7 +445,7 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_lldR'%tag)
         
     plots.append( Plot( name = "Z_cosThetaStar10",
-      texX = 'cos(#theta*_{Z})', texY = y_label,
+      texX = 'cos(#theta_{Z}*)', texY = y_label,
 #      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
 #      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
@@ -355,7 +454,7 @@ def getPlotList( scaleLumi, level ):
     fisherInfoVariables.append('%sZ_cosThetaStar'%level)
 
     plots.append( Plot( name = "Z_cosThetaStar20",
-      texX = 'cos(#theta*_{Z})', texY = y_label,
+      texX = 'cos(#theta_{Z}*)', texY = y_label,
 #      texX = 'cos(#theta*)', texY = labelAddon + 'd#sigma/dcos(#theta*)'+unit,
 #      texX = 'cos(#theta*)', texY = labelAddon + '#frac{d#sigma}{d cos(#theta*)}'+unit,
       attribute = lambda event, sample: getattr( event, '%sZ_cosThetaStar'%level ) if event.passing_checks else float('nan'),
@@ -417,49 +516,7 @@ def getPlotList( scaleLumi, level ):
 
     plots.append(Plot( name = 'nbjets',
       texX = 'Number of bJets', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
-
-    plots.append(Plot( name = 'nbjets_looseWP',
-      texX = 'Number of bJets (loose WP)', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets_0) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
-
-    plots.append(Plot( name = 'nbjets_mediumWP',
-      texX = 'Number of bJets (medium WP)', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets_1) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
-
-    plots.append(Plot( name = 'nbjets_tightWP',
-      texX = 'Number of bJets (tight WP)', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets_2) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
-
-    plots.append(Plot( name = 'nbjets_looseWP_MTD',
-      texX = 'Number of bJets (loose WP w/ MTD)', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets_3) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
-
-    plots.append(Plot( name = 'nbjets_mediumWP_MTD',
-      texX = 'Number of bJets (medium WP w/ MTD)', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets_4) if event.passing_checks else float('nan'),
-      binning=[4,0,4],
-    ))
-    fisherInfoVariables.append(None)
-
-    plots.append(Plot( name = 'nbjets_tightWP_MTD',
-      texX = 'Number of bJets (tight WP w/ MTD)', texY = y_label,
-      attribute = lambda event, sample: len(event.bjets_5) if event.passing_checks else float('nan'),
+      attribute = lambda event, sample: getattr( event, 'nBTag' ) if event.passing_checks else float('nan'),
       binning=[4,0,4],
     ))
     fisherInfoVariables.append(None)

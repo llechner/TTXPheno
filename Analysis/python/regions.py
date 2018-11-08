@@ -30,3 +30,7 @@ genttgammaRegionsSmall = getRegionsFromThresholds("genPhoton_pt[0]", [200,300])#
 recottZRegionsSmall = getRegions2D("recoZ_pt", [200,400], "recoZ_cosThetaStar", [-1,-0.6])# + [Region("recoZ_pt", (400, -1))]
 recottgammaRegionsSmall = getRegionsFromThresholds("recoPhoton_pt[0]", [200,300])# + [Region("recoPhoton_pt[0]", (300, -1))]
 
+recottZRegionsPTZ = getRegionsFromThresholds("recoZ_pt",  [0,40,80,120,160,200,240,280,320,360,400])
+recottZRegionsCos = getRegionsFromThresholds("recoZ_cosThetaStar",  [-1,-0.6,-0.2,0.2,0.6,1])
+recottZRegionsCosPTZ200 = getRegions2D("recoZ_pt", [200,-1], "recoZ_cosThetaStar",[-1,-0.6,-0.2,0.2,0.6,1] )
+
