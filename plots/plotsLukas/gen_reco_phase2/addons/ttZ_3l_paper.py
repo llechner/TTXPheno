@@ -319,6 +319,48 @@ def getPlotList( scaleLumi, level ):
     ) )
     fisherInfoVariables.append(None)
 
+    plots.append( Plot( name = "l0_pt20",
+      texX = 'p_{T}(l_{0}) [GeV]', texY = y_label + ' / 20 GeV',
+      attribute = lambda event, sample: getattr( event, '%sLep_pt[0]'%level ) if event.passing_checks else float('nan'),
+      binning=[20,0,400],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "l1_pt20",
+      texX = 'p_{T}(l_{1}) [GeV]', texY = y_label + ' / 20 GeV',
+      attribute = lambda event, sample: getattr( event, '%sLep_pt[1]'%level ) if event.passing_checks else float('nan'),
+      binning=[20,0,400],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "l2_pt20",
+      texX = 'p_{T}(l_{2}) [GeV]', texY = y_label + ' / 20 GeV',
+      attribute = lambda event, sample: getattr( event, '%sLep_pt[2]'%level ) if event.passing_checks else float('nan'),
+      binning=[20,0,400],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "l0_pt10",
+      texX = 'p_{T}(l_{0}) [GeV]', texY = y_label + ' / 10 GeV',
+      attribute = lambda event, sample: getattr( event, '%sLep_pt[0]'%level ) if event.passing_checks else float('nan'),
+      binning=[20,0,200],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "l1_pt10",
+      texX = 'p_{T}(l_{1}) [GeV]', texY = y_label + ' / 10 GeV',
+      attribute = lambda event, sample: getattr( event, '%sLep_pt[1]'%level ) if event.passing_checks else float('nan'),
+      binning=[20,0,200],
+    ) )
+    fisherInfoVariables.append(None)
+
+    plots.append( Plot( name = "l2_pt10",
+      texX = 'p_{T}(l_{2}) [GeV]', texY = y_label + ' / 10 GeV',
+      attribute = lambda event, sample: getattr( event, '%sLep_pt[2]'%level ) if event.passing_checks else float('nan'),
+      binning=[20,0,200],
+    ) )
+    fisherInfoVariables.append(None)
+
     plots.append( Plot( name = "jet0_pt",
       texX = 'p_{T}(jet_{0}) [GeV]', texY = y_label + ' / 20 GeV',
       attribute = lambda event, sample: event.jets[0]['pt'] if event.passing_checks and len(event.jets)>0 else float('nan'),

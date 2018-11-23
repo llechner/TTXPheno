@@ -80,11 +80,14 @@ if args.parameters is not None:
     coeffs = args.parameters[::2]
     str_vals = args.parameters[1::2]
     vals = list( map( float, str_vals ) )
+    str_vals = list( map( int, vals ))
+    str_vals = list( map( str, str_vals ))
     for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
-        params[coeff] = val
+#        params[coeff] = val
+        params[coeff] = int(val)
     signalLegendText = ""
     for i, par in enumerate(params.keys()):
-        signalLegendText += par.replace('gamma','#gamma').replace('c','C_{').replace('p','#phi').replace('M','').replace('I','}^{[Im]') + '}=' + str(params[par])
+        signalLegendText += par.replace('gamma','#gamma').replace('c','C_{').replace('p','#phi').replace('M','').replace('I','}^{[Im]') + '} = ' + str(params[par])
         if i!=len(params.keys())-1: signalLegendText += ', '
 
 
@@ -239,7 +242,7 @@ for i_region, region in enumerate(regions):
     if args.addNonPrompt:
         hists['nonPrompt'].SetBinContent(i_region+1, rate[region]['nonPrompt'])
         hists['nonPrompt'].SetBinError(i_region+1,0)
-        hists['nonPrompt'].legendText = 'nonPrompt'
+        hists['nonPrompt'].legendText = 'non-prompt'
         hists['nonPrompt'].style = styles.fillStyle( getattr(color, 'nonprompt'), lineColor=getattr(color, 'nonprompt'), errors=False )
 
         if args.addUncertainties:

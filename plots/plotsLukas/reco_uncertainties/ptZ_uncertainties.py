@@ -74,8 +74,10 @@ if args.addUncertainties:
 params = []
 if args.parameters is not None:
     coeffs = args.parameters[::2]
-    str_vals = args.parameters[1::2]
-    vals = list( map( float, str_vals ) )
+    vals = list( map( float, args.parameters[1::2] ))
+#    str_vals = list( map( "{:3.1f}".format, vals ))
+    str_vals = list( map( int, vals ))
+    str_vals = list( map( str, str_vals ))
     for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
         params.append( {
             'legendText': ' '.join([coeff,str_val]).replace('gamma','#gamma').replace('c','C_{').replace(' ','} = ').replace('p','#phi').replace('M','').replace('I','}^{[Im]') + '  ',
@@ -273,9 +275,6 @@ for ib in range(1, 1 + hists[ttXSample.shortname].GetNbinsX() ):
     box.SetFillStyle(3444)
     box.SetFillColor(ROOT.kBlack)
 
-    print 'region', ib, 'yield', val, 'unc', sys, 'rel unc', sys_rel, 'stat+sys', sqrt(sys**2+val), 'stat+sys rel', sqrt(sys**2+val)/val
-    tot += sys**2+val 
-    tot_val += val
     # uncertainty box in ratio histogram
     r_box = ROOT.TBox( hists[ttXSample.shortname].GetXaxis().GetBinLowEdge(ib),  max(0.1, 1-sys_rel), hists[ttXSample.shortname].GetXaxis().GetBinUpEdge(ib), min(1.9, 1+sys_rel) )
     r_box.SetLineColor(ROOT.kBlack)
@@ -298,6 +297,16 @@ def histmodification(log):
         h.GetYaxis().SetLabelSize( 0.04 )
     return histmod
 
+def ratiomodification(h):
+    h.GetXaxis().SetTitleOffset( 1.3 )
+    h.GetYaxis().SetTitleOffset( 0.65 )
+
+    h.GetXaxis().SetTitleSize( 0.1042 )
+    h.GetYaxis().SetTitleSize( 0.1042 )
+
+    h.GetXaxis().SetLabelSize( 0.104 )
+    h.GetYaxis().SetLabelSize( 0.104 )
+
 def legendmodification(l):
     l.SetTextSize(.037)
 
@@ -307,11 +316,14 @@ for logY in [True, False]:
         plot,
         plot_directory = os.path.join(plot_directory_, 'log' if logY else 'lin'),
         logX = False, logY = logY, sorting = False,
+        yRange = (0.01,'auto'),
         legend = (0.65,0.48, 0.9, 0.88),
         widths = {'x_width':500, 'y_width':500},
         scaling = {i:len(params) for i in range(0,len(params))} if args.shape else {},
-        drawObjects = drawObjects() + boxes ,
+        drawObjects = drawObjects() + boxes, #+ ratio_boxes,
+        ratio = {'yRange': (0.3, 1.7), 'histos':[(i,len(params)) for i in range(0,len(params))], 'texY':'BSM / SM', 'drawObjects':ratio_boxes},
         histModifications = [histmodification(logY)],
+        ratioModifications = [ratiomodification],
         legendModifications = [legendmodification],
         copyIndexPHP = True,
     )
