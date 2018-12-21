@@ -333,8 +333,8 @@ def drawObjects( hasData = False ):
     tex.SetTextAlign(11) # align right
     tex.SetTextFont(42)
     lines = [
-      (0.15, 0.95, 'CMS Simulation'),
-      (offset, 0.95, 'L=%i fb{}^{-1} (%s TeV)'% ( int(args.luminosity), '14' if args.scale14TeV else '13' ) )
+      (0.15, 0.95, '#bf{CMS} #it{Simulation Preliminary}'),
+      (offset, 0.95, '%i fb{}^{-1} (%s TeV)'% ( int(args.luminosity), '14' if args.scale14TeV else '13' ) )
 #      (0.15, 0.95, ' '.join(args.processFile.split('_')[:2]) + '(' + args.detector + ')'),
 #      (offset, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
     ]

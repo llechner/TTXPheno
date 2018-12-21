@@ -34,3 +34,4 @@ recottZRegionsPTZ = getRegionsFromThresholds("recoZ_pt",  [0,40,80,120,160,200,2
 recottZRegionsCos = getRegionsFromThresholds("recoZ_cosThetaStar",  [-1,-0.6,-0.2,0.2,0.6,1])
 recottZRegionsCosPTZ200 = getRegions2D("recoZ_pt", [200,-1], "recoZ_cosThetaStar",[-1,-0.6,-0.2,0.2,0.6,1] )
 
+recottZRegionsPTZOnly = getRegionsFromThresholds("recoZ_pt",  [0,100,200,400,-1])

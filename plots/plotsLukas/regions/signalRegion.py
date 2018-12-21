@@ -45,7 +45,7 @@ argParser.add_argument('--order',              action='store',     default=2, he
 argParser.add_argument('--selection',          action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt0', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--level',              action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
-argParser.add_argument('--luminosity',         action='store',     default=150, help='Luminosity for weighting the plots')
+argParser.add_argument('--luminosity',         action='store',     default=150, type=int, help='Luminosity for weighting the plots')
 argParser.add_argument('--detector',           action='store',     default='CMS', nargs='?', choices=['CMS', 'ATLAS', 'phase2_CMS'], help='Which Delphes detector simulation?')
 argParser.add_argument('--scale14TeV',         action='store_true', help='scale 13 TeV cross-sections to 14 Tev?')
 argParser.add_argument('--additionalCardFile', action='store',     default='TopEFTCardFile.txt', help='Cardfile where additional uncertainties are taken from')
@@ -63,8 +63,7 @@ args = argParser.parse_args()
 
 if len(args.parameters) < 2: args.parameters = None
 
-#color = [ ROOT.kRed+1, ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue,  ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+3,  ROOT.kGreen-7, ROOT.kGreen-10 ]
-#color = [ ROOT., ROOT.kGreen+2, ROOT.kOrange+1, ROOT.kViolet+9, ROOT.kSpring-7, ROOT.kRed+2,  ROOT.kPink-9, ROOT.kBlue,  ROOT.kRed-7, ROOT.kRed-10, ROOT.kRed+3,  ROOT.kGreen-7, ROOT.kGreen-10 ]
+#colors = { 'WZ':ROOT.kAzure-3, 'tWZ':ROOT.kGreen-2, 'tZq':ROOT.kCyan-9, 'ttgamma':ROOT.kRed+2, 'ttZ':ROOT.kWhite, 'nonInfo':ROOT.kRed-7 }
 colors = { 'WZ':ROOT.kAzure-3, 'tWZ':ROOT.kGreen-2, 'tZq':ROOT.kCyan-9, 'ttgamma':ROOT.kRed+2, 'ttZ':ROOT.kOrange, 'nonInfo':ROOT.kRed-7 }
 #if args.nonInfoSignal: colors['ttZ']=ROOT.kOrange#41#ROOT.kWhite
 
@@ -183,6 +182,10 @@ if args.parameters is not None:
     hists['signal'] = ROOT.TH1F('signal',"", Nbins, 0, Nbins)
 hists['SM'] = ROOT.TH1F('SM',"", Nbins, 0, Nbins)
 
+hists['empty'] = ROOT.TH1F('empty',"", Nbins, 0, Nbins)
+hists['empty'].legendText = ''
+hists['empty'].style = styles.fillStyle( ROOT.kWhite, lineColor=ROOT.kWhite, errors=False, width=0 )
+
 rate = {}
 
 for i_region, region in enumerate(regions):
@@ -220,11 +223,12 @@ for i_region, region in enumerate(regions):
 
     totalUncertainty = 0
 
-    for s in [ttXSample] + bg:
+    for i, s in enumerate( [ttXSample] + bg ):
         hists[s.shortname].SetBinContent(i_region+1, rate[region][s.shortname])
         hists[s.shortname].SetBinError(i_region+1,0)
         hists[s.shortname].legendText = s.shortname.replace('gamma', '#gamma')
-        hists[s.shortname].style = styles.fillStyle( s.color, lineColor=s.color, errors=False )
+#        hists[s.shortname].style = styles.fillStyle( s.color, lineColor=s.color if i!=0 else ROOT.kBlack, errors=False, width=0 if i!=0 else 2 )
+        hists[s.shortname].style = styles.fillStyle( s.color, lineColor=ROOT.kBlack, errors=False, width=1 if i!=0 else 2 )
 
         if args.addUncertainties and s.name != ttXSample.name:
             for unc in uncertainties:
@@ -234,16 +238,23 @@ for i_region, region in enumerate(regions):
         hists['nonInfo'].SetBinContent(i_region+1, rate[region]['nonInfo'])
         hists['nonInfo'].SetBinError(i_region+1,0)
         hists['nonInfo'].legendText = ttXSample.shortname.replace('gamma', '#gamma') + ' (non-info)'
-        hists['nonInfo'].style = styles.fillStyle( colors['nonInfo'], lineColor=colors['nonInfo'], errors=False )
-        hists['nonInfo'].SetFillStyle(3544)
-        hists['nonInfo'].SetFillColor(ROOT.kWhite)
-        ROOT.gStyle.SetHatchesLineWidth(2)
+        hists['nonInfo'].style = styles.fillStyle( colors['nonInfo'], lineColor=ROOT.kBlack, errors=False, width=1, fillStyle=3345, hatchesWidth=1, hatchesSpacing=None )
+#        hists['nonInfo'].style = styles.fillStyle( colors['nonInfo'], lineColor=colors['nonInfo'], errors=False )
+#        hists['nonInfo'].SetFillStyle(3345)
+#        hists['nonInfo'].SetFillStyle(3005)
+#        hists['nonInfo'].SetFillStyle(3544)
+#        hists['nonInfo'].SetFillColor(ROOT.kWhite)
+#        hists['nonInfo'].SetLineWidth(1)
+#        hists['nonInfo'].SetLineColor(ROOT.kBlack)
+#        ROOT.gStyle.SetHatchesLineWidth(2)
+#        ROOT.gStyle.SetHatchesSpacing(1.1)
 
     if args.addNonPrompt:
         hists['nonPrompt'].SetBinContent(i_region+1, rate[region]['nonPrompt'])
         hists['nonPrompt'].SetBinError(i_region+1,0)
-        hists['nonPrompt'].legendText = 'non-prompt'
-        hists['nonPrompt'].style = styles.fillStyle( getattr(color, 'nonprompt'), lineColor=getattr(color, 'nonprompt'), errors=False )
+        hists['nonPrompt'].legendText = 'non-prompt     '
+#        hists['nonPrompt'].style = styles.fillStyle( getattr(color, 'nonprompt'), lineColor=getattr(color, 'nonprompt'), errors=False )
+        hists['nonPrompt'].style = styles.fillStyle( getattr(color, 'nonprompt'), lineColor=ROOT.kBlack, errors=False, width=1 )
 
         if args.addUncertainties:
             for unc in uncertainties:
@@ -253,22 +264,26 @@ for i_region, region in enumerate(regions):
         hists['rare'].SetBinContent(i_region+1, rate[region]['rare'])
         hists['rare'].SetBinError(i_region+1,0)
         hists['rare'].legendText = 'rare'
-        hists['rare'].style = styles.fillStyle( getattr(color, 'rare'), lineColor=getattr(color, 'rare'), errors=False )
+#        hists['rare'].style = styles.fillStyle( getattr(color, 'rare'), lineColor=getattr(color, 'rare'), errors=False )
+        hists['rare'].style = styles.fillStyle( getattr(color, 'rare'), lineColor=ROOT.kBlack, errors=False, width=1 )
 
         hists['ttW'].SetBinContent(i_region+1, rate[region]['ttW'])
         hists['ttW'].SetBinError(i_region+1,0)
         hists['ttW'].legendText = 'ttW'
-        hists['ttW'].style = styles.fillStyle( getattr(color, 'ttW'), lineColor=getattr(color, 'ttW'), errors=False )
+#        hists['ttW'].style = styles.fillStyle( getattr(color, 'ttW'), lineColor=getattr(color, 'ttW'), errors=False )
+        hists['ttW'].style = styles.fillStyle( getattr(color, 'ttW'), lineColor=ROOT.kBlack, errors=False, width=1 )
 
         hists['ZZ'].SetBinContent(i_region+1, rate[region]['ZZ'])
         hists['ZZ'].SetBinError(i_region+1,0)
         hists['ZZ'].legendText = 'ZZ'
-        hists['ZZ'].style = styles.fillStyle( getattr(color, 'ZZ'), lineColor=getattr(color, 'ZZ'), errors=False )
+#        hists['ZZ'].style = styles.fillStyle( getattr(color, 'ZZ'), lineColor=getattr(color, 'ZZ'), errors=False )
+        hists['ZZ'].style = styles.fillStyle( getattr(color, 'ZZ'), lineColor=ROOT.kBlack, errors=False, width=1 )
 
         hists['ZG'].SetBinContent(i_region+1, rate[region]['ZG'])
         hists['ZG'].SetBinError(i_region+1,0)
         hists['ZG'].legendText = 'Z#gamma'
-        hists['ZG'].style = styles.fillStyle( getattr(color, 'ZG'), lineColor=getattr(color, 'ZG'), errors=False )
+#        hists['ZG'].style = styles.fillStyle( getattr(color, 'ZG'), lineColor=getattr(color, 'ZG'), errors=False )
+        hists['ZG'].style = styles.fillStyle( getattr(color, 'ZG'), lineColor=ROOT.kBlack, errors=False, width=1 )
 
         if args.addUncertainties:
             for unc in uncertainties:
@@ -279,13 +294,15 @@ for i_region, region in enumerate(regions):
         hists['ttX'].SetBinContent(i_region+1, rate[region]['tWZ'] + rate[region]['ttgamma'] + rate[region]['tZq'])
         hists['ttX'].SetBinError(i_region+1,0)
         hists['ttX'].legendText = 't(t)X'#=tZq,tWZ,tt#gamma'
-        hists['ttX'].style = styles.fillStyle( getattr(color, 'ttX'), lineColor=getattr(color, 'ttX'), errors=False )
+#        hists['ttX'].style = styles.fillStyle( getattr(color, 'ttX'), lineColor=getattr(color, 'ttX'), errors=False )
+        hists['ttX'].style = styles.fillStyle( getattr(color, 'ttX'), lineColor=ROOT.kBlack, errors=False, width=1 )
 
     if args.parameters is not None:
         hists['signal'].SetBinContent(i_region+1, rate[region]['signal'])
         hists['signal'].SetBinError(i_region+1,0)
         hists['signal'].legendText = signalLegendText
-        hists['signal'].style = styles.lineStyle( ROOT.kRed, width=2, dashed=True )
+#        hists['signal'].style = styles.lineStyle( ROOT.kRed, width=2, dashed=True )
+        hists['signal'].style = styles.lineStyle( ROOT.kRed, width=2, dashed=False )
 
     hists['SM'].SetBinContent(i_region+1, rate[region][ttXSample.shortname] + rate[region]['nonInfo'] if args.nonInfoSignal else rate[region][ttXSample.shortname])
     hists['SM'].SetBinError(i_region+1,0)
@@ -308,10 +325,10 @@ def drawDivisions(regions):
     line = ROOT.TLine()
 #   line.SetLineColor(38)
     line.SetLineWidth(1)
-    line.SetLineStyle(2)
+    line.SetLineStyle(9)
 #    lines = [ (min+3*i*diff,  0.023, min+3*i*diff, 0.93) if min+3*i*diff<0.74 else (min+3*i*diff,  0.023, min+3*i*diff, 0.52) for i in range(1,10) ]
     lines = [ (min+3*i*diff,  0.08, min+3*i*diff, 0.93) if min+3*i*diff<0.74 else (min+3*i*diff,  0.08, min+3*i*diff, 0.93) for i in range(1,10) ]
-    return [line.DrawLineNDC(*l) for l in lines] + [tex.DrawLatex(*l) for l in []] + [tex2.DrawLatex(*l) for l in lines2]
+    return [line.DrawLineNDC(*l) for l in lines[:3]] + [tex.DrawLatex(*l) for l in []] + [tex2.DrawLatex(*l) for l in lines2]
 
 def setBinLabels( hist ):
     for i in range(1, hist.GetNbinsX()+1):
@@ -327,8 +344,8 @@ def drawObjects( hasData = False ):
     tex.SetTextAlign(11) # align right
     tex.SetTextFont(42)
     lines = [
-      (0.15, 0.95, 'CMS Simulation'),
-      (0.68, 0.95, 'L=%i fb{}^{-1} (%s TeV)'% ( int(args.luminosity), '14' if args.scale14TeV else '13' ) )
+      (0.15, 0.95, '#bf{CMS Phase-2} #it{Simulation Preliminary}'),
+      (0.76, 0.95, '%i ab{}^{-1} (%s TeV)'% ( int(args.luminosity/1000.), '14' if args.scale14TeV else '13' ) )
 #      (0.15, 0.95, ' '.join(args.processFile.split('_')[:2]) + '(' + args.detector + ')'),
 #      (offset, 0.95, '%3.1f fb{}^{-1} @ 13 TeV%s'% ( float(args.luminosity), titleAddon) )
     ]
@@ -337,7 +354,7 @@ def drawObjects( hasData = False ):
 def drawLabels( regions ):
     tex = ROOT.TLatex()
     tex.SetNDC()
-    tex.SetTextSize(0.03)
+    tex.SetTextSize(0.032)
     if len(regions)>12:
         tex.SetTextAngle(90)
     else:
@@ -346,12 +363,12 @@ def drawLabels( regions ):
     min = 0.15
     max = 0.95
     diff = (max-min) / len(regions)
-    y_pos = 0.6 if len(regions)>12 else 0.85
-    x_pos = 0.90 if len(regions)>12 else 0.25
+    y_pos = 0.6 if len(regions)>12 else 0.87
+    x_pos = 0.90 if len(regions)>12 else 0.18
     if len(regions) > 12:
         lines =  [(min+(3*i+x_pos)*diff, y_pos,  r.texStringForVar('recoZ_pt'))   for i, r in enumerate(regions[:-3][::3])]
     else:
-        lines =  [(min+(3*i+x_pos)*diff, y_pos,  r.texStringForVar('recoZ_pt'))   for i, r in enumerate(regions[::3])]
+        lines =  [(min+(3*i+x_pos)*diff + 0.017 if i==0 or i==len(regions[::3])-1 else min+(3*i+x_pos)*diff, y_pos,  r.texStringForVar('recoZ_pt'))   for i, r in enumerate(regions[::3])]
     return [tex.DrawLatex(*l) for l in lines]
 
 
@@ -362,6 +379,7 @@ bkgHists = []
 for s in bg:
     ind = s.shortname
     if args.combineTTX and (ind=='tWZ' or ind=='ttgamma' or ind=='tZq'): continue
+    if ind=="ttgamma": bkgHists.append(hists['empty'])
     bkgHists.append(hists[ind])
 if args.addOthers:
     bkgHists.append(hists['ZZ'])
@@ -379,9 +397,11 @@ if args.addOthers:
 SM = [ [ hists[ttXSample.shortname], hists['nonInfo'] ] ] if args.nonInfoSignal else [[hists[ttXSample.shortname]]]
 
 if args.parameters is not None:
-    plots = SM + [ bkgHists, [hists['SM']], [hists['signal']] ]
+    plots = [ [hists['signal']], [hists['SM']] ] + SM + [ bkgHists ]
+#    plots = [ [hists['signal']] ] + SM + [ bkgHists ]
 else:
-    plots = SM + [ bkgHists, [hists['SM']] ]
+    plots = [ [hists['SM']] ] + SM + [ bkgHists ]
+#    plots = SM + [ bkgHists ]
 
 #histos =  bkgHists  + [hists["total"]]
 #if options.signal:
@@ -414,9 +434,9 @@ plotName = '_'.join(plotNameList)
 
 plot = Plot.fromHisto(plotName, plots, texX = "Signal Regions", texY = "Number of Events" )
 
-bgHistIndex = 1 if args.nonInfoSignal else 1
-for bgHisto in plot.histos[bgHistIndex]:
-    for signalHisto in plot.histos[:bgHistIndex] + plot.histos[bgHistIndex+1:]:
+#bgHistIndex = 1 if args.nonInfoSignal else 1
+for bgHisto in plot.histos[-1]:
+    for signalHisto in plot.histos[:-1]:# + plot.histos[bgHistIndex+1:]:
         signalHisto[-1].Add(bgHisto)
 
 boxes = []
@@ -457,18 +477,17 @@ def histmodification(log):
         h.GetXaxis().SetTitleSize( 0.042 )
         h.GetYaxis().SetTitleSize( 0.042 )
 
-        h.GetXaxis().SetLabelSize( 0.055 )
+        h.GetXaxis().SetLabelSize( 0.06 )
         h.GetYaxis().SetLabelSize( 0.04 )
     return histmod
 
 def legendmodification(l):
-    l.SetTextSize(.03)
+    l.SetTextSize(.032)
 
 for logY in [True, False]:
 
     if logY:
-        ymax = 30000 * float(args.luminosity)/77.
-        if args.scale14TeV: ymax *= 1.15
+        ymax = 2000000
     else:
         ymax = 12000
 
@@ -476,7 +495,8 @@ for logY in [True, False]:
         plot,
         plot_directory = os.path.join(plot_directory_, 'log' if logY else 'lin'),
         logX = False, logY = logY, sorting = False,
-        legend = (0.76,0.54, 0.95, 0.81),
+        legend = ( (0.55,0.6, 0.925, 0.85), 2 ),
+#        legend = (0.75,0.49, 0.95, 0.85),
         widths = {'x_width':750, 'y_width':600},
         yRange = (0.7,ymax),
 #       ratio = {'yRange': (0.6, 1.4), 'drawObjects':boxes},

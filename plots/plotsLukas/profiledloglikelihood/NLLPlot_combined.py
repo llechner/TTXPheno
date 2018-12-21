@@ -103,7 +103,7 @@ else:
 
 filename = '_'.join( ['nll', args.detector, 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
 
-if not os.path.isfile('data/' + filename) or args.overwrite:
+if not os.path.isfile('dat/' + filename) or args.overwrite:
     exit()
 
     # Import samples
@@ -292,7 +292,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
 
     #            c.specifyFlatUncertainty( 'lumi', 1.05 )
     #            c.specifyFlatUncertainty( 'lumi', 1.026 )
-                c.specifyFlatUncertainty( 'lumi', 1.05 )
+                c.specifyFlatUncertainty( 'lumi', 1.01 )
 
                 c.specifyExpectation( bin_name, 'signal', signal_rate[region] )
                 c.specifyUncertainty( 'JEC', bin_name, 'signal', signal_jec_uncertainty[region])
@@ -372,7 +372,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             f.write( "%s\n" % ','.join( map( str, list(item) ) ) )
 
 else:
-    with open('data/'+filename, 'r') as f:
+    with open('dat/'+filename, 'r') as f:
         data = f.readlines()
 
     results = []

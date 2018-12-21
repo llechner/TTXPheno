@@ -1,5 +1,5 @@
 allowedVars = [ "genZ_pt", "genPhoton_pt[0]", "genZ_cosThetaStar", "recoZ_pt", "recoPhoton_pt[0]", "recoZ_cosThetaStar" ]
-texString  = { "genZ_pt":"p_{T}(Z,gen)", "genPhoton_pt[0]":"p_{T}(#gamma,gen)", "genZ_cosThetaStar":"cos(#theta^{*})(Z,gen)",  "recoZ_pt":"p_{T}(Z,reco)", "recoPhoton_pt[0]":"p_{T}(#gamma,reco)", "recoZ_cosThetaStar":"cos(#theta^{*})(Z,reco)"}
+texString  = { "genZ_pt":"p_{T}(Z,gen)", "genPhoton_pt[0]":"p_{T}(#gamma,gen)", "genZ_cosThetaStar":"cos(#theta^{*})(Z,gen)",  "recoZ_pt":"p_{T}(ll)", "recoPhoton_pt[0]":"p_{T}(#gamma,reco)", "recoZ_cosThetaStar":"cos(#theta^{*})(Z,reco)"}
 
 class Region:
 

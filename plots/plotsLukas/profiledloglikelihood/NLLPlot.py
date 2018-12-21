@@ -54,7 +54,7 @@ argParser.add_argument('--level',              action='store',     default='reco
 argParser.add_argument('--variables' ,         action='store',     default = ['ctZ', 'ctZI'], type=str, nargs=2, help = "argument plotting variables")
 argParser.add_argument('--binning',            action='store',     default = [1, -2, 2, 1, -2, 2], type=float, nargs=6, help = "argument parameters")
 argParser.add_argument('--zRange',             action='store',     default = [None, None], type=float, nargs=2, help = "argument parameters")
-argParser.add_argument('--luminosity',         action='store',     default=150, help='Luminosity for weighting the plots')
+argParser.add_argument('--luminosity',         action='store',     default=150, type=int, help='Luminosity for weighting the plots')
 argParser.add_argument('--scale',              action='store',     default=None, help='Luminosity for weighting the plots')
 argParser.add_argument('--cores',              action='store',     default=8, type=int, help='number of cpu cores for multicore processing')
 argParser.add_argument('--overwrite',          action='store_true', help='overwrite datafile?')
@@ -112,11 +112,14 @@ if binningY[0] > 1:
 else:
     yRange = [ 0.5 * ( binningY[1] + binningY[2] ) ]
 
+addon = []
+if args.statOnly: addon += ["statOnly"]
+if args.noExpUnc: addon += ["noExpUnc"]
 #save data file
-filename = '_'.join( ['nll', args.detector ] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity), "14TeV" if args.scale14TeV else "13TeV" ] ) + '.data'
+filename = '_'.join( ['nll', args.detector ] + args.sample.split('_')[1:3] + args.variables + map( str, args.binning ) + [ args.selection, str(args.luminosity), "14TeV" if args.scale14TeV else "13TeV" ] + addon ) + '.data'
 
 #do the calculation
-if not os.path.isfile('data/' + filename) or args.overwrite:
+if not os.path.isfile('dat/' + filename) or args.overwrite:
 
     if not args.fitOnly:
 
@@ -471,7 +474,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             f.write( "%s\n" % ','.join( map( str, list(item) ) ) )
 
 else:
-    with open('data/'+filename, 'r') as f:
+    with open('dat/'+filename, 'r') as f:
         data = f.readlines()
 
     results = []
@@ -526,7 +529,7 @@ if args.smooth: hist.Smooth()
 cans = ROOT.TCanvas("can_%s"%args.process,"",500,500)
 
 #calculate contour lines (1sigma, 2sigma) for 2D
-contours = {'ttZ_3l': [1.515*1.515, 2.486*2.486], 'ttgamma_1l': [1.515*1.515, 2.486*2.486], 'ttgamma_2l': [1.515*1.515, 2.486*2.486]}
+contours = {'ttZ_3l': [2.28, 5.99]}
 if args.contours:
     histsForCont = hist.Clone()
     c_contlist = ((ctypes.c_double)*(len(contours[args.process])))(*contours[args.process])
@@ -553,13 +556,13 @@ if args.contours:
     for conts in [cont_p2]:
         for cont in conts:
             cont.SetLineColor(ROOT.kOrange+7)
-            cont.SetLineWidth(2)
+            cont.SetLineWidth(3)
 #            cont.SetLineStyle(7)
             cont.Draw("same")
     for conts in [cont_p1]:
         for cont in conts:
             cont.SetLineColor(ROOT.kSpring-1)
-            cont.SetLineWidth(2)
+            cont.SetLineWidth(3)
 #            cont.SetLineStyle(7)
             cont.Draw("same")
 
@@ -594,12 +597,12 @@ hist.GetXaxis().SetLabelFont(42)
 hist.GetYaxis().SetLabelFont(42)
 hist.GetZaxis().SetLabelFont(42)
 
-hist.GetXaxis().SetTitleOffset(1.4)
-hist.GetYaxis().SetTitleOffset(1.4)
+hist.GetXaxis().SetTitleOffset(1.15)
+hist.GetYaxis().SetTitleOffset(1.25)
 
-hist.GetXaxis().SetTitleSize(0.04)
-hist.GetYaxis().SetTitleSize(0.04)
-hist.GetZaxis().SetTitleSize(0.04)
+hist.GetXaxis().SetTitleSize(0.045)
+hist.GetYaxis().SetTitleSize(0.045)
+hist.GetZaxis().SetTitleSize(0.042)
 hist.GetXaxis().SetLabelSize(0.04)
 hist.GetYaxis().SetLabelSize(0.04)
 hist.GetZaxis().SetLabelSize(0.04)
@@ -610,8 +613,9 @@ latex1.SetTextSize(0.04)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.95, 'CMS Simulation'),
-latex1.DrawLatex(0.45, 0.95, 'L=%i fb{}^{-1} (%s TeV)' % (int(args.luminosity), "14" if args.scale14TeV else "13"))
+latex1.DrawLatex(0.03, 0.92, '#bf{CMS Phase-2} #it{Simulation Preliminary}'),
+#latex1.DrawLatex(0.15, 0.95, '#bf{CMS Phase-2} #it{Simulation Preliminary}'),
+latex1.DrawLatex(0.68, 0.92, '%i ab{}^{-1} (%s TeV)' % (int(args.luminosity/1000.), "14" if args.scale14TeV else "13"))
 
 latex2 = ROOT.TLatex()
 latex2.SetNDC()
@@ -619,7 +623,8 @@ latex2.SetTextSize(0.04)
 latex2.SetTextFont(42)
 latex2.SetTextAlign(11)
 
-latex2.DrawLatex(0.15, 0.9, 'with Stat. uncert. only' if args.statOnly else 'with YR18 syst. uncert.' if not args.noExpUnc else 'with Stat. and Theory uncert. only'),
+#latex2.DrawLatex(0.15, 0.9, 'with Stat. uncert. only' if args.statOnly else 'with YR18 syst. uncert.' if not args.noExpUnc else 'w/o Exp. uncert.'),
+if (args.noExpUnc or args.statOnly): latex2.DrawLatex(0.17, 0.82, 'Stat. uncert. only' if args.statOnly else 'w/o Exp. uncert.'),
 
 #latex1.DrawLatex(0.15, 0.92, ' '.join(args.process.split('_')[:2]) + ' (' + args.detector + ')')
 #latex1.DrawLatex(0.55, 0.92, '%3.1f fb{}^{-1} @ 13 TeV'%(float(args.luminosity) if args.scale is None else float(args.scale)) )

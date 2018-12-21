@@ -48,7 +48,7 @@ argParser.add_argument('--order',              action='store',     default=2, he
 argParser.add_argument('--selection',          action='store',     default='lepSel3-onZ-njet3p-nbjet1p-Zpt200-leptonIso3', help="Specify cut.")
 argParser.add_argument('--small',              action='store_true', help='Run only on a small subset of the data?')
 argParser.add_argument('--level',              action='store',     default='reco', nargs='?', choices=['reco', 'gen'], help='Which level of reconstruction? reco, gen')
-argParser.add_argument('--luminosity',         action='store',     default=3000, help='Luminosity for weighting the plots')
+argParser.add_argument('--luminosity',         action='store',     default=3000, type=int, help='Luminosity for weighting the plots')
 argParser.add_argument('--detector',           action='store',     default='phase2_CMS', nargs='?', choices=['CMS', 'ATLAS', 'phase2_CMS'], help='Which Delphes detector simulation?')
 argParser.add_argument('--scale14TeV',         action='store_true', help='scale 13 TeV cross-sections to 14 Tev?')
 argParser.add_argument('--cardFile',           action='store',     default='Cos_SM_cardfile.txt', help='Cardfile where additional uncertainties are taken from')
@@ -193,10 +193,12 @@ for i_region, region in enumerate(regions):
         hists['nonInfo'].SetBinContent(i_region+1, rate[region]['nonInfo'])
         hists['nonInfo'].SetBinError(i_region+1,0)
         hists['nonInfo'].legendText = ttXSample.shortname.replace('gamma', '#gamma') + ' (non-info)'
-        hists['nonInfo'].style = styles.fillStyle( colors['nonInfo'], lineColor=ROOT.kBlack, errors=False, width=1 )
-        hists['nonInfo'].SetFillStyle(3544)
-        hists['nonInfo'].SetFillColor(ROOT.kWhite)
-        ROOT.gStyle.SetHatchesLineWidth(2)
+        hists['nonInfo'].style = styles.fillStyle( colors['nonInfo'], lineColor=ROOT.kBlack, errors=False, width=1, fillStyle=3645, hatchesWidth=1, hatchesSpacing=None )
+#        hists['nonInfo'].style = styles.fillStyle( colors['nonInfo'], lineColor=ROOT.kBlack, errors=False, width=1 )
+#        hists['nonInfo'].SetFillStyle(3345)
+#        hists['nonInfo'].SetFillStyle(3544)
+#        hists['nonInfo'].SetFillColor(ROOT.kWhite)
+#        ROOT.gStyle.SetHatchesLineWidth(3)
 
     if args.parameters is not None:
         for i_param, param in enumerate(params):
@@ -215,12 +217,12 @@ for i_region, region in enumerate(regions):
 def drawObjects( hasData = False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
-    tex.SetTextSize(0.04)
+    tex.SetTextSize(0.042)
     tex.SetTextAlign(11) # align right
     tex.SetTextFont(42)
     lines = [
-      (0.15, 0.95, 'CMS Simulation'),
-      (0.63, 0.95, 'L=%i fb{}^{-1} (%s TeV)'% ( int(args.luminosity), '14' if args.scale14TeV else '13' ) )
+      (0.02, 0.95, '#bf{CMS Phase-2} #it{Simulation Preliminary}'),
+      (0.69, 0.95, '%i ab{}^{-1} (%s TeV)'% ( int(args.luminosity/1000.), '14' if args.scale14TeV else '13' ) )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
@@ -289,27 +291,31 @@ for ib in range(1, 1 + hists[ttXSample.shortname].GetNbinsX() ):
 def histmodification(log):
     def histmod(h):
         h.GetXaxis().SetTitleOffset( 1.06 )
-        h.GetYaxis().SetTitleOffset( 1.08 if log else 1.7 )
+        h.GetYaxis().SetTitleOffset( 1.08 if log else 1.6 )
 
-        h.GetXaxis().SetTitleSize( 0.042 )
-        h.GetYaxis().SetTitleSize( 0.042 )
+        h.GetXaxis().SetTitleSize( 0.045 )
+        h.GetYaxis().SetTitleSize( 0.045 )
 
         h.GetXaxis().SetLabelSize( 0.04 )
         h.GetYaxis().SetLabelSize( 0.04 )
+
     return histmod
 
 def ratiomodification(h):
-    h.GetXaxis().SetTitleOffset( 1.3 )
+    h.GetXaxis().SetTitleOffset( 1.25 )
     h.GetYaxis().SetTitleOffset( 0.65 )
 
-    h.GetXaxis().SetTitleSize( 0.1042 )
-    h.GetYaxis().SetTitleSize( 0.1042 )
+    h.GetXaxis().SetTitleSize( 0.11 )
+    h.GetYaxis().SetTitleSize( 0.11 )
 
-    h.GetXaxis().SetLabelSize( 0.104 )
-    h.GetYaxis().SetLabelSize( 0.104 )
+    h.GetXaxis().SetLabelSize( 0.10 )
+    h.GetYaxis().SetLabelSize( 0.10 )
 
 def legendmodification(l):
-    l.SetTextSize(.037)
+    l.SetTextSize(.04)
+
+#ROOT.gStyle.SetPadLeftMargin(0.14)
+#ROOT.gStyle.SetPadRightMargin(0.1)
 
 for logY in [True, False]:
 

@@ -94,7 +94,7 @@ else:
 
 filename = '_'.join( ['limit', args.detector, 'combined'] + args.variables + map( str, args.binning ) + [ str(args.luminosity) ] ) + '.data'
 
-if not os.path.isfile('data/' + filename) or args.overwrite:
+if not os.path.isfile('dat/' + filename) or args.overwrite:
     # Import samples
     sample_file     = "$CMSSW_BASE/python/TTXPheno/samples/benchmarks.py"
     loadedSamples   = imp.load_source( "samples", os.path.expandvars( sample_file ) )
@@ -413,7 +413,7 @@ if not os.path.isfile('data/' + filename) or args.overwrite:
             f.write( "%s\n" % ','.join( map( str, list(item[:2]) + item[-1] ) ) )
 
 else:
-    with open('data/'+filename, 'r') as f:
+    with open('dat/'+filename, 'r') as f:
         data = f.readlines()
 
     results = []
