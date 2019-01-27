@@ -20,9 +20,15 @@ class DelphesProducer:
         self.delphes_dir = os.path.expandvars( '$CMSSW_BASE/../delphes' )
         self.card = 'cards/' + card + '.tcl'
 
-    def produce( self, infiles, outfile ):
+    def produce( self, infiles, outfile, executable = 'fwlite'):
 
-        logger.info( "Running Delphes on %i files using %s", len(infiles), self.card )
+
+        if executable == 'hepmc':
+            executable_ = 'DelphesHepMC'
+        elif executable == 'fwlite':
+            executable_ = 'DelphesCMSFWLite'
+        
+        logger.info( "Running %s on %i files using %s", executable_, len(infiles), self.card )
 
         # Clean output
         tmp_files = []
@@ -41,8 +47,8 @@ class DelphesProducer:
                 logger.warning( "Found output file %s. Deleting", tmp_file )
                 os.remove( tmp_file )
             tmp_files.append( tmp_file )
-            print os.path.join( self.delphes_dir, 'DelphesCMSFWLite'), os.path.join( self.delphes_dir, self.card), tmp_file, infile
-            subprocess.check_call( [ os.path.join( self.delphes_dir, 'DelphesCMSFWLite'), os.path.join( self.delphes_dir, self.card ), tmp_file, infile ] )
+            logger.info( "Calling Delphes: %s", " ".join( [ os.path.join( self.delphes_dir, executable_), os.path.join( self.delphes_dir, self.card), tmp_file, infile ] ) )
+            subprocess.check_call( [ os.path.join( self.delphes_dir, executable_), os.path.join( self.delphes_dir, self.card ), tmp_file, infile ] )
 
         # Hadd
         subprocess.check_call( ['hadd', outfile] + tmp_files ) 
@@ -50,3 +56,4 @@ class DelphesProducer:
         # Clean up 
         for tmp_file in tmp_files:
             os.remove(tmp_file)
+
