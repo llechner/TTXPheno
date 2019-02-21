@@ -32,4 +32,37 @@
 #python genPostProcessing.py --overwrite target --targetDir v18 --logLevel DEBUG --sample fwlite_tt_full_LO_order2_15weights --interpolationOrder 2  --delphes --delphesCard CMS_PhaseII/CMS_PhaseII_200PU_v03 #SPLIT2000
 
 
-python genPostProcessing.py --overwrite target --targetDir test --logLevel DEBUG --sample  hepmc_1event --HEPMC PP --delphes --delphesCard CMS_PhaseII/CMS_PhaseII_200PU_v03 
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  hepmc_1event --HEPMC PP --delphes --delphesCard CMS_PhaseII/CMS_PhaseII_200PU_v03 
+
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC PP           --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 10d0_HH  --delphes --delphesEra RunII #SPLIT50
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 10d0_GH  --delphes --delphesEra RunII #SPLIT50
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 10d0_HG  --delphes --delphesEra RunII #SPLIT50
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 1d0_GH   --delphes --delphesEra RunII #SPLIT50
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 1d0_HG   --delphes --delphesEra RunII #SPLIT50
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 1d0_HH   --delphes --delphesEra RunII #SPLIT50
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 0d1_HG   --delphes --delphesEra RunII #SPLIT50
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 0d1_GH   --delphes --delphesEra RunII #SPLIT50
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbar --HEPMC 0d1_HH   --delphes --delphesEra RunII #SPLIT50
+
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC PP       --delphes --delphesEra RunII #SPLIT100
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 10d0_HH  --delphes --delphesEra RunII #SPLIT50
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 10d0_GH  --delphes --delphesEra RunII #SPLIT50
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 10d0_HG  --delphes --delphesEra RunII #SPLIT50
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 1d0_GH   --delphes --delphesEra RunII #SPLIT50
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 1d0_HG   --delphes --delphesEra RunII #SPLIT50
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 1d0_HH   --delphes --delphesEra RunII #SPLIT50
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 0d1_HG   --delphes --delphesEra RunII #SPLIT50
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 0d1_GH   --delphes --delphesEra RunII #SPLIT50
+python genPostProcessing.py --overwrite all --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 0d1_HH   --delphes --delphesEra RunII #SPLIT50
+
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC PP           --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 10d0_HH  --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 10d0_GH  --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 10d0_HG  --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 1d0_GH   --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 1d0_HG   --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 1d0_HH   --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 0d1_HG   --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 0d1_GH   --delphes --delphesEra RunII #SPLIT100
+#python genPostProcessing.py --overwrite target --targetDir RunII_v01 --logLevel DEBUG --sample  ttbarZ --HEPMC 0d1_HH   --delphes --delphesEra RunII #SPLIT100

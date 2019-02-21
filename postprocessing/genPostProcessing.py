@@ -21,8 +21,6 @@ from TTXPheno.Tools.helpers                import deltaPhi, deltaR, deltaR2, cos
 from TTXPheno.Tools.HyperPoly              import HyperPoly
 from TTXPheno.Tools.WeightInfo             import WeightInfo
 from TTXPheno.Tools.DelphesProducer        import DelphesProducer
-from TTXPheno.Tools.DelphesReaderCMSHLLHC  import DelphesReader
-#from TTXPheno.Tools.DelphesReader          import DelphesReader
 from TTXPheno.Tools.objectSelection        import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, isGoodRecoMuon, isGoodRecoElectron, isGoodRecoLepton, isGoodRecoJet, isGoodRecoPhoton, genJetId
 from TTXPheno.Tools.UpgradeJECUncertainty  import UpgradeJECUncertainty 
 #
@@ -38,7 +36,7 @@ argParser.add_argument('--HEPMC',              action='store',      nargs='?', d
 argParser.add_argument('--targetDir',          action='store',      default='v5')
 argParser.add_argument('--sample',             action='store',      default='fwlite_ttZ_ll_LO_scan', help="Name of the sample loaded from fwlite_benchmarks. Only if no inputFiles are specified")
 argParser.add_argument('--inputFiles',         action='store',      nargs = '*', default=[])
-argParser.add_argument('--delphesCard',        action='store',      default='delphes_card_CMS', help="name of the delphes card in delphes/cards/NAME.tcl")
+argParser.add_argument('--delphesEra',         action='store',      default='delphes_card_CMS', choices = ["RunII", "PhaseII"], help="specify delphes era")
 argParser.add_argument('--targetSampleName',   action='store',      default=None, help="Name of the sample in case inputFile are specified. Otherwise ignored")
 argParser.add_argument('--nJobs',              action='store',      nargs='?', type=int, default=1,  help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      nargs='?', type=int, default=0,  help="Run only job i")
@@ -264,13 +262,21 @@ def fill_vector( event, collection_name, collection_varnames, obj):
             logger.error( "collection_name %s var %s obj[var] %r", collection_name, var,  obj[var] )
             raise e
 
+
+if args.delphes:
+    if args.delphesEra == 'RunII':
+        from TTXPheno.Tools.DelphesReader          import DelphesReader
+        delphesCard = 'delphes_card_CMS_PileUp'
+    elif args.delphesEra == 'PhaseII':
+        from TTXPheno.Tools.DelphesReaderCMSHLLHC  import DelphesReader
+        delphesCard = 'CMS_PhaseII/CMS_PhaseII_200PU_v03'
 readers = []
 #If this is a HEPMC file
 if args.HEPMC:
     delphes_file = os.path.join( output_directory, 'delphes', sample.name+'.root' )
     if not os.path.exists( delphes_file ) or args.overwrite in ['all']:
         logger.debug( "Reproducing delphes file %s", delphes_file)
-        delphesProducer = DelphesProducer( card = args.delphesCard )
+        delphesProducer = DelphesProducer( card = delphesCard )
         delphesProducer.produce( sample.files, delphes_file, executable = 'hepmc')
     delphesReader = DelphesReader( Sample.fromFiles( delphes_file, delphes_file, treeName = "Delphes" ) ) # RootTools version
     readers.append( delphesReader )
@@ -284,7 +290,7 @@ else:
         delphes_file = os.path.join( output_directory, 'delphes', sample.name+'.root' )
         if not os.path.exists( delphes_file ) or args.overwrite in ['all']:
             logger.debug( "Reproducing delphes file %s", delphes_file)
-            delphesProducer = DelphesProducer( card = args.delphesCard )
+            delphesProducer = DelphesProducer( card = delphesCard )
             delphesProducer.produce( sample.files, delphes_file)
         delphesReader = DelphesReader( Sample.fromFiles( delphes_file, delphes_file, treeName = "Delphes" ) ) # RootTools version
         readers.append( delphesReader )

@@ -51,7 +51,7 @@ class DelphesReader( DelphesReaderBase ): # version RootTools reader
     def jets( self ):
         return self.read_collection( 'JetPUPPI', 
             [   ('PT', 'pt'), ( 'Eta', 'eta'), ('Phi', 'phi'),
-                ('BTag', 'bTag'), ( 'BTagPhys', 'bTagPhys'),('Flavor', 'flavor'),
+                ('BTag', 'bTag'), ( 'BTagPhys', 'bTagPhys'), ('Flavor', 'flavor'),
                 ('NCharged', 'nCharged'), ('NNeutrals', 'nNeutrals'), 
             ])
 
