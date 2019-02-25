@@ -2,7 +2,7 @@
 '''
 #Standard imports
 import ROOT
-from math import pi, sqrt, cos, sin, sinh, log, cosh
+from math import pi, sqrt, cos, sin, sinh, log, cosh, isnan
 from array import array
 import itertools
 import timeit
@@ -16,6 +16,43 @@ ROOT.gROOT.LoadMacro("$CMSSW_BASE/src/TTXPheno/Tools/scripts/tdrstyle.C")
 ROOT.setTDRStyle()
 #mZ=91.1876
 mZ = 91.2
+
+
+def nanJet():
+    ''' return a dict in Jet format filled with Nan
+    '''
+    elementList = ['index', 'pt', 'eta', 'phi', 'bTag', 'matchBParton' ]
+    jet = {}
+    for element in elementList:
+        jet[element] = float('nan')
+    jet['bTagPhys'] = -1
+    jet['nCharged'] = -1
+    jet['nNeutrals'] = -1
+    jet['vec2D'] = ROOT.TVector2( float('nan'), float('nan') )
+    jet['vec4D'] = ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )
+    return jet
+
+def nanPhoton():
+    ''' return a dict in Jet format filled with Nan
+    '''
+    elementList = ['index', 'pt', 'eta', 'phi', 'mass', 'motherPdgId', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
+    gamma = {}
+    for element in elementList:
+        gamma[element] = float('nan')
+    gamma['vec2D'] = ROOT.TVector2( float('nan'), float('nan') )
+    gamma['vec4D'] = ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )
+    return gamma
+
+def nanLepton():
+    ''' return a dict in Lepton format filled with Nan
+    '''
+    elementList = ['index', 'pt', 'eta', 'phi', 'pdgId', 'isolationVar', 'isolationVarRhoCorr', 'sumPtCharged', 'sumPtNeutral', 'sumPtChargedPU', 'sumPt', 'ehadOverEem', 'genIndex']
+    lepton = {}
+    for element in elementList:
+        lepton[element] = float('nan')
+    lepton['vec2D'] = ROOT.TVector2( float('nan'), float('nan') )
+    lepton['vec4D'] = ROOT.TLorentzVector( float('nan'), float('nan'), float('nan'), float('nan') )
+    return lepton
 
 def natural_sort(list, key=lambda s:s):
     """
@@ -56,6 +93,7 @@ def cosThetaStar( Z_mass, Z_pt, Z_eta, Z_phi, l_pt, l_eta, l_phi ):
     return (-beta + cosTheta) / (1 - beta*cosTheta)
 
 def deltaPhi(phi1, phi2):
+    if isnan(phi1) or isnan(phi2): return float('nan')
     dphi = phi2-phi1
     if  dphi > pi:
         dphi -= 2.0*pi
@@ -64,6 +102,7 @@ def deltaPhi(phi1, phi2):
     return abs(dphi)
 
 def deltaR2(l1, l2):
+    if isnan(l1['phi']) or isnan(l2['phi']) or isnan(l1['eta']) or isnan(l2['eta']): return float('nan')
     return deltaPhi(l1['phi'], l2['phi'])**2 + (l1['eta'] - l2['eta'])**2
 
 def deltaR(l1, l2):
@@ -318,6 +357,7 @@ def getPlotFromChain(c, var, binning, cutString = "(1)", weight = "weight", binn
         res.SetBinError(1 , sqrt(res.GetBinError(0)**2 + res.GetBinError(1)**2))
     return res
 
+
 def getGenZ(genparts):
   for g in genparts:
     if g['pdgId'] != 23:        continue					# pdgId == 23 for Z
@@ -347,3 +387,44 @@ def timeit(method):
 #                  (method.__name__, (te - ts) * 1000)
         return result
     return timed
+
+def create_cut_string(dict, operator):
+    if len(dict.keys()) == 0: return ''
+    cut_string = ''
+    for item in dict.keys():
+       cut_string += '*('
+       cut_string += str(item)
+       cut_string += str(operator)
+       cut_string += str(dict[item])
+       cut_string += ')'
+    return cut_string
+
+import collections
+import functools
+
+# https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
+class memoized(object):
+   '''Decorator. Caches a function's return value each time it is called.
+   If called later with the same arguments, the cached value is returned
+   (not reevaluated).
+   '''
+   def __init__(self, func):
+      self.func = func
+      self.cache = {}
+   def __call__(self, *args):
+      if not isinstance(args, collections.Hashable):
+         # uncacheable. a list, for instance.
+         # better to not cache than blow up.
+         return self.func(*args)
+      if args in self.cache:
+         return self.cache[args]
+      else:
+         value = self.func(*args)
+         self.cache[args] = value
+         return value
+   def __repr__(self):
+      '''Return the function's docstring.'''
+      return self.func.__doc__
+   def __get__(self, obj, objtype):
+      '''Support instance methods.'''
+      return functools.partial(self.__call__, obj) 

@@ -1,0 +1,5385 @@
+@(#)CERN job starter $Date: 2010/06/23 14:22:16 $
+Working directory is </pool/lsf/llechner/179705427> on <b6b24af50b.cern.ch>
+
+Running gridpack generation step ALL
+Starting job on  Tue Jul 10 09:37:49 CEST 2018
+Running on  Linux b6b24af50b.cern.ch 2.6.32-696.30.1.el6.x86_64 #1 SMP Tue May 22 06:09:36 CEST 2018 x86_64 x86_64 x86_64 GNU/Linux
+System release  Scientific Linux CERN SLC release 6.10 (Carbon)
+name: tWZ_rwgt
+carddir: addons/cards/tWZ_rwgt/
+queue: 1nw
+scram_arch: slc6_amd64_gcc630
+cmssw_version: CMSSW_9_3_0
+# On branch master
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   addons/cards/WZ_rwgt/WZ_rwgt_reweight_card.dat
+#	modified:   addons/cards/Zgamma_rwgt/Zgamma_rwgt_reweight_card.dat
+#	modified:   addons/cards/tWZ_rwgt/tWZ_rwgt_reweight_card.dat
+#	modified:   addons/cards/tW_rwgt/tW_rwgt_reweight_card.dat
+#	modified:   addons/cards/tZq_rwgt/tZq_rwgt_reweight_card.dat
+#	modified:   addons/cards/tt_rwgt/tt_rwgt_reweight_card.dat
+#	modified:   addons/cards/tt_semilep_rwgt/tt_semilep_rwgt_reweight_card.dat
+#	modified:   addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_customizecards.dat
+#	modified:   addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_reweight_card.dat
+#	modified:   submit_gridpacks.sh
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	LSFJOB_179063646/
+#	LSFJOB_179071527/
+#	LSFJOB_179071530/
+#	LSFJOB_179071532/
+#	LSFJOB_179071534/
+#	LSFJOB_179071535/
+#	LSFJOB_179071538/
+#	LSFJOB_179071540/
+#	LSFJOB_179072653/
+#	LSFJOB_179072655/
+#	addons/cards/WZ_rwgt/WZ_rwgt_customizecards.dat
+#	addons/cards/WZ_rwgt/WZ_rwgt_reweight_card.pkl
+#	addons/cards/Zgamma_rwgt/Zgamma_rwgt_customizecards.dat
+#	addons/cards/Zgamma_rwgt/Zgamma_rwgt_reweight_card.pkl
+#	addons/cards/tWZ_rwgt/tWZ_rwgt_customizecards.dat
+#	addons/cards/tWZ_rwgt/tWZ_rwgt_reweight_card.pkl
+#	addons/cards/tW_rwgt/tW_rwgt_customizecards.dat
+#	addons/cards/tW_rwgt/tW_rwgt_reweight_card.pkl
+#	addons/cards/tZq_rwgt/tZq_rwgt_customizecards.dat
+#	addons/cards/tZq_rwgt/tZq_rwgt_reweight_card.pkl
+#	addons/cards/tt_semilep_rwgt/tt_semilep_rwgt_customizecards.dat
+#	addons/cards/tt_semilep_rwgt/tt_semilep_rwgt_reweight_card.pkl
+#	addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_reweight_card.pkl
+#	addons/cards/ttgamma_rwgt/ttgamma_rwgt_customizecards.dat
+#	addons/cards/ttgamma_rwgt/ttgamma_rwgt_reweight_card.pkl
+#	output/
+no changes added to commit (use "git add" and/or "git commit -a")
+Current git revision is:
+f75b3514f0a8eff84cba1a3f4e23146c17e73f8d
+diff --git a/addons/cards/WZ_rwgt/WZ_rwgt_reweight_card.dat b/addons/cards/WZ_rwgt/WZ_rwgt_reweight_card.dat
+index 1797d7d..ecaf2e1 100644
+--- a/addons/cards/WZ_rwgt/WZ_rwgt_reweight_card.dat
++++ b/addons/cards/WZ_rwgt/WZ_rwgt_reweight_card.dat
+@@ -1,24 +1,9 @@
+-# reweight card file created with https://github.com/schoef/gridpacks on 2018-06-05 11:12:41
+-# Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_bg/addons/cards/WZ_rwgt//WZ_rwgt_reweight_card.dat --couplings 2
+-# Polynomial order: 2
++# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-10 09:37:29
++# Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/WZ_rwgt//WZ_rwgt_reweight_card.dat --couplings
++# Polynomial order: None
+ change rwgt_dir rwgt
+ 
+ launch --rwgt_name=dummy # Name of first argument seems to be rwgt_1. Add dummy to fix it.
+ 
+-launch --rwgt_name=ctp_0p_ctpI_0p_cpQM_0p_cpQ3_0p_cpt_0p_cptb_0p_cptbI_0p_ctW_0p_ctWI_0p_ctZ_0p_ctZI_0p_cbW_0p_cbWI_0p_ctG_0p_ctGI_0p
+-set ctp 0.000000
+-set ctpI 0.000000
+-set cpQM 0.000000
+-set cpQ3 0.000000
+-set cpt 0.000000
+-set cptb 0.000000
+-set cptbI 0.000000
+-set ctW 0.000000
+-set ctWI 0.000000
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cbW 0.000000
+-set cbWI 0.000000
+-set ctG 0.000000
+-set ctGI 0.000000
++launch --rwgt_name=
+ 
+diff --git a/addons/cards/Zgamma_rwgt/Zgamma_rwgt_reweight_card.dat b/addons/cards/Zgamma_rwgt/Zgamma_rwgt_reweight_card.dat
+index f8d415b..a2794a3 100644
+--- a/addons/cards/Zgamma_rwgt/Zgamma_rwgt_reweight_card.dat
++++ b/addons/cards/Zgamma_rwgt/Zgamma_rwgt_reweight_card.dat
+@@ -1,4 +1,4 @@
+-# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 12:07:08
++# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-10 09:37:30
+ # Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/Zgamma_rwgt//Zgamma_rwgt_reweight_card.dat --couplings
+ # Polynomial order: None
+ change rwgt_dir rwgt
+diff --git a/addons/cards/tWZ_rwgt/tWZ_rwgt_reweight_card.dat b/addons/cards/tWZ_rwgt/tWZ_rwgt_reweight_card.dat
+index e8e66e3..07b55cf 100644
+--- a/addons/cards/tWZ_rwgt/tWZ_rwgt_reweight_card.dat
++++ b/addons/cards/tWZ_rwgt/tWZ_rwgt_reweight_card.dat
+@@ -1,4 +1,4 @@
+-# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 12:07:06
++# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-10 09:37:27
+ # Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/tWZ_rwgt//tWZ_rwgt_reweight_card.dat --couplings
+ # Polynomial order: None
+ change rwgt_dir rwgt
+diff --git a/addons/cards/tW_rwgt/tW_rwgt_reweight_card.dat b/addons/cards/tW_rwgt/tW_rwgt_reweight_card.dat
+index 548888c..8175c91 100644
+--- a/addons/cards/tW_rwgt/tW_rwgt_reweight_card.dat
++++ b/addons/cards/tW_rwgt/tW_rwgt_reweight_card.dat
+@@ -1,4 +1,4 @@
+-# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 12:07:09
++# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-10 09:37:28
+ # Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/tW_rwgt//tW_rwgt_reweight_card.dat --couplings
+ # Polynomial order: None
+ change rwgt_dir rwgt
+diff --git a/addons/cards/tZq_rwgt/tZq_rwgt_reweight_card.dat b/addons/cards/tZq_rwgt/tZq_rwgt_reweight_card.dat
+index 6837e6b..7860b06 100644
+--- a/addons/cards/tZq_rwgt/tZq_rwgt_reweight_card.dat
++++ b/addons/cards/tZq_rwgt/tZq_rwgt_reweight_card.dat
+@@ -1,4 +1,4 @@
+-# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 12:07:08
++# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 16:38:56
+ # Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/tZq_rwgt//tZq_rwgt_reweight_card.dat --couplings
+ # Polynomial order: None
+ change rwgt_dir rwgt
+diff --git a/addons/cards/tt_rwgt/tt_rwgt_reweight_card.dat b/addons/cards/tt_rwgt/tt_rwgt_reweight_card.dat
+index d97032a..5a0b05b 100644
+--- a/addons/cards/tt_rwgt/tt_rwgt_reweight_card.dat
++++ b/addons/cards/tt_rwgt/tt_rwgt_reweight_card.dat
+@@ -1,5 +1,5 @@
+-# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 08:29:50
+-# Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_bg_noref/addons/cards/tt_rwgt//tt_rwgt_reweight_card.dat
++# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 16:38:59
++# Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/tt_rwgt//tt_rwgt_reweight_card.dat --couplings
+ # Polynomial order: None
+ change rwgt_dir rwgt
+ 
+diff --git a/addons/cards/tt_semilep_rwgt/tt_semilep_rwgt_reweight_card.dat b/addons/cards/tt_semilep_rwgt/tt_semilep_rwgt_reweight_card.dat
+index 5a0b05b..0a85007 100644
+--- a/addons/cards/tt_semilep_rwgt/tt_semilep_rwgt_reweight_card.dat
++++ b/addons/cards/tt_semilep_rwgt/tt_semilep_rwgt_reweight_card.dat
+@@ -1,5 +1,5 @@
+-# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 16:38:59
+-# Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/tt_rwgt//tt_rwgt_reweight_card.dat --couplings
++# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-10 09:37:29
++# Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/tt_semilep_rwgt//tt_semilep_rwgt_reweight_card.dat --couplings
+ # Polynomial order: None
+ change rwgt_dir rwgt
+ 
+diff --git a/addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_customizecards.dat b/addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_customizecards.dat
+index 1a4df41..883b8c8 100644
+--- a/addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_customizecards.dat
++++ b/addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_customizecards.dat
+@@ -1,3 +1,6 @@
+-set param_card mass 6 172.5 
++# customize card file created with https://github.com/TTXPheno/gridpacks on 2018-07-06 12:08:21
++# Command line arguments: ./make_customizecard.py --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/ttgamma0j_rwgt//ttgamma0j_rwgt_customizecards.dat
++# Reference Point: 
++set param_card mass 6 172.5
+ set param_card yukawa 6 172.5
+-set param_card decay 6 auto 
++set param_card decay 6 auto
+diff --git a/addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_reweight_card.dat b/addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_reweight_card.dat
+index ae8a26e..8e3b92d 100644
+--- a/addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_reweight_card.dat
++++ b/addons/cards/ttgamma0j_rwgt/ttgamma0j_rwgt_reweight_card.dat
+@@ -1,3756 +1,9 @@
+-# reweight card file created with https://github.com/schoef/gridpacks on 2018-03-23 13:05:10
+-# Command line arguments: make_reweight_card.py --couplings ctZ -2 -1 0 1 2 ctZI -2 -1 0 1 2 cpQM -10 0 10 20 30 cpt -20 -10 0 10 20 --overwrite
++# reweight card file created with https://github.com/schoef/gridpacks on 2018-07-06 12:08:19
++# Command line arguments: ./make_reweight_card.py --overwrite --filename /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/addons/cards/ttgamma0j_rwgt//ttgamma0j_rwgt_reweight_card.dat --couplings
++# Polynomial order: None
+ change rwgt_dir rwgt
+ 
+ launch --rwgt_name=dummy # Name of first argument seems to be rwgt_1. Add dummy to fix it.
+ 
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_m10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_m10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_m10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_m10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_m10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_m10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_m10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_m10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_m10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_m10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_m10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_m10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_m10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_m10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_m10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_m10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_m10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_m10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_m10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_m10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_m10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_m10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_m10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_m10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_m10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_0p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_0p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_0p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_0p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_0p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_0p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_0p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_0p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_0p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_0p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_0p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_0p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_0p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_0p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_0p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_0p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_0p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_0p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_0p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_0p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_0p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_0p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_0p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_0p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_0p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_10p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_10p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_10p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_10p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_10p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_20p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_20p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_20p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_20p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_20p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_20p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_20p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_20p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_20p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_20p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_20p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_20p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_20p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_20p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_20p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_20p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_20p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_20p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_20p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_20p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_20p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_20p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_20p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_20p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_20p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_30p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_30p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_30p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_30p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_30p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_30p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_30p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_30p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_30p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_30p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_30p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_30p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_30p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_30p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_30p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_30p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_30p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_30p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_30p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_30p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_30p_cpt_m20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_30p_cpt_m20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_30p_cpt_m20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_30p_cpt_m20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_30p_cpt_m20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_m10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_m10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_m10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_m10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_m10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_m10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_m10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_m10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_m10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_m10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_m10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_m10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_m10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_m10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_m10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_m10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_m10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_m10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_m10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_m10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_m10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_m10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_m10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_m10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_m10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_0p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_0p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_0p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_0p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_0p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_0p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_0p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_0p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_0p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_0p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_0p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_0p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_0p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_0p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_0p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_0p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_0p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_0p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_0p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_0p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_0p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_0p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_0p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_0p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_0p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_10p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_10p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_10p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_10p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_10p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_20p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_20p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_20p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_20p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_20p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_20p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_20p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_20p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_20p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_20p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_20p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_20p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_20p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_20p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_20p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_20p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_20p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_20p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_20p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_20p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_20p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_20p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_20p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_20p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_20p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_30p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_30p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_30p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_30p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_30p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_30p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_30p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_30p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_30p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_30p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_30p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_30p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_30p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_30p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_30p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_30p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_30p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_30p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_30p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_30p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_30p_cpt_m10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_30p_cpt_m10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_30p_cpt_m10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_30p_cpt_m10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_30p_cpt_m10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt -10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_m10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_m10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_m10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_m10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_m10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_m10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_m10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_m10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_m10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_m10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_m10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_m10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_m10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_m10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_m10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_m10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_m10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_m10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_m10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_m10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_m10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_m10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_m10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_m10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_m10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_0p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_0p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_0p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_0p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_0p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_0p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_0p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_0p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_0p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_0p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_0p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_0p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_0p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_0p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_0p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_0p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_0p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_0p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_0p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_0p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_0p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_0p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_0p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_0p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_0p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_10p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_10p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_10p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_10p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_10p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_20p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_20p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_20p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_20p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_20p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_20p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_20p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_20p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_20p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_20p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_20p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_20p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_20p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_20p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_20p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_20p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_20p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_20p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_20p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_20p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_20p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_20p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_20p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_20p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_20p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_30p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_30p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_30p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_30p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_30p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_30p_cpt_0p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_30p_cpt_0p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_30p_cpt_0p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_30p_cpt_0p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_30p_cpt_0p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_30p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_30p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_30p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_30p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_30p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_30p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_30p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_30p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_30p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_30p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_30p_cpt_0p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_30p_cpt_0p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_30p_cpt_0p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_30p_cpt_0p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_30p_cpt_0p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 0.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_m10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_m10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_m10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_m10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_m10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_m10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_m10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_m10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_m10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_m10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_m10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_m10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_m10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_m10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_m10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_m10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_m10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_m10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_m10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_m10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_m10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_m10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_m10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_m10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_m10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_0p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_0p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_0p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_0p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_0p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_0p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_0p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_0p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_0p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_0p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_0p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_0p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_0p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_0p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_0p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_0p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_0p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_0p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_0p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_0p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_0p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_0p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_0p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_0p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_0p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_10p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_10p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_10p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_10p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_10p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_20p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_20p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_20p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_20p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_20p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_20p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_20p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_20p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_20p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_20p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_20p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_20p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_20p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_20p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_20p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_20p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_20p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_20p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_20p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_20p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_20p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_20p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_20p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_20p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_20p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_30p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_30p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_30p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_30p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_30p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_30p_cpt_10p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_30p_cpt_10p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_30p_cpt_10p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_30p_cpt_10p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_30p_cpt_10p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_30p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_30p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_30p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_30p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_30p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_30p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_30p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_30p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_30p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_30p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_30p_cpt_10p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_30p_cpt_10p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_30p_cpt_10p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_30p_cpt_10p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_30p_cpt_10p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 10.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_m10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_m10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_m10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_m10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_m10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_m10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_m10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_m10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_m10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_m10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_m10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_m10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_m10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_m10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_m10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_m10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_m10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_m10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_m10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_m10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_m10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_m10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_m10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_m10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_m10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM -10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_0p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_0p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_0p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_0p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_0p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_0p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_0p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_0p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_0p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_0p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_0p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_0p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_0p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_0p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_0p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_0p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_0p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_0p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_0p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_0p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_0p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_0p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_0p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_0p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_0p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 0.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_10p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_10p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_10p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_10p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_10p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 10.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_20p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_20p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_20p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_20p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_20p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_20p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_20p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_20p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_20p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_20p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_20p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_20p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_20p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_20p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_20p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_20p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_20p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_20p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_20p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_20p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_20p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_20p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_20p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_20p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_20p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 20.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m2p_cpQM_30p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m2p_cpQM_30p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m2p_cpQM_30p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m2p_cpQM_30p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m2p_cpQM_30p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_m1p_cpQM_30p_cpt_20p
+-set ctZ -2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_m1p_cpQM_30p_cpt_20p
+-set ctZ -1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_m1p_cpQM_30p_cpt_20p
+-set ctZ 0.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_m1p_cpQM_30p_cpt_20p
+-set ctZ 1.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_m1p_cpQM_30p_cpt_20p
+-set ctZ 2.000000
+-set ctZI -1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_0p_cpQM_30p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_0p_cpQM_30p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_0p_cpQM_30p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_0p_cpQM_30p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_0p_cpQM_30p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 0.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_1p_cpQM_30p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_1p_cpQM_30p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_1p_cpQM_30p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_1p_cpQM_30p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_1p_cpQM_30p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 1.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m2p_ctZI_2p_cpQM_30p_cpt_20p
+-set ctZ -2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_m1p_ctZI_2p_cpQM_30p_cpt_20p
+-set ctZ -1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_0p_ctZI_2p_cpQM_30p_cpt_20p
+-set ctZ 0.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_1p_ctZI_2p_cpQM_30p_cpt_20p
+-set ctZ 1.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
+-
+-launch --rwgt_name=ctZ_2p_ctZI_2p_cpQM_30p_cpt_20p
+-set ctZ 2.000000
+-set ctZI 2.000000
+-set cpQM 30.000000
+-set cpt 20.000000
++launch --rwgt_name=
+ 
+diff --git a/submit_gridpacks.sh b/submit_gridpacks.sh
+index b94402d..3ad7e77 100755
+--- a/submit_gridpacks.sh
++++ b/submit_gridpacks.sh
+@@ -14,22 +14,24 @@
+ ################################################################
+ 
+ # declare states to analyze
+-declare -a states=('ttZ' 'ttgamma' 'ttW')
++#declare -a states=('ttZ' 'ttgamma' 'ttW')
++#declare -a states=('tWZ' 'ttgamma' 'tZq' 'Zgamma' 'tW' 'tt' 'WZ' 'tt_semilep')
++declare -a states=('tWZ' 'tW' 'WZ' 'tt_semilep' 'Zgamma')
+ 
+ # polynomial order
+ polyorder='2'
+ 
+ # dim6 operators and stepsize as string
+-operators='ctp 1 ctpI 1 cpQM 1 cpQ3 1 cpt 1 cptb 1 cptbI 1 ctW 1 ctWI 1 ctZ 1 ctZI 1 cbW 1 cbWI 1 ctG 1 ctGI 1'
++#operators='ctp 1 ctpI 1 cpQM 1 cpQ3 1 cpt 1 cptb 1 cptbI 1 ctW 1 ctWI 1 ctZ 1 ctZI 1 cbW 1 cbWI 1 ctG 1 ctGI 1'
+ 
+ # set reference point
+-referencepoint='ctW 4 ctWI 4 ctZ 4 ctZI 4 ctG 4 ctGI 4'
++#referencepoint='ctW 4 ctWI 4 ctZ 4 ctZI 4 ctG 4 ctGI 4'
+ 
+ # declare number of jets
+-num_jets='0j'
++num_jets=''
+ 
+ # lxplus GRID
+-lxplus='2nw'
++lxplus='1nw'
+ 
+ ################################################################
+ 
+@@ -47,10 +49,10 @@ do
+    mkdir -p $outputpath
+ 
+    # create reweight card
+-   ./make_reweight_card.py --overwrite --filename $PWD/$carddir/$name\_reweight_card.dat --couplings $polyorder $operators --referencepoint $referencepoint
++   ./make_reweight_card.py --overwrite --filename $PWD/$carddir/$name\_reweight_card.dat --couplings #$polyorder $operators --referencepoint $referencepoint
+ 
+    # create customize card
+-   ./make_customizecard.py --filename $PWD/$carddir/$name\_customizecards.dat --referencepoint $referencepoint
++   ./make_customizecard.py --filename $PWD/$carddir/$name\_customizecards.dat #--referencepoint $referencepoint
+ 
+    # run gridpack generation
+    ./submit_gridpack_generation.sh 30000 30000 $lxplus $name $carddir $lxplus $outputpath
+/pool/lsf/llechner/179705427
+WARNING: In non-interactive mode release checks e.g. deprecated releases, production architectures are disabled.
+**** Following environment variables are going to be unset.
+       CMSSW_FULL_RELEASE_BASE
+--2018-07-10 09:37:57--  https://cms-project-generators.web.cern.ch/cms-project-generators/MG5_aMC_v2.6.0.tar.gz
+Resolving cms-project-generators.web.cern.ch... 188.184.67.82, 2001:1458:201:a4::100:34c
+Connecting to cms-project-generators.web.cern.ch|188.184.67.82|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 33578012 (32M) [application/x-gzip]
+Saving to: "MG5_aMC_v2.6.0.tar.gz"
+
+     0K .......... .......... .......... .......... ..........  0% 8.64M 4s
+    50K .......... .......... .......... .......... ..........  0% 28.0M 2s
+   100K .......... .......... .......... .......... ..........  0% 30.5M 2s
+   150K .......... .......... .......... .......... ..........  0% 28.6M 2s
+   200K .......... .......... .......... .......... ..........  0% 27.8M 2s
+   250K .......... .......... .......... .......... ..........  0% 23.9M 2s
+   300K .......... .......... .......... .......... ..........  1% 22.6M 2s
+   350K .......... .......... .......... .......... ..........  1% 27.2M 1s
+   400K .......... .......... .......... .......... ..........  1% 17.4M 2s
+   450K .......... .......... .......... .......... ..........  1% 28.5M 1s
+   500K .......... .......... .......... .......... ..........  1% 10.2M 2s
+   550K .......... .......... .......... .......... ..........  1% 27.4M 2s
+   600K .......... .......... .......... .......... ..........  1% 36.0M 2s
+   650K .......... .......... .......... .......... ..........  2% 31.1M 1s
+   700K .......... .......... .......... .......... ..........  2% 24.9M 1s
+   750K .......... .......... .......... .......... ..........  2% 17.3M 1s
+   800K .......... .......... .......... .......... ..........  2% 17.2M 2s
+   850K .......... .......... .......... .......... ..........  2% 31.6M 1s
+   900K .......... .......... .......... .......... ..........  2% 26.5M 1s
+   950K .......... .......... .......... .......... ..........  3% 29.3M 1s
+  1000K .......... .......... .......... .......... ..........  3% 17.1M 1s
+  1050K .......... .......... .......... .......... ..........  3% 27.9M 1s
+  1100K .......... .......... .......... .......... ..........  3% 18.8M 1s
+  1150K .......... .......... .......... .......... ..........  3% 29.7M 1s
+  1200K .......... .......... .......... .......... ..........  3% 17.7M 1s
+  1250K .......... .......... .......... .......... ..........  3% 26.5M 1s
+  1300K .......... .......... .......... .......... ..........  4% 24.9M 1s
+  1350K .......... .......... .......... .......... ..........  4% 32.4M 1s
+  1400K .......... .......... .......... .......... ..........  4% 24.1M 1s
+  1450K .......... .......... .......... .......... ..........  4% 20.3M 1s
+  1500K .......... .......... .......... .......... ..........  4% 27.1M 1s
+  1550K .......... .......... .......... .......... ..........  4% 30.6M 1s
+  1600K .......... .......... .......... .......... ..........  5% 19.2M 1s
+  1650K .......... .......... .......... .......... ..........  5% 21.1M 1s
+  1700K .......... .......... .......... .......... ..........  5% 22.3M 1s
+  1750K .......... .......... .......... .......... ..........  5% 25.7M 1s
+  1800K .......... .......... .......... .......... ..........  5% 24.8M 1s
+  1850K .......... .......... .......... .......... ..........  5% 25.4M 1s
+  1900K .......... .......... .......... .......... ..........  5% 26.0M 1s
+  1950K .......... .......... .......... .......... ..........  6% 22.7M 1s
+  2000K .......... .......... .......... .......... ..........  6% 17.5M 1s
+  2050K .......... .......... .......... .......... ..........  6% 29.0M 1s
+  2100K .......... .......... .......... .......... ..........  6% 28.0M 1s
+  2150K .......... .......... .......... .......... ..........  6% 22.3M 1s
+  2200K .......... .......... .......... .......... ..........  6% 26.8M 1s
+  2250K .......... .......... .......... .......... ..........  7% 24.0M 1s
+  2300K .......... .......... .......... .......... ..........  7% 33.6M 1s
+  2350K .......... .......... .......... .......... ..........  7% 16.7M 1s
+  2400K .......... .......... .......... .......... ..........  7% 19.1M 1s
+  2450K .......... .......... .......... .......... ..........  7% 28.2M 1s
+  2500K .......... .......... .......... .......... ..........  7% 27.7M 1s
+  2550K .......... .......... .......... .......... ..........  7% 27.9M 1s
+  2600K .......... .......... .......... .......... ..........  8% 20.2M 1s
+  2650K .......... .......... .......... .......... ..........  8% 19.9M 1s
+  2700K .......... .......... .......... .......... ..........  8% 28.2M 1s
+  2750K .......... .......... .......... .......... ..........  8% 29.6M 1s
+  2800K .......... .......... .......... .......... ..........  8% 13.9M 1s
+  2850K .......... .......... .......... .......... ..........  8% 26.7M 1s
+  2900K .......... .......... .......... .......... ..........  8% 20.3M 1s
+  2950K .......... .......... .......... .......... ..........  9% 20.3M 1s
+  3000K .......... .......... .......... .......... ..........  9% 25.6M 1s
+  3050K .......... .......... .......... .......... ..........  9% 27.2M 1s
+  3100K .......... .......... .......... .......... ..........  9% 29.6M 1s
+  3150K .......... .......... .......... .......... ..........  9% 22.9M 1s
+  3200K .......... .......... .......... .......... ..........  9% 20.4M 1s
+  3250K .......... .......... .......... .......... .......... 10% 23.4M 1s
+  3300K .......... .......... .......... .......... .......... 10% 30.6M 1s
+  3350K .......... .......... .......... .......... .......... 10% 19.5M 1s
+  3400K .......... .......... .......... .......... .......... 10% 40.5M 1s
+  3450K .......... .......... .......... .......... .......... 10% 31.5M 1s
+  3500K .......... .......... .......... .......... .......... 10% 24.3M 1s
+  3550K .......... .......... .......... .......... .......... 10% 19.3M 1s
+  3600K .......... .......... .......... .......... .......... 11% 13.4M 1s
+  3650K .......... .......... .......... .......... .......... 11% 12.1M 1s
+  3700K .......... .......... .......... .......... .......... 11% 19.4M 1s
+  3750K .......... .......... .......... .......... .......... 11% 21.1M 1s
+  3800K .......... .......... .......... .......... .......... 11% 18.7M 1s
+  3850K .......... .......... .......... .......... .......... 11% 21.1M 1s
+  3900K .......... .......... .......... .......... .......... 12% 20.8M 1s
+  3950K .......... .......... .......... .......... .......... 12% 15.7M 1s
+  4000K .......... .......... .......... .......... .......... 12% 18.7M 1s
+  4050K .......... .......... .......... .......... .......... 12% 25.4M 1s
+  4100K .......... .......... .......... .......... .......... 12% 22.4M 1s
+  4150K .......... .......... .......... .......... .......... 12% 23.2M 1s
+  4200K .......... .......... .......... .......... .......... 12% 20.2M 1s
+  4250K .......... .......... .......... .......... .......... 13% 18.1M 1s
+  4300K .......... .......... .......... .......... .......... 13% 24.8M 1s
+  4350K .......... .......... .......... .......... .......... 13% 37.1M 1s
+  4400K .......... .......... .......... .......... .......... 13% 32.5M 1s
+  4450K .......... .......... .......... .......... .......... 13% 34.2M 1s
+  4500K .......... .......... .......... .......... .......... 13% 37.4M 1s
+  4550K .......... .......... .......... .......... .......... 14% 19.7M 1s
+  4600K .......... .......... .......... .......... .......... 14% 39.1M 1s
+  4650K .......... .......... .......... .......... .......... 14% 24.5M 1s
+  4700K .......... .......... .......... .......... .......... 14% 33.4M 1s
+  4750K .......... .......... .......... .......... .......... 14% 32.0M 1s
+  4800K .......... .......... .......... .......... .......... 14% 17.1M 1s
+  4850K .......... .......... .......... .......... .......... 14% 21.3M 1s
+  4900K .......... .......... .......... .......... .......... 15% 22.7M 1s
+  4950K .......... .......... .......... .......... .......... 15% 19.8M 1s
+  5000K .......... .......... .......... .......... .......... 15% 22.9M 1s
+  5050K .......... .......... .......... .......... .......... 15% 23.9M 1s
+  5100K .......... .......... .......... .......... .......... 15% 42.7M 1s
+  5150K .......... .......... .......... .......... .......... 15% 33.7M 1s
+  5200K .......... .......... .......... .......... .......... 16% 29.2M 1s
+  5250K .......... .......... .......... .......... .......... 16% 30.8M 1s
+  5300K .......... .......... .......... .......... .......... 16% 34.2M 1s
+  5350K .......... .......... .......... .......... .......... 16% 31.9M 1s
+  5400K .......... .......... .......... .......... .......... 16% 23.6M 1s
+  5450K .......... .......... .......... .......... .......... 16% 37.4M 1s
+  5500K .......... .......... .......... .......... .......... 16% 38.6M 1s
+  5550K .......... .......... .......... .......... .......... 17% 34.5M 1s
+  5600K .......... .......... .......... .......... .......... 17% 29.0M 1s
+  5650K .......... .......... .......... .......... .......... 17% 24.2M 1s
+  5700K .......... .......... .......... .......... .......... 17% 44.2M 1s
+  5750K .......... .......... .......... .......... .......... 17% 34.8M 1s
+  5800K .......... .......... .......... .......... .......... 17% 32.8M 1s
+  5850K .......... .......... .......... .......... .......... 17% 16.6M 1s
+  5900K .......... .......... .......... .......... .......... 18% 18.0M 1s
+  5950K .......... .......... .......... .......... .......... 18% 14.8M 1s
+  6000K .......... .......... .......... .......... .......... 18% 11.4M 1s
+  6050K .......... .......... .......... .......... .......... 18% 17.4M 1s
+  6100K .......... .......... .......... .......... .......... 18% 18.5M 1s
+  6150K .......... .......... .......... .......... .......... 18% 16.2M 1s
+  6200K .......... .......... .......... .......... .......... 19% 17.5M 1s
+  6250K .......... .......... .......... .......... .......... 19% 14.6M 1s
+  6300K .......... .......... .......... .......... .......... 19% 17.7M 1s
+  6350K .......... .......... .......... .......... .......... 19% 15.4M 1s
+  6400K .......... .......... .......... .......... .......... 19% 6.49M 1s
+  6450K .......... .......... .......... .......... .......... 19% 31.9M 1s
+  6500K .......... .......... .......... .......... .......... 19% 29.5M 1s
+  6550K .......... .......... .......... .......... .......... 20% 30.2M 1s
+  6600K .......... .......... .......... .......... .......... 20% 36.7M 1s
+  6650K .......... .......... .......... .......... .......... 20% 37.7M 1s
+  6700K .......... .......... .......... .......... .......... 20% 30.8M 1s
+  6750K .......... .......... .......... .......... .......... 20% 29.6M 1s
+  6800K .......... .......... .......... .......... .......... 20% 23.5M 1s
+  6850K .......... .......... .......... .......... .......... 21% 33.9M 1s
+  6900K .......... .......... .......... .......... .......... 21% 33.9M 1s
+  6950K .......... .......... .......... .......... .......... 21% 22.4M 1s
+  7000K .......... .......... .......... .......... .......... 21% 34.4M 1s
+  7050K .......... .......... .......... .......... .......... 21% 34.1M 1s
+  7100K .......... .......... .......... .......... .......... 21% 33.3M 1s
+  7150K .......... .......... .......... .......... .......... 21% 32.2M 1s
+  7200K .......... .......... .......... .......... .......... 22% 23.8M 1s
+  7250K .......... .......... .......... .......... .......... 22% 37.6M 1s
+  7300K .......... .......... .......... .......... .......... 22% 33.8M 1s
+  7350K .......... .......... .......... .......... .......... 22% 31.8M 1s
+  7400K .......... .......... .......... .......... .......... 22% 29.7M 1s
+  7450K .......... .......... .......... .......... .......... 22% 31.0M 1s
+  7500K .......... .......... .......... .......... .......... 23% 39.1M 1s
+  7550K .......... .......... .......... .......... .......... 23% 47.9M 1s
+  7600K .......... .......... .......... .......... .......... 23% 17.2M 1s
+  7650K .......... .......... .......... .......... .......... 23% 29.9M 1s
+  7700K .......... .......... .......... .......... .......... 23% 29.2M 1s
+  7750K .......... .......... .......... .......... .......... 23% 32.1M 1s
+  7800K .......... .......... .......... .......... .......... 23% 34.8M 1s
+  7850K .......... .......... .......... .......... .......... 24% 32.9M 1s
+  7900K .......... .......... .......... .......... .......... 24% 22.6M 1s
+  7950K .......... .......... .......... .......... .......... 24% 35.6M 1s
+  8000K .......... .......... .......... .......... .......... 24% 21.0M 1s
+  8050K .......... .......... .......... .......... .......... 24% 50.3M 1s
+  8100K .......... .......... .......... .......... .......... 24% 5.08M 1s
+  8150K .......... .......... .......... .......... .......... 25% 12.4M 1s
+  8200K .......... .......... .......... .......... .......... 25% 22.2M 1s
+  8250K .......... .......... .......... .......... .......... 25% 24.0M 1s
+  8300K .......... .......... .......... .......... .......... 25% 23.5M 1s
+  8350K .......... .......... .......... .......... .......... 25% 20.1M 1s
+  8400K .......... .......... .......... .......... .......... 25% 11.6M 1s
+  8450K .......... .......... .......... .......... .......... 25% 17.3M 1s
+  8500K .......... .......... .......... .......... .......... 26% 12.2M 1s
+  8550K .......... .......... .......... .......... .......... 26% 16.4M 1s
+  8600K .......... .......... .......... .......... .......... 26% 18.2M 1s
+  8650K .......... .......... .......... .......... .......... 26% 12.0M 1s
+  8700K .......... .......... .......... .......... .......... 26% 24.2M 1s
+  8750K .......... .......... .......... .......... .......... 26% 15.2M 1s
+  8800K .......... .......... .......... .......... .......... 26% 13.9M 1s
+  8850K .......... .......... .......... .......... .......... 27% 17.2M 1s
+  8900K .......... .......... .......... .......... .......... 27% 19.4M 1s
+  8950K .......... .......... .......... .......... .......... 27% 23.8M 1s
+  9000K .......... .......... .......... .......... .......... 27% 32.1M 1s
+  9050K .......... .......... .......... .......... .......... 27% 26.4M 1s
+  9100K .......... .......... .......... .......... .......... 27% 26.1M 1s
+  9150K .......... .......... .......... .......... .......... 28% 33.0M 1s
+  9200K .......... .......... .......... .......... .......... 28% 24.2M 1s
+  9250K .......... .......... .......... .......... .......... 28% 29.1M 1s
+  9300K .......... .......... .......... .......... .......... 28% 32.5M 1s
+  9350K .......... .......... .......... .......... .......... 28% 26.6M 1s
+  9400K .......... .......... .......... .......... .......... 28% 28.9M 1s
+  9450K .......... .......... .......... .......... .......... 28% 16.8M 1s
+  9500K .......... .......... .......... .......... .......... 29% 29.9M 1s
+  9550K .......... .......... .......... .......... .......... 29% 29.1M 1s
+  9600K .......... .......... .......... .......... .......... 29% 20.9M 1s
+  9650K .......... .......... .......... .......... .......... 29% 29.3M 1s
+  9700K .......... .......... .......... .......... .......... 29% 25.2M 1s
+  9750K .......... .......... .......... .......... .......... 29% 23.4M 1s
+  9800K .......... .......... .......... .......... .......... 30% 24.2M 1s
+  9850K .......... .......... .......... .......... .......... 30% 20.3M 1s
+  9900K .......... .......... .......... .......... .......... 30% 14.5M 1s
+  9950K .......... .......... .......... .......... .......... 30% 20.7M 1s
+ 10000K .......... .......... .......... .......... .......... 30% 15.7M 1s
+ 10050K .......... .......... .......... .......... .......... 30% 23.0M 1s
+ 10100K .......... .......... .......... .......... .......... 30% 17.6M 1s
+ 10150K .......... .......... .......... .......... .......... 31% 19.8M 1s
+ 10200K .......... .......... .......... .......... .......... 31% 17.9M 1s
+ 10250K .......... .......... .......... .......... .......... 31% 9.97M 1s
+ 10300K .......... .......... .......... .......... .......... 31% 11.2M 1s
+ 10350K .......... .......... .......... .......... .......... 31% 19.2M 1s
+ 10400K .......... .......... .......... .......... .......... 31% 15.2M 1s
+ 10450K .......... .......... .......... .......... .......... 32% 22.5M 1s
+ 10500K .......... .......... .......... .......... .......... 32% 19.4M 1s
+ 10550K .......... .......... .......... .......... .......... 32% 18.1M 1s
+ 10600K .......... .......... .......... .......... .......... 32% 19.0M 1s
+ 10650K .......... .......... .......... .......... .......... 32% 20.3M 1s
+ 10700K .......... .......... .......... .......... .......... 32% 17.1M 1s
+ 10750K .......... .......... .......... .......... .......... 32% 16.7M 1s
+ 10800K .......... .......... .......... .......... .......... 33% 16.9M 1s
+ 10850K .......... .......... .......... .......... .......... 33% 40.7M 1s
+ 10900K .......... .......... .......... .......... .......... 33% 37.3M 1s
+ 10950K .......... .......... .......... .......... .......... 33% 21.7M 1s
+ 11000K .......... .......... .......... .......... .......... 33% 20.2M 1s
+ 11050K .......... .......... .......... .......... .......... 33% 35.2M 1s
+ 11100K .......... .......... .......... .......... .......... 34% 24.5M 1s
+ 11150K .......... .......... .......... .......... .......... 34% 32.7M 1s
+ 11200K .......... .......... .......... .......... .......... 34% 18.2M 1s
+ 11250K .......... .......... .......... .......... .......... 34% 29.5M 1s
+ 11300K .......... .......... .......... .......... .......... 34% 30.6M 1s
+ 11350K .......... .......... .......... .......... .......... 34% 30.1M 1s
+ 11400K .......... .......... .......... .......... .......... 34% 30.5M 1s
+ 11450K .......... .......... .......... .......... .......... 35% 29.9M 1s
+ 11500K .......... .......... .......... .......... .......... 35% 34.6M 1s
+ 11550K .......... .......... .......... .......... .......... 35% 38.3M 1s
+ 11600K .......... .......... .......... .......... .......... 35% 26.6M 1s
+ 11650K .......... .......... .......... .......... .......... 35% 34.6M 1s
+ 11700K .......... .......... .......... .......... .......... 35% 29.3M 1s
+ 11750K .......... .......... .......... .......... .......... 35% 30.5M 1s
+ 11800K .......... .......... .......... .......... .......... 36% 21.0M 1s
+ 11850K .......... .......... .......... .......... .......... 36% 33.0M 1s
+ 11900K .......... .......... .......... .......... .......... 36% 30.1M 1s
+ 11950K .......... .......... .......... .......... .......... 36% 36.1M 1s
+ 12000K .......... .......... .......... .......... .......... 36% 14.7M 1s
+ 12050K .......... .......... .......... .......... .......... 36% 32.5M 1s
+ 12100K .......... .......... .......... .......... .......... 37% 8.93M 1s
+ 12150K .......... .......... .......... .......... .......... 37% 29.8M 1s
+ 12200K .......... .......... .......... .......... .......... 37% 30.7M 1s
+ 12250K .......... .......... .......... .......... .......... 37% 28.7M 1s
+ 12300K .......... .......... .......... .......... .......... 37% 29.1M 1s
+ 12350K .......... .......... .......... .......... .......... 37% 33.2M 1s
+ 12400K .......... .......... .......... .......... .......... 37% 24.6M 1s
+ 12450K .......... .......... .......... .......... .......... 38% 27.9M 1s
+ 12500K .......... .......... .......... .......... .......... 38% 32.0M 1s
+ 12550K .......... .......... .......... .......... .......... 38% 18.4M 1s
+ 12600K .......... .......... .......... .......... .......... 38% 18.1M 1s
+ 12650K .......... .......... .......... .......... .......... 38% 17.0M 1s
+ 12700K .......... .......... .......... .......... .......... 38% 17.7M 1s
+ 12750K .......... .......... .......... .......... .......... 39% 18.6M 1s
+ 12800K .......... .......... .......... .......... .......... 39% 11.4M 1s
+ 12850K .......... .......... .......... .......... .......... 39% 16.5M 1s
+ 12900K .......... .......... .......... .......... .......... 39% 20.3M 1s
+ 12950K .......... .......... .......... .......... .......... 39% 14.6M 1s
+ 13000K .......... .......... .......... .......... .......... 39% 26.7M 1s
+ 13050K .......... .......... .......... .......... .......... 39% 17.2M 1s
+ 13100K .......... .......... .......... .......... .......... 40% 9.46M 1s
+ 13150K .......... .......... .......... .......... .......... 40% 14.0M 1s
+ 13200K .......... .......... .......... .......... .......... 40% 12.2M 1s
+ 13250K .......... .......... .......... .......... .......... 40% 12.4M 1s
+ 13300K .......... .......... .......... .......... .......... 40% 13.4M 1s
+ 13350K .......... .......... .......... .......... .......... 40% 9.99M 1s
+ 13400K .......... .......... .......... .......... .......... 41% 8.93M 1s
+ 13450K .......... .......... .......... .......... .......... 41% 12.7M 1s
+ 13500K .......... .......... .......... .......... .......... 41% 18.3M 1s
+ 13550K .......... .......... .......... .......... .......... 41% 24.4M 1s
+ 13600K .......... .......... .......... .......... .......... 41% 18.2M 1s
+ 13650K .......... .......... .......... .......... .......... 41% 24.5M 1s
+ 13700K .......... .......... .......... .......... .......... 41% 16.8M 1s
+ 13750K .......... .......... .......... .......... .......... 42% 21.2M 1s
+ 13800K .......... .......... .......... .......... .......... 42% 21.2M 1s
+ 13850K .......... .......... .......... .......... .......... 42% 22.9M 1s
+ 13900K .......... .......... .......... .......... .......... 42% 17.8M 1s
+ 13950K .......... .......... .......... .......... .......... 42% 23.7M 1s
+ 14000K .......... .......... .......... .......... .......... 42% 17.2M 1s
+ 14050K .......... .......... .......... .......... .......... 42% 24.4M 1s
+ 14100K .......... .......... .......... .......... .......... 43% 17.6M 1s
+ 14150K .......... .......... .......... .......... .......... 43% 21.4M 1s
+ 14200K .......... .......... .......... .......... .......... 43% 27.5M 1s
+ 14250K .......... .......... .......... .......... .......... 43% 22.9M 1s
+ 14300K .......... .......... .......... .......... .......... 43% 17.1M 1s
+ 14350K .......... .......... .......... .......... .......... 43% 15.1M 1s
+ 14400K .......... .......... .......... .......... .......... 44% 14.1M 1s
+ 14450K .......... .......... .......... .......... .......... 44% 10.9M 1s
+ 14500K .......... .......... .......... .......... .......... 44% 11.4M 1s
+ 14550K .......... .......... .......... .......... .......... 44% 9.79M 1s
+ 14600K .......... .......... .......... .......... .......... 44% 14.0M 1s
+ 14650K .......... .......... .......... .......... .......... 44% 15.8M 1s
+ 14700K .......... .......... .......... .......... .......... 44% 16.1M 1s
+ 14750K .......... .......... .......... .......... .......... 45% 13.7M 1s
+ 14800K .......... .......... .......... .......... .......... 45% 6.83M 1s
+ 14850K .......... .......... .......... .......... .......... 45% 6.53M 1s
+ 14900K .......... .......... .......... .......... .......... 45% 15.5M 1s
+ 14950K .......... .......... .......... .......... .......... 45% 15.8M 1s
+ 15000K .......... .......... .......... .......... .......... 45% 12.6M 1s
+ 15050K .......... .......... .......... .......... .......... 46% 10.5M 1s
+ 15100K .......... .......... .......... .......... .......... 46% 14.3M 1s
+ 15150K .......... .......... .......... .......... .......... 46% 10.2M 1s
+ 15200K .......... .......... .......... .......... .......... 46% 12.1M 1s
+ 15250K .......... .......... .......... .......... .......... 46% 13.8M 1s
+ 15300K .......... .......... .......... .......... .......... 46% 8.94M 1s
+ 15350K .......... .......... .......... .......... .......... 46% 14.3M 1s
+ 15400K .......... .......... .......... .......... .......... 47% 11.0M 1s
+ 15450K .......... .......... .......... .......... .......... 47% 15.6M 1s
+ 15500K .......... .......... .......... .......... .......... 47% 11.2M 1s
+ 15550K .......... .......... .......... .......... .......... 47% 16.5M 1s
+ 15600K .......... .......... .......... .......... .......... 47% 12.2M 1s
+ 15650K .......... .......... .......... .......... .......... 47% 18.1M 1s
+ 15700K .......... .......... .......... .......... .......... 48% 11.9M 1s
+ 15750K .......... .......... .......... .......... .......... 48% 11.4M 1s
+ 15800K .......... .......... .......... .......... .......... 48% 27.1M 1s
+ 15850K .......... .......... .......... .......... .......... 48% 24.2M 1s
+ 15900K .......... .......... .......... .......... .......... 48% 23.0M 1s
+ 15950K .......... .......... .......... .......... .......... 48% 6.92M 1s
+ 16000K .......... .......... .......... .......... .......... 48% 14.4M 1s
+ 16050K .......... .......... .......... .......... .......... 49% 25.7M 1s
+ 16100K .......... .......... .......... .......... .......... 49% 28.2M 1s
+ 16150K .......... .......... .......... .......... .......... 49% 25.6M 1s
+ 16200K .......... .......... .......... .......... .......... 49% 15.9M 1s
+ 16250K .......... .......... .......... .......... .......... 49% 11.4M 1s
+ 16300K .......... .......... .......... .......... .......... 49% 10.8M 1s
+ 16350K .......... .......... .......... .......... .......... 50% 25.5M 1s
+ 16400K .......... .......... .......... .......... .......... 50% 9.74M 1s
+ 16450K .......... .......... .......... .......... .......... 50% 23.9M 1s
+ 16500K .......... .......... .......... .......... .......... 50% 23.9M 1s
+ 16550K .......... .......... .......... .......... .......... 50% 14.0M 1s
+ 16600K .......... .......... .......... .......... .......... 50% 21.7M 1s
+ 16650K .......... .......... .......... .......... .......... 50% 20.5M 1s
+ 16700K .......... .......... .......... .......... .......... 51% 21.2M 1s
+ 16750K .......... .......... .......... .......... .......... 51% 15.7M 1s
+ 16800K .......... .......... .......... .......... .......... 51% 14.0M 1s
+ 16850K .......... .......... .......... .......... .......... 51% 24.1M 1s
+ 16900K .......... .......... .......... .......... .......... 51% 17.2M 1s
+ 16950K .......... .......... .......... .......... .......... 51% 29.5M 1s
+ 17000K .......... .......... .......... .......... .......... 51% 26.8M 1s
+ 17050K .......... .......... .......... .......... .......... 52% 30.5M 1s
+ 17100K .......... .......... .......... .......... .......... 52% 27.0M 1s
+ 17150K .......... .......... .......... .......... .......... 52% 30.1M 1s
+ 17200K .......... .......... .......... .......... .......... 52% 22.0M 1s
+ 17250K .......... .......... .......... .......... .......... 52% 16.0M 1s
+ 17300K .......... .......... .......... .......... .......... 52% 33.4M 1s
+ 17350K .......... .......... .......... .......... .......... 53% 26.1M 1s
+ 17400K .......... .......... .......... .......... .......... 53% 27.0M 1s
+ 17450K .......... .......... .......... .......... .......... 53% 30.3M 1s
+ 17500K .......... .......... .......... .......... .......... 53% 33.4M 1s
+ 17550K .......... .......... .......... .......... .......... 53% 34.3M 1s
+ 17600K .......... .......... .......... .......... .......... 53% 12.8M 1s
+ 17650K .......... .......... .......... .......... .......... 53% 23.4M 1s
+ 17700K .......... .......... .......... .......... .......... 54% 20.4M 1s
+ 17750K .......... .......... .......... .......... .......... 54% 19.8M 1s
+ 17800K .......... .......... .......... .......... .......... 54% 21.3M 1s
+ 17850K .......... .......... .......... .......... .......... 54% 20.5M 1s
+ 17900K .......... .......... .......... .......... .......... 54% 18.8M 1s
+ 17950K .......... .......... .......... .......... .......... 54% 19.3M 1s
+ 18000K .......... .......... .......... .......... .......... 55% 12.8M 1s
+ 18050K .......... .......... .......... .......... .......... 55% 19.6M 1s
+ 18100K .......... .......... .......... .......... .......... 55% 18.2M 1s
+ 18150K .......... .......... .......... .......... .......... 55% 17.5M 1s
+ 18200K .......... .......... .......... .......... .......... 55% 15.5M 1s
+ 18250K .......... .......... .......... .......... .......... 55% 12.1M 1s
+ 18300K .......... .......... .......... .......... .......... 55% 15.5M 1s
+ 18350K .......... .......... .......... .......... .......... 56% 15.9M 1s
+ 18400K .......... .......... .......... .......... .......... 56% 11.8M 1s
+ 18450K .......... .......... .......... .......... .......... 56% 12.4M 1s
+ 18500K .......... .......... .......... .......... .......... 56% 12.7M 1s
+ 18550K .......... .......... .......... .......... .......... 56% 12.3M 1s
+ 18600K .......... .......... .......... .......... .......... 56% 12.1M 1s
+ 18650K .......... .......... .......... .......... .......... 57% 16.3M 1s
+ 18700K .......... .......... .......... .......... .......... 57% 16.9M 1s
+ 18750K .......... .......... .......... .......... .......... 57% 18.0M 1s
+ 18800K .......... .......... .......... .......... .......... 57% 13.3M 1s
+ 18850K .......... .......... .......... .......... .......... 57% 16.3M 1s
+ 18900K .......... .......... .......... .......... .......... 57% 9.11M 1s
+ 18950K .......... .......... .......... .......... .......... 57% 16.7M 1s
+ 19000K .......... .......... .......... .......... .......... 58% 18.8M 1s
+ 19050K .......... .......... .......... .......... .......... 58% 13.5M 1s
+ 19100K .......... .......... .......... .......... .......... 58% 11.7M 1s
+ 19150K .......... .......... .......... .......... .......... 58% 13.3M 1s
+ 19200K .......... .......... .......... .......... .......... 58% 11.7M 1s
+ 19250K .......... .......... .......... .......... .......... 58% 11.4M 1s
+ 19300K .......... .......... .......... .......... .......... 59% 17.4M 1s
+ 19350K .......... .......... .......... .......... .......... 59% 14.6M 1s
+ 19400K .......... .......... .......... .......... .......... 59% 12.7M 1s
+ 19450K .......... .......... .......... .......... .......... 59% 15.3M 1s
+ 19500K .......... .......... .......... .......... .......... 59% 18.5M 1s
+ 19550K .......... .......... .......... .......... .......... 59% 15.0M 1s
+ 19600K .......... .......... .......... .......... .......... 59% 9.42M 1s
+ 19650K .......... .......... .......... .......... .......... 60% 14.9M 1s
+ 19700K .......... .......... .......... .......... .......... 60% 11.7M 1s
+ 19750K .......... .......... .......... .......... .......... 60% 14.5M 1s
+ 19800K .......... .......... .......... .......... .......... 60% 13.6M 1s
+ 19850K .......... .......... .......... .......... .......... 60% 18.8M 1s
+ 19900K .......... .......... .......... .......... .......... 60% 25.8M 1s
+ 19950K .......... .......... .......... .......... .......... 60% 16.8M 1s
+ 20000K .......... .......... .......... .......... .......... 61% 20.7M 1s
+ 20050K .......... .......... .......... .......... .......... 61% 26.8M 1s
+ 20100K .......... .......... .......... .......... .......... 61% 25.5M 1s
+ 20150K .......... .......... .......... .......... .......... 61% 16.3M 1s
+ 20200K .......... .......... .......... .......... .......... 61% 5.50M 1s
+ 20250K .......... .......... .......... .......... .......... 61% 11.3M 1s
+ 20300K .......... .......... .......... .......... .......... 62% 12.2M 1s
+ 20350K .......... .......... .......... .......... .......... 62% 10.3M 1s
+ 20400K .......... .......... .......... .......... .......... 62% 8.14M 1s
+ 20450K .......... .......... .......... .......... .......... 62% 14.3M 1s
+ 20500K .......... .......... .......... .......... .......... 62% 11.1M 1s
+ 20550K .......... .......... .......... .......... .......... 62% 16.1M 1s
+ 20600K .......... .......... .......... .......... .......... 62% 15.0M 1s
+ 20650K .......... .......... .......... .......... .......... 63% 17.1M 1s
+ 20700K .......... .......... .......... .......... .......... 63% 17.8M 1s
+ 20750K .......... .......... .......... .......... .......... 63% 12.4M 1s
+ 20800K .......... .......... .......... .......... .......... 63% 7.97M 1s
+ 20850K .......... .......... .......... .......... .......... 63% 15.4M 1s
+ 20900K .......... .......... .......... .......... .......... 63% 17.7M 1s
+ 20950K .......... .......... .......... .......... .......... 64% 20.2M 1s
+ 21000K .......... .......... .......... .......... .......... 64% 14.7M 1s
+ 21050K .......... .......... .......... .......... .......... 64% 14.3M 1s
+ 21100K .......... .......... .......... .......... .......... 64% 16.4M 1s
+ 21150K .......... .......... .......... .......... .......... 64% 15.6M 1s
+ 21200K .......... .......... .......... .......... .......... 64% 13.6M 1s
+ 21250K .......... .......... .......... .......... .......... 64% 17.1M 1s
+ 21300K .......... .......... .......... .......... .......... 65% 10.3M 1s
+ 21350K .......... .......... .......... .......... .......... 65% 12.2M 1s
+ 21400K .......... .......... .......... .......... .......... 65% 14.5M 1s
+ 21450K .......... .......... .......... .......... .......... 65% 16.7M 1s
+ 21500K .......... .......... .......... .......... .......... 65% 13.1M 1s
+ 21550K .......... .......... .......... .......... .......... 65% 15.7M 1s
+ 21600K .......... .......... .......... .......... .......... 66% 10.3M 1s
+ 21650K .......... .......... .......... .......... .......... 66% 26.0M 1s
+ 21700K .......... .......... .......... .......... .......... 66% 30.1M 1s
+ 21750K .......... .......... .......... .......... .......... 66% 28.4M 1s
+ 21800K .......... .......... .......... .......... .......... 66% 28.2M 1s
+ 21850K .......... .......... .......... .......... .......... 66% 16.7M 1s
+ 21900K .......... .......... .......... .......... .......... 66% 27.9M 1s
+ 21950K .......... .......... .......... .......... .......... 67% 30.7M 1s
+ 22000K .......... .......... .......... .......... .......... 67% 13.9M 1s
+ 22050K .......... .......... .......... .......... .......... 67% 16.2M 1s
+ 22100K .......... .......... .......... .......... .......... 67% 16.3M 1s
+ 22150K .......... .......... .......... .......... .......... 67% 18.1M 1s
+ 22200K .......... .......... .......... .......... .......... 67% 9.83M 1s
+ 22250K .......... .......... .......... .......... .......... 68% 12.4M 1s
+ 22300K .......... .......... .......... .......... .......... 68% 16.0M 1s
+ 22350K .......... .......... .......... .......... .......... 68% 16.7M 1s
+ 22400K .......... .......... .......... .......... .......... 68% 6.05M 1s
+ 22450K .......... .......... .......... .......... .......... 68% 26.6M 1s
+ 22500K .......... .......... .......... .......... .......... 68% 27.5M 1s
+ 22550K .......... .......... .......... .......... .......... 68% 30.1M 1s
+ 22600K .......... .......... .......... .......... .......... 69% 18.6M 1s
+ 22650K .......... .......... .......... .......... .......... 69% 28.7M 1s
+ 22700K .......... .......... .......... .......... .......... 69% 16.3M 1s
+ 22750K .......... .......... .......... .......... .......... 69% 30.1M 1s
+ 22800K .......... .......... .......... .......... .......... 69% 22.8M 1s
+ 22850K .......... .......... .......... .......... .......... 69% 17.9M 1s
+ 22900K .......... .......... .......... .......... .......... 69% 18.4M 1s
+ 22950K .......... .......... .......... .......... .......... 70% 14.0M 1s
+ 23000K .......... .......... .......... .......... .......... 70% 12.6M 1s
+ 23050K .......... .......... .......... .......... .......... 70% 23.0M 1s
+ 23100K .......... .......... .......... .......... .......... 70% 18.2M 1s
+ 23150K .......... .......... .......... .......... .......... 70% 38.1M 1s
+ 23200K .......... .......... .......... .......... .......... 70% 16.9M 1s
+ 23250K .......... .......... .......... .......... .......... 71% 31.6M 1s
+ 23300K .......... .......... .......... .......... .......... 71% 32.0M 0s
+ 23350K .......... .......... .......... .......... .......... 71% 38.4M 0s
+ 23400K .......... .......... .......... .......... .......... 71% 22.5M 0s
+ 23450K .......... .......... .......... .......... .......... 71% 21.2M 0s
+ 23500K .......... .......... .......... .......... .......... 71% 21.1M 0s
+ 23550K .......... .......... .......... .......... .......... 71% 23.8M 0s
+ 23600K .......... .......... .......... .......... .......... 72% 14.6M 0s
+ 23650K .......... .......... .......... .......... .......... 72% 19.1M 0s
+ 23700K .......... .......... .......... .......... .......... 72% 12.5M 0s
+ 23750K .......... .......... .......... .......... .......... 72% 29.0M 0s
+ 23800K .......... .......... .......... .......... .......... 72% 26.3M 0s
+ 23850K .......... .......... .......... .......... .......... 72% 29.6M 0s
+ 23900K .......... .......... .......... .......... .......... 73% 16.0M 0s
+ 23950K .......... .......... .......... .......... .......... 73% 17.4M 0s
+ 24000K .......... .......... .......... .......... .......... 73% 24.6M 0s
+ 24050K .......... .......... .......... .......... .......... 73% 37.3M 0s
+ 24100K .......... .......... .......... .......... .......... 73% 33.9M 0s
+ 24150K .......... .......... .......... .......... .......... 73% 32.5M 0s
+ 24200K .......... .......... .......... .......... .......... 73% 28.3M 0s
+ 24250K .......... .......... .......... .......... .......... 74% 35.7M 0s
+ 24300K .......... .......... .......... .......... .......... 74% 32.1M 0s
+ 24350K .......... .......... .......... .......... .......... 74% 17.7M 0s
+ 24400K .......... .......... .......... .......... .......... 74% 23.7M 0s
+ 24450K .......... .......... .......... .......... .......... 74% 30.9M 0s
+ 24500K .......... .......... .......... .......... .......... 74% 33.1M 0s
+ 24550K .......... .......... .......... .......... .......... 75% 32.5M 0s
+ 24600K .......... .......... .......... .......... .......... 75% 31.3M 0s
+ 24650K .......... .......... .......... .......... .......... 75% 34.8M 0s
+ 24700K .......... .......... .......... .......... .......... 75% 31.0M 0s
+ 24750K .......... .......... .......... .......... .......... 75% 33.5M 0s
+ 24800K .......... .......... .......... .......... .......... 75% 26.0M 0s
+ 24850K .......... .......... .......... .......... .......... 75% 32.8M 0s
+ 24900K .......... .......... .......... .......... .......... 76% 28.0M 0s
+ 24950K .......... .......... .......... .......... .......... 76% 33.9M 0s
+ 25000K .......... .......... .......... .......... .......... 76% 25.2M 0s
+ 25050K .......... .......... .......... .......... .......... 76% 28.7M 0s
+ 25100K .......... .......... .......... .......... .......... 76% 27.7M 0s
+ 25150K .......... .......... .......... .......... .......... 76% 26.5M 0s
+ 25200K .......... .......... .......... .......... .......... 77% 9.94M 0s
+ 25250K .......... .......... .......... .......... .......... 77% 28.3M 0s
+ 25300K .......... .......... .......... .......... .......... 77% 29.9M 0s
+ 25350K .......... .......... .......... .......... .......... 77% 30.9M 0s
+ 25400K .......... .......... .......... .......... .......... 77% 26.9M 0s
+ 25450K .......... .......... .......... .......... .......... 77% 16.5M 0s
+ 25500K .......... .......... .......... .......... .......... 77% 17.8M 0s
+ 25550K .......... .......... .......... .......... .......... 78% 29.5M 0s
+ 25600K .......... .......... .......... .......... .......... 78% 15.5M 0s
+ 25650K .......... .......... .......... .......... .......... 78% 23.9M 0s
+ 25700K .......... .......... .......... .......... .......... 78% 26.1M 0s
+ 25750K .......... .......... .......... .......... .......... 78% 28.3M 0s
+ 25800K .......... .......... .......... .......... .......... 78% 29.4M 0s
+ 25850K .......... .......... .......... .......... .......... 78% 17.2M 0s
+ 25900K .......... .......... .......... .......... .......... 79% 19.3M 0s
+ 25950K .......... .......... .......... .......... .......... 79% 16.7M 0s
+ 26000K .......... .......... .......... .......... .......... 79% 12.7M 0s
+ 26050K .......... .......... .......... .......... .......... 79% 15.5M 0s
+ 26100K .......... .......... .......... .......... .......... 79% 15.0M 0s
+ 26150K .......... .......... .......... .......... .......... 79% 12.0M 0s
+ 26200K .......... .......... .......... .......... .......... 80% 14.4M 0s
+ 26250K .......... .......... .......... .......... .......... 80% 12.0M 0s
+ 26300K .......... .......... .......... .......... .......... 80% 14.3M 0s
+ 26350K .......... .......... .......... .......... .......... 80% 17.4M 0s
+ 26400K .......... .......... .......... .......... .......... 80% 9.92M 0s
+ 26450K .......... .......... .......... .......... .......... 80% 18.3M 0s
+ 26500K .......... .......... .......... .......... .......... 80% 12.3M 0s
+ 26550K .......... .......... .......... .......... .......... 81% 16.7M 0s
+ 26600K .......... .......... .......... .......... .......... 81% 16.9M 0s
+ 26650K .......... .......... .......... .......... .......... 81% 14.8M 0s
+ 26700K .......... .......... .......... .......... .......... 81% 11.8M 0s
+ 26750K .......... .......... .......... .......... .......... 81% 11.3M 0s
+ 26800K .......... .......... .......... .......... .......... 81% 13.1M 0s
+ 26850K .......... .......... .......... .......... .......... 82% 19.6M 0s
+ 26900K .......... .......... .......... .......... .......... 82% 14.3M 0s
+ 26950K .......... .......... .......... .......... .......... 82% 14.0M 0s
+ 27000K .......... .......... .......... .......... .......... 82% 17.5M 0s
+ 27050K .......... .......... .......... .......... .......... 82% 17.5M 0s
+ 27100K .......... .......... .......... .......... .......... 82% 13.4M 0s
+ 27150K .......... .......... .......... .......... .......... 82% 13.1M 0s
+ 27200K .......... .......... .......... .......... .......... 83% 9.04M 0s
+ 27250K .......... .......... .......... .......... .......... 83% 14.4M 0s
+ 27300K .......... .......... .......... .......... .......... 83% 13.2M 0s
+ 27350K .......... .......... .......... .......... .......... 83% 17.1M 0s
+ 27400K .......... .......... .......... .......... .......... 83% 11.2M 0s
+ 27450K .......... .......... .......... .......... .......... 83% 14.8M 0s
+ 27500K .......... .......... .......... .......... .......... 84% 10.9M 0s
+ 27550K .......... .......... .......... .......... .......... 84% 10.2M 0s
+ 27600K .......... .......... .......... .......... .......... 84% 13.3M 0s
+ 27650K .......... .......... .......... .......... .......... 84% 19.4M 0s
+ 27700K .......... .......... .......... .......... .......... 84% 14.3M 0s
+ 27750K .......... .......... .......... .......... .......... 84% 16.5M 0s
+ 27800K .......... .......... .......... .......... .......... 84% 10.5M 0s
+ 27850K .......... .......... .......... .......... .......... 85% 19.2M 0s
+ 27900K .......... .......... .......... .......... .......... 85% 18.0M 0s
+ 27950K .......... .......... .......... .......... .......... 85% 13.7M 0s
+ 28000K .......... .......... .......... .......... .......... 85% 13.2M 0s
+ 28050K .......... .......... .......... .......... .......... 85% 13.1M 0s
+ 28100K .......... .......... .......... .......... .......... 85% 18.2M 0s
+ 28150K .......... .......... .......... .......... .......... 85% 16.7M 0s
+ 28200K .......... .......... .......... .......... .......... 86% 12.0M 0s
+ 28250K .......... .......... .......... .......... .......... 86% 18.8M 0s
+ 28300K .......... .......... .......... .......... .......... 86% 19.9M 0s
+ 28350K .......... .......... .......... .......... .......... 86% 17.5M 0s
+ 28400K .......... .......... .......... .......... .......... 86% 12.5M 0s
+ 28450K .......... .......... .......... .......... .......... 86% 16.9M 0s
+ 28500K .......... .......... .......... .......... .......... 87% 12.9M 0s
+ 28550K .......... .......... .......... .......... .......... 87% 15.0M 0s
+ 28600K .......... .......... .......... .......... .......... 87% 14.1M 0s
+ 28650K .......... .......... .......... .......... .......... 87% 13.4M 0s
+ 28700K .......... .......... .......... .......... .......... 87% 5.97M 0s
+ 28750K .......... .......... .......... .......... .......... 87% 19.2M 0s
+ 28800K .......... .......... .......... .......... .......... 87% 14.4M 0s
+ 28850K .......... .......... .......... .......... .......... 88% 12.9M 0s
+ 28900K .......... .......... .......... .......... .......... 88% 12.3M 0s
+ 28950K .......... .......... .......... .......... .......... 88% 15.0M 0s
+ 29000K .......... .......... .......... .......... .......... 88% 15.5M 0s
+ 29050K .......... .......... .......... .......... .......... 88% 16.2M 0s
+ 29100K .......... .......... .......... .......... .......... 88% 17.4M 0s
+ 29150K .......... .......... .......... .......... .......... 89% 12.3M 0s
+ 29200K .......... .......... .......... .......... .......... 89% 8.76M 0s
+ 29250K .......... .......... .......... .......... .......... 89% 10.6M 0s
+ 29300K .......... .......... .......... .......... .......... 89% 11.4M 0s
+ 29350K .......... .......... .......... .......... .......... 89% 17.0M 0s
+ 29400K .......... .......... .......... .......... .......... 89% 12.4M 0s
+ 29450K .......... .......... .......... .......... .......... 89% 16.5M 0s
+ 29500K .......... .......... .......... .......... .......... 90% 16.5M 0s
+ 29550K .......... .......... .......... .......... .......... 90% 14.6M 0s
+ 29600K .......... .......... .......... .......... .......... 90% 7.98M 0s
+ 29650K .......... .......... .......... .......... .......... 90% 9.35M 0s
+ 29700K .......... .......... .......... .......... .......... 90% 12.2M 0s
+ 29750K .......... .......... .......... .......... .......... 90% 17.0M 0s
+ 29800K .......... .......... .......... .......... .......... 91% 13.0M 0s
+ 29850K .......... .......... .......... .......... .......... 91% 17.2M 0s
+ 29900K .......... .......... .......... .......... .......... 91% 14.8M 0s
+ 29950K .......... .......... .......... .......... .......... 91% 14.0M 0s
+ 30000K .......... .......... .......... .......... .......... 91% 7.96M 0s
+ 30050K .......... .......... .......... .......... .......... 91% 14.9M 0s
+ 30100K .......... .......... .......... .......... .......... 91% 14.3M 0s
+ 30150K .......... .......... .......... .......... .......... 92% 17.7M 0s
+ 30200K .......... .......... .......... .......... .......... 92% 9.17M 0s
+ 30250K .......... .......... .......... .......... .......... 92% 20.9M 0s
+ 30300K .......... .......... .......... .......... .......... 92% 18.9M 0s
+ 30350K .......... .......... .......... .......... .......... 92% 15.1M 0s
+ 30400K .......... .......... .......... .......... .......... 92% 11.8M 0s
+ 30450K .......... .......... .......... .......... .......... 93% 13.3M 0s
+ 30500K .......... .......... .......... .......... .......... 93% 11.8M 0s
+ 30550K .......... .......... .......... .......... .......... 93% 21.6M 0s
+ 30600K .......... .......... .......... .......... .......... 93% 12.8M 0s
+ 30650K .......... .......... .......... .......... .......... 93% 16.2M 0s
+ 30700K .......... .......... .......... .......... .......... 93% 14.4M 0s
+ 30750K .......... .......... .......... .......... .......... 93% 17.4M 0s
+ 30800K .......... .......... .......... .......... .......... 94% 9.06M 0s
+ 30850K .......... .......... .......... .......... .......... 94% 21.2M 0s
+ 30900K .......... .......... .......... .......... .......... 94% 22.5M 0s
+ 30950K .......... .......... .......... .......... .......... 94% 15.6M 0s
+ 31000K .......... .......... .......... .......... .......... 94% 16.6M 0s
+ 31050K .......... .......... .......... .......... .......... 94% 19.1M 0s
+ 31100K .......... .......... .......... .......... .......... 94% 17.3M 0s
+ 31150K .......... .......... .......... .......... .......... 95% 12.3M 0s
+ 31200K .......... .......... .......... .......... .......... 95% 11.7M 0s
+ 31250K .......... .......... .......... .......... .......... 95% 22.8M 0s
+ 31300K .......... .......... .......... .......... .......... 95% 13.9M 0s
+ 31350K .......... .......... .......... .......... .......... 95% 13.2M 0s
+ 31400K .......... .......... .......... .......... .......... 95% 10.7M 0s
+ 31450K .......... .......... .......... .......... .......... 96% 15.1M 0s
+ 31500K .......... .......... .......... .......... .......... 96% 21.7M 0s
+ 31550K .......... .......... .......... .......... .......... 96% 15.1M 0s
+ 31600K .......... .......... .......... .......... .......... 96% 14.1M 0s
+ 31650K .......... .......... .......... .......... .......... 96% 21.8M 0s
+ 31700K .......... .......... .......... .......... .......... 96% 22.4M 0s
+ 31750K .......... .......... .......... .......... .......... 96% 13.6M 0s
+ 31800K .......... .......... .......... .......... .......... 97% 22.5M 0s
+ 31850K .......... .......... .......... .......... .......... 97% 19.0M 0s
+ 31900K .......... .......... .......... .......... .......... 97% 21.5M 0s
+ 31950K .......... .......... .......... .......... .......... 97% 22.8M 0s
+ 32000K .......... .......... .......... .......... .......... 97% 16.5M 0s
+ 32050K .......... .......... .......... .......... .......... 97% 21.1M 0s
+ 32100K .......... .......... .......... .......... .......... 98% 19.7M 0s
+ 32150K .......... .......... .......... .......... .......... 98% 21.1M 0s
+ 32200K .......... .......... .......... .......... .......... 98% 22.6M 0s
+ 32250K .......... .......... .......... .......... .......... 98% 21.4M 0s
+ 32300K .......... .......... .......... .......... .......... 98% 21.6M 0s
+ 32350K .......... .......... .......... .......... .......... 98% 20.6M 0s
+ 32400K .......... .......... .......... .......... .......... 98% 15.2M 0s
+ 32450K .......... .......... .......... .......... .......... 99% 5.64M 0s
+ 32500K .......... .......... .......... .......... .......... 99% 17.6M 0s
+ 32550K .......... .......... .......... .......... .......... 99% 19.1M 0s
+ 32600K .......... .......... .......... .......... .......... 99% 21.6M 0s
+ 32650K .......... .......... .......... .......... .......... 99% 25.0M 0s
+ 32700K .......... .......... .......... .......... .......... 99% 26.3M 0s
+ 32750K .......... .......... .......... .......... .         100% 22.8M=1.8s
+
+2018-07-10 09:37:59 (17.8 MB/s) - "MG5_aMC_v2.6.0.tar.gz" saved [33578012/33578012]
+
+patching file models/loop_qcd_qed_sm/restrict_lepton_masses_no_lepton_yukawas.dat
+patching file models/loop_sm/restrict_ckm_no_b_mass.dat
+patching file models/sm/restrict_ckm_lepton_masses.dat
+patching file models/sm/restrict_ckm_lepton_masses_no_b_mass.dat
+patching file models/sm/restrict_ckm_no_b_mass.dat
+patching file models/sm/restrict_lepton_masses_no_b_mass.dat
+patching file Template/NLO/SubProcesses/MCmasses_PYTHIA8.inc
+patching file Template/LO/bin/internal/Gridpack/run.sh
+patching file madgraph/interface/loop_interface.py
+Hunk #1 succeeded at 500 (offset 2 lines).
+patching file madgraph/various/cluster.py
+Hunk #3 succeeded at 1384 (offset 15 lines).
+Hunk #4 succeeded at 1481 (offset 15 lines).
+Hunk #5 succeeded at 1509 (offset 15 lines).
+Hunk #6 succeeded at 1669 (offset 15 lines).
+patching file madgraph/various/systematics.py
+Hunk #1 succeeded at 314 (offset 86 lines).
+Hunk #2 succeeded at 348 (offset 87 lines).
+Hunk #3 succeeded at 512 (offset 96 lines).
+patching file Template/LO/Source/.make_opts
+patching file Template/NLO/Source/make_opts.inc
+patching file madgraph/iolibs/export_v4.py
+Hunk #1 succeeded at 502 (offset 4 lines).
+patching file madgraph/iolibs/template_files/pdf_opendata.f
+patching file madgraph/iolibs/template_files/pdf_wrap_lhapdf.f
+patching file madgraph/various/cluster.py
+Hunk #1 succeeded at 857 (offset 8 lines).
+Hunk #2 succeeded at 1139 (offset 8 lines).
+patching file Template/LO/SubProcesses/refine.sh
+patching file Template/LO/SubProcesses/refine_splitted.sh
+patching file Template/LO/SubProcesses/survey.sh
+patching file Template/NLO/SubProcesses/ajob_template
+patching file Template/NLO/SubProcesses/reweight_xsec_events.local
+patching file Template/LO/Source/.make_opts
+patching file Template/LO/Source/PDF/pdf_lhapdf6.cc
+patching file Template/NLO/Source/PDF/pdf_lhapdf6.cc
+patching file Template/NLO/Source/make_opts.inc
+patching file madgraph/iolibs/template_files/pdf_wrap_lhapdf.f
+patching file madgraph/various/cluster.py
+patching file Template/LO/SubProcesses/refine.sh
+patching file Template/LO/SubProcesses/refine_splitted.sh
+patching file Template/LO/SubProcesses/survey.sh
+patching file Template/NLO/SubProcesses/ajob_template
+patching file Template/NLO/SubProcesses/reweight_xsec_events.local
+patching file madgraph/iolibs/export_v4.py
+Hunk #1 succeeded at 1742 (offset 3 lines).
+patching file MadSpin/interface_madspin.py
+patching file madgraph/interface/reweight_interface.py
+patching file madgraph/interface/common_run_interface.py
+local path is not an afs path, batch jobs will use worker node scratch space instead of afs
+************************************************************
+*                                                          *
+*                     W E L C O M E to                     *
+*              M A D G R A P H 5 _ a M C @ N L O           *
+*                                                          *
+*                                                          *
+*                 *                       *                *
+*                   *        * *        *                  *
+*                     * * * * 5 * * * *                    *
+*                   *        * *        *                  *
+*                 *                       *                *
+*                                                          *
+*         VERSION 2.6.0                 2017-08-16         *
+*                                                          *
+*    The MadGraph5_aMC@NLO Development Team - Find us at   *
+*    https://server06.fynu.ucl.ac.be/projects/madgraph     *
+*                            and                           *
+*            http://amcatnlo.web.cern.ch/amcatnlo/         *
+*                                                          *
+*               Type 'help' for in-line help.              *
+*           Type 'tutorial' to learn how MG5 works         *
+*    Type 'tutorial aMCatNLO' to learn how aMC@NLO works   *
+*    Type 'tutorial MadLoop' to learn how MadLoop works    *
+*                                                          *
+************************************************************
+load MG5 configuration from input/mg5_configuration.txt 
+fastjet-config does not seem to correspond to a valid fastjet-config executable (v3+). We will use fjcore instead.
+ Please set the 'fastjet'variable to the full (absolute) /PATH/TO/fastjet-config (including fastjet-config).
+ MG5_aMC> set fastjet /PATH/TO/fastjet-config
+
+lhapdf-config does not seem to correspond to a valid lhapdf-config executable. 
+Please set the 'lhapdf' variable to the (absolute) /PATH/TO/lhapdf-config (including lhapdf-config).
+Note that you can still compile and run aMC@NLO with the built-in PDFs
+ MG5_aMC> set lhapdf /PATH/TO/lhapdf-config
+
+No valid eps viewer found. Please set in ./input/mg5_configuration.txt
+No valid web browser found. Please set in ./input/mg5_configuration.txt
+import /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/mgconfigscript
+The import format was not given, so we guess it as command
+set auto_update 0
+save options auto_update
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt
+set automatic_html_opening False
+This option will be the default in any output that you are going to create in this session.
+In order to keep this changes permanent please run 'save options'
+set lhapdf /cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/lhapdf/6.2.1/share/LHAPDF/../../bin/lhapdf-config
+set lhapdf to /cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/lhapdf/6.2.1/share/LHAPDF/../../bin/lhapdf-config
+save options lhapdf
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt
+set run_mode  1
+This option will be the default in any output that you are going to create in this session.
+In order to keep this changes permanent please run 'save options'
+set cluster_type lsf
+save options cluster_type
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt
+set cluster_status_update 60 30
+save options cluster_status_update
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt
+set cluster_nb_retry 3
+save options cluster_nb_retry
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt
+set cluster_retry_wait 300
+save options cluster_retry_wait
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt
+set cluster_retry_wait 30
+save options cluster_retry_wait
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt
+save options
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt
+quit
+ 
+
+ 
+
+/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work
+************************************************************
+*                                                          *
+*                     W E L C O M E to                     *
+*              M A D G R A P H 5 _ a M C @ N L O           *
+*                                                          *
+*                                                          *
+*                 *                       *                *
+*                   *        * *        *                  *
+*                     * * * * 5 * * * *                    *
+*                   *        * *        *                  *
+*                 *                       *                *
+*                                                          *
+*         VERSION 2.6.0                 2017-08-16         *
+*                                                          *
+*    The MadGraph5_aMC@NLO Development Team - Find us at   *
+*    https://server06.fynu.ucl.ac.be/projects/madgraph     *
+*                            and                           *
+*            http://amcatnlo.web.cern.ch/amcatnlo/         *
+*                                                          *
+*               Type 'help' for in-line help.              *
+*           Type 'tutorial' to learn how MG5 works         *
+*    Type 'tutorial aMCatNLO' to learn how aMC@NLO works   *
+*    Type 'tutorial MadLoop' to learn how MadLoop works    *
+*                                                          *
+************************************************************
+load MG5 configuration from MG5_aMC_v2_6_0/input/mg5_configuration.txt 
+None does not seem to correspond to a valid fastjet-config executable (v3+). We will use fjcore instead.
+ Please set the 'fastjet'variable to the full (absolute) /PATH/TO/fastjet-config (including fastjet-config).
+ MG5_aMC> set fastjet /PATH/TO/fastjet-config
+
+set lhapdf to /cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/lhapdf/6.2.1/share/LHAPDF/../../bin/lhapdf-config
+No valid eps viewer found. Please set in ./input/mg5_configuration.txt
+No valid web browser found. Please set in ./input/mg5_configuration.txt
+import /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/tWZ_rwgt_proc_card.dat
+The import format was not given, so we guess it as command
+set group_subprocesses Auto
+Set group_subprocesses to Auto
+Note that you need to regenerate all processes
+set ignore_six_quark_processes False
+set loop_optimized_output True
+set loop optimized output to True
+set low_mem_multicore_nlo_generation False
+set loop_color_flows False
+set loop color flows to False
+set gauge unitary
+Passing to gauge unitary.
+set complex_mass_scheme False
+Complex mass already desactivated.
+set max_npoint_for_channel 0
+import model dim6top_LO_UFO
+INFO: reload from .py file 
+INFO: load particles 
+INFO: load vertices 
+INFO: Change particles name to pass to MG5 convention 
+Defined multiparticle p = g u c d s u~ c~ d~ s~
+Defined multiparticle j = g u c d s u~ c~ d~ s~
+Defined multiparticle l+ = e+ mu+
+Defined multiparticle l- = e- mu-
+Defined multiparticle vl = ve vm vt
+Defined multiparticle vl~ = ve~ vm~ vt~
+Defined multiparticle all = g u c d s u~ c~ d~ s~ a ve vm vt e- mu- ve~ vm~ vt~ e+ mu+ t b t~ b~ z w+ h w- ta- ta+
+define p = g u c d s u~ c~ d~ s~
+Defined multiparticle p = g u c d s u~ c~ d~ s~
+define j = g u c d s u~ c~ d~ s~
+Defined multiparticle j = g u c d s u~ c~ d~ s~
+define l+ = e+ mu+ ta+
+Defined multiparticle l+ = e+ mu+ ta+
+define l- = e- mu- ta-
+Defined multiparticle l- = e- mu- ta-
+define vl = ve vm vt
+Defined multiparticle vl = ve vm vt
+define vl~ = ve~ vm~ vt~
+Defined multiparticle vl~ = ve~ vm~ vt~
+define p = p b b~
+Defined multiparticle p = g u c d s u~ c~ d~ s~ b b~
+define j = j b b~
+Defined multiparticle j = g u c d s u~ c~ d~ s~ b b~
+define wdecay = j l+ vl l- vl~
+Defined multiparticle wdecay = g u c d s u~ c~ d~ s~ ve vm vt e- mu- e+ mu+ ve~ vm~ vt~ b b~ ta- ta+
+define w = w+ w-
+Defined multiparticle w = w+ w-
+generate p p > t w l+ l- DIM6=0
+INFO: Trying process: g d > t w- e+ e- DIM6=0 @1  
+INFO: Trying process: g d > t w- e+ mu- DIM6=0 @1  
+INFO: Trying process: g d > t w- e+ ta- DIM6=0 @1  
+INFO: Trying process: g d > t w- mu+ e- DIM6=0 @1  
+INFO: Trying process: g d > t w- mu+ mu- DIM6=0 @1  
+INFO: Trying process: g d > t w- mu+ ta- DIM6=0 @1  
+INFO: Trying process: g d > t w- ta+ e- DIM6=0 @1  
+INFO: Trying process: g d > t w- ta+ mu- DIM6=0 @1  
+INFO: Trying process: g d > t w- ta+ ta- DIM6=0 @1  
+INFO: Trying process: g s > t w- e+ e- DIM6=0 @1  
+INFO: Trying process: g s > t w- e+ mu- DIM6=0 @1  
+INFO: Trying process: g s > t w- e+ ta- DIM6=0 @1  
+INFO: Trying process: g s > t w- mu+ e- DIM6=0 @1  
+INFO: Trying process: g s > t w- mu+ mu- DIM6=0 @1  
+INFO: Trying process: g s > t w- mu+ ta- DIM6=0 @1  
+INFO: Trying process: g s > t w- ta+ e- DIM6=0 @1  
+INFO: Trying process: g s > t w- ta+ mu- DIM6=0 @1  
+INFO: Trying process: g s > t w- ta+ ta- DIM6=0 @1  
+INFO: Trying process: g b > t w- e+ e- DIM6=0 @1  
+INFO: Process has 18 diagrams 
+INFO: Trying process: g b > t w- e+ mu- DIM6=0 @1  
+INFO: Trying process: g b > t w- e+ ta- DIM6=0 @1  
+INFO: Trying process: g b > t w- mu+ e- DIM6=0 @1  
+INFO: Trying process: g b > t w- mu+ mu- DIM6=0 @1  
+INFO: Process has 18 diagrams 
+INFO: Trying process: g b > t w- mu+ ta- DIM6=0 @1  
+INFO: Trying process: g b > t w- ta+ e- DIM6=0 @1  
+INFO: Trying process: g b > t w- ta+ mu- DIM6=0 @1  
+INFO: Trying process: g b > t w- ta+ ta- DIM6=0 @1  
+INFO: Process has 26 diagrams 
+INFO: Process b g > t w- e+ e- added to mirror process g b > t w- e+ e- 
+INFO: Process b g > t w- mu+ mu- added to mirror process g b > t w- mu+ mu- 
+INFO: Process b g > t w- ta+ ta- added to mirror process g b > t w- ta+ ta- 
+3 processes with 62 diagrams generated in 1.825 s
+Total: 3 processes with 62 diagrams
+add process p p > t~ w l+ l- DIM6=0
+INFO: Trying process: g d~ > t~ w+ e+ e- DIM6=0 @2  
+INFO: Trying process: g d~ > t~ w+ e+ mu- DIM6=0 @2  
+INFO: Trying process: g d~ > t~ w+ e+ ta- DIM6=0 @2  
+INFO: Trying process: g d~ > t~ w+ mu+ e- DIM6=0 @2  
+INFO: Trying process: g d~ > t~ w+ mu+ mu- DIM6=0 @2  
+INFO: Trying process: g d~ > t~ w+ mu+ ta- DIM6=0 @2  
+INFO: Trying process: g d~ > t~ w+ ta+ e- DIM6=0 @2  
+INFO: Trying process: g d~ > t~ w+ ta+ mu- DIM6=0 @2  
+INFO: Trying process: g d~ > t~ w+ ta+ ta- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ e+ e- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ e+ mu- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ e+ ta- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ mu+ e- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ mu+ mu- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ mu+ ta- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ ta+ e- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ ta+ mu- DIM6=0 @2  
+INFO: Trying process: g s~ > t~ w+ ta+ ta- DIM6=0 @2  
+INFO: Trying process: g b~ > t~ w+ e+ e- DIM6=0 @2  
+INFO: Process has 18 diagrams 
+INFO: Trying process: g b~ > t~ w+ e+ mu- DIM6=0 @2  
+INFO: Trying process: g b~ > t~ w+ e+ ta- DIM6=0 @2  
+INFO: Trying process: g b~ > t~ w+ mu+ e- DIM6=0 @2  
+INFO: Trying process: g b~ > t~ w+ mu+ mu- DIM6=0 @2  
+INFO: Process has 18 diagrams 
+INFO: Trying process: g b~ > t~ w+ mu+ ta- DIM6=0 @2  
+INFO: Trying process: g b~ > t~ w+ ta+ e- DIM6=0 @2  
+INFO: Trying process: g b~ > t~ w+ ta+ mu- DIM6=0 @2  
+INFO: Trying process: g b~ > t~ w+ ta+ ta- DIM6=0 @2  
+INFO: Process has 26 diagrams 
+INFO: Process b~ g > t~ w+ e+ e- added to mirror process g b~ > t~ w+ e+ e- 
+INFO: Process b~ g > t~ w+ mu+ mu- added to mirror process g b~ > t~ w+ mu+ mu- 
+INFO: Process b~ g > t~ w+ ta+ ta- added to mirror process g b~ > t~ w+ ta+ ta- 
+3 processes with 62 diagrams generated in 2.527 s
+Total: 6 processes with 124 diagrams
+output tWZ_rwgt
+INFO: initialize a new directory: tWZ_rwgt 
+INFO: remove old information in tWZ_rwgt 
+INFO: Organizing processes into subprocess groups 
+INFO: Generating Helas calls for process: g b > t w- ta+ ta- DIM6=0 @1 
+INFO: Processing color information for process: g b > t w- ta+ ta- DIM6=0 @1 
+INFO: Generating Helas calls for process: g b~ > t~ w+ ta+ ta- DIM6=0 @2 
+INFO: Processing color information for process: g b~ > t~ w+ ta+ ta- DIM6=0 @2 
+INFO: Generating Helas calls for process: g b > t w- e+ e- DIM6=0 @1 
+INFO: Processing color information for process: g b > t w- e+ e- DIM6=0 @1 
+INFO: Combined process g b > t w- mu+ mu- DIM6=0 @1 with process g b > t w- e+ e- DIM6=0 @1 
+INFO: Generating Helas calls for process: g b~ > t~ w+ e+ e- DIM6=0 @2 
+INFO: Processing color information for process: g b~ > t~ w+ e+ e- DIM6=0 @2 
+INFO: Combined process g b~ > t~ w+ mu+ mu- DIM6=0 @2 with process g b~ > t~ w+ e+ e- DIM6=0 @2 
+INFO: Creating files in directory P1_gb_twmtaptam 
+INFO: Generating Feynman diagrams for Process: g b > t w- ta+ ta- DIM6=0 @1 
+INFO: Finding symmetric diagrams for subprocess group gb_twmtaptam 
+INFO: Creating files in directory P2_gbx_txwptaptam 
+INFO: Generating Feynman diagrams for Process: g b~ > t~ w+ ta+ ta- DIM6=0 @2 
+INFO: Finding symmetric diagrams for subprocess group gbx_txwptaptam 
+INFO: Creating files in directory P1_gb_twmll 
+INFO: Generating Feynman diagrams for Process: g b > t w- e+ e- DIM6=0 @1 
+INFO: Finding symmetric diagrams for subprocess group gb_twmll 
+INFO: Creating files in directory P2_gbx_txwpll 
+INFO: Generating Feynman diagrams for Process: g b~ > t~ w+ e+ e- DIM6=0 @2 
+INFO: Finding symmetric diagrams for subprocess group gbx_txwpll 
+Generated helas calls for 4 subprocesses (88 diagrams) in 0.680 s
+Wrote files for 166 helas calls in 1.002 s
+ALOHA: aloha creates FFV8 routines
+ALOHA: aloha creates VVV1 routines
+ALOHA: aloha creates FFV2 routines
+ALOHA: aloha creates FFV1 routines
+ALOHA: aloha creates FFV7 routines
+ALOHA: aloha creates FFS1 routines
+ALOHA: aloha creates VVS1 routines
+ALOHA: aloha creates FFS3 routines
+ALOHA: aloha creates FFS4 routines
+save configuration file to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/tWZ_rwgt/Cards/me5_configuration.txt
+INFO: Use Fortran compiler gfortran 
+INFO: Use c++ compiler g++ 
+INFO: Generate jpeg diagrams 
+INFO: Generate web pages 
+Output to directory /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/tWZ_rwgt done.
+Type "launch" to generate events from this process, or see
+/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/tWZ_rwgt/README
+Run "open index.html" to see more information about this process.
+display multiparticles
+Multiparticle labels:
+all = g u c d s u~ c~ d~ s~ a ve vm vt e- mu- ve~ vm~ vt~ e+ mu+ t b t~ b~ z w+ h w- ta- ta+
+l- = e- mu- ta-
+wdecay = g u c d s u~ c~ d~ s~ ve vm vt e- mu- e+ mu+ ve~ vm~ vt~ b b~ ta- ta+
+j = g u c d s u~ c~ d~ s~ b b~
+vl = ve vm vt
+l+ = e+ mu+ ta+
+p = g u c d s u~ c~ d~ s~ b b~
+w = w+ w-
+vl~ = ve~ vm~ vt~
+quit
+ 
+
+ 
+
+moving generated process to working directory
+
+        WARNING: You've chosen not to use the PDF sets recommended for 2017 production!
+        If this isn't intentional, and you prefer to use the recommended sets,
+        insert the following lines into your process-name_run_card.dat:
+
+            '$DEFAULT_PDF_SETS = lhaid'
+            '$DEFAULT_PDF_MEMBERS = reweight_PDF'
+        
+copying run_card.dat file
+copying custom reweight file
+starting LO mode
+************************************************************
+*                                                          *
+*                      W E L C O M E to                    *
+*             M A D G R A P H 5 _ a M C @ N L O            *
+*                      M A D E V E N T                     *
+*                                                          *
+*                 *                       *                *
+*                   *        * *        *                  *
+*                     * * * * 5 * * * *                    *
+*                   *        * *        *                  *
+*                 *                       *                *
+*                                                          *
+*         VERSION 2.6.0                 20xx-xx-xx         *
+*                                                          *
+*    The MadGraph5_aMC@NLO Development Team - Find us at   *
+*    https://server06.fynu.ucl.ac.be/projects/madgraph     *
+*                                                          *
+*               Type 'help' for in-line help.              *
+*                                                          *
+************************************************************
+INFO: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/processtmp/Cards/me5_configuration.txt  
+INFO: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt  
+INFO: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/processtmp/Cards/me5_configuration.txt  
+No valid eps viewer found. Please set in ./input/mg5_configuration.txt
+No valid web browser found. Please set in ./input/mg5_configuration.txt
+generate_events pilotrun
+The following switches determine which programs are run:
+/--------------------------------------------------------------------------------------------------\
+|  [31m1[0m. Choose the shower/hadronization program:                           shower = [31mNot installed[0m    |
+|  [31m2[0m. Choose the detector simulation program:                          detector = [31mNot installed[0m    |
+|  [31m3[0m. Run an analysis package on the events generated:                 analysis = [33mNo analysis tool interfaced to MG5aMC.[0m|
+|  [31m4[0m. Decay particles with the MadSpin module:                          madspin = [31mOFF[0m              |
+|  [31m5[0m. Add weights to events for different model hypothesis:            reweight = [32mON[0m               |
+\--------------------------------------------------------------------------------------------------/
+  Either type the switch number (1 to 5) to change its setting,
+  Set any switch explicitly (e.g. type 'madspin=ON' at the prompt)
+  Type 'help' for the list of all valid option
+  Type '0', 'auto', 'done' or just press enter when you are done.
+ [[4m0[0m, auto, done, shower=OFF, detector=OFF, analysis=OFF, madspin=ON, madspin=OFF, madspin, reweight=ON, ... ][60s to answer] 
+>Do you want to edit a card (press enter to bypass editing)?
+/------------------------------------------------------------\
+|  [31m1[0m. param    : [32mparam_card.dat[0m                              |
+|  [31m2[0m. run      : [32mrun_card.dat[0m                                |
+|  [31m3[0m. reweight : [32mreweight_card.dat[0m                           |
+\------------------------------------------------------------/
+ you can also
+   - enter the path to a valid card or banner.
+   - use the 'set' command to modify a parameter directly.
+     The set option works only for param_card and run_card.
+     Type 'help set' for more information on this command.
+   - call an external program (ASperGE/MadWidth/...).
+     Type 'help' for the list of available command
+ [[4m0[0m, done, 1, param, 2, run, 3, reweight, enter path][90s to answer] 
+>[1;60mINFO: modify parameter gridpack of the run_card.dat to True [0m
+Do you want to edit a card (press enter to bypass editing)?
+/------------------------------------------------------------\
+|  [31m1[0m. param    : [32mparam_card.dat[0m                              |
+|  [31m2[0m. run      : [32mrun_card.dat[0m                                |
+|  [31m3[0m. reweight : [32mreweight_card.dat[0m                           |
+\------------------------------------------------------------/
+ you can also
+   - enter the path to a valid card or banner.
+   - use the 'set' command to modify a parameter directly.
+     The set option works only for param_card and run_card.
+     Type 'help set' for more information on this command.
+   - call an external program (ASperGE/MadWidth/...).
+     Type 'help' for the list of available command
+ [[4m0[0m, done, 1, param, 2, run, 3, reweight, enter path] 
+>not valid argument. Valid argument are file path or value in (0,done,1,param,2,run,3,reweight).
+please retry
+>not valid argument. Valid argument are file path or value in (0,done,1,param,2,run,3,reweight).
+please retry
+>not valid argument. Valid argument are file path or value in (0,done,1,param,2,run,3,reweight).
+please retry
+>[1;60mINFO: modify param_card information BLOCK mass with id (6,) set to 172.5 [0m
+Do you want to edit a card (press enter to bypass editing)?
+/------------------------------------------------------------\
+|  [31m1[0m. param    : [32mparam_card.dat[0m                              |
+|  [31m2[0m. run      : [32mrun_card.dat[0m                                |
+|  [31m3[0m. reweight : [32mreweight_card.dat[0m                           |
+\------------------------------------------------------------/
+ you can also
+   - enter the path to a valid card or banner.
+   - use the 'set' command to modify a parameter directly.
+     The set option works only for param_card and run_card.
+     Type 'help set' for more information on this command.
+   - call an external program (ASperGE/MadWidth/...).
+     Type 'help' for the list of available command
+ [[4m0[0m, done, 1, param, 2, run, 3, reweight, enter path] 
+>[1;60mINFO: modify param_card information BLOCK yukawa with id (6,) set to 172.5 [0m
+Do you want to edit a card (press enter to bypass editing)?
+/------------------------------------------------------------\
+|  [31m1[0m. param    : [32mparam_card.dat[0m                              |
+|  [31m2[0m. run      : [32mrun_card.dat[0m                                |
+|  [31m3[0m. reweight : [32mreweight_card.dat[0m                           |
+\------------------------------------------------------------/
+ you can also
+   - enter the path to a valid card or banner.
+   - use the 'set' command to modify a parameter directly.
+     The set option works only for param_card and run_card.
+     Type 'help set' for more information on this command.
+   - call an external program (ASperGE/MadWidth/...).
+     Type 'help' for the list of available command
+ [[4m0[0m, done, 1, param, 2, run, 3, reweight, enter path] 
+>[1;60mINFO: modify param_card information BLOCK decay with id (6,) set to Auto [0m
+Do you want to edit a card (press enter to bypass editing)?
+/------------------------------------------------------------\
+|  [31m1[0m. param    : [32mparam_card.dat[0m                              |
+|  [31m2[0m. run      : [32mrun_card.dat[0m                                |
+|  [31m3[0m. reweight : [32mreweight_card.dat[0m                           |
+\------------------------------------------------------------/
+ you can also
+   - enter the path to a valid card or banner.
+   - use the 'set' command to modify a parameter directly.
+     The set option works only for param_card and run_card.
+     Type 'help set' for more information on this command.
+   - call an external program (ASperGE/MadWidth/...).
+     Type 'help' for the list of available command
+ [[4m0[0m, done, 1, param, 2, run, 3, reweight, enter path] 
+>INFO: load particles 
+INFO: load vertices 
+INFO: Change particles name to pass to MG5 convention 
+************************************************************
+*                                                          *
+*                     W E L C O M E to                     *
+*              M A D G R A P H 5 _ a M C @ N L O           *
+*                                                          *
+*                                                          *
+*                 *                       *                *
+*                   *        * *        *                  *
+*                     * * * * 5 * * * *                    *
+*                   *        * *        *                  *
+*                 *                       *                *
+*                                                          *
+*         VERSION 2.6.0                 2017-08-16         *
+*                                                          *
+*    The MadGraph5_aMC@NLO Development Team - Find us at   *
+*    https://server06.fynu.ucl.ac.be/projects/madgraph     *
+*                            and                           *
+*            http://amcatnlo.web.cern.ch/amcatnlo/         *
+*                                                          *
+*               Type 'help' for in-line help.              *
+*           Type 'tutorial' to learn how MG5 works         *
+*    Type 'tutorial aMCatNLO' to learn how aMC@NLO works   *
+*    Type 'tutorial MadLoop' to learn how MadLoop works    *
+*                                                          *
+************************************************************
+load MG5 configuration from ../MG5_aMC_v2_6_0/input/mg5_configuration.txt 
+None does not seem to correspond to a valid fastjet-config executable (v3+). We will use fjcore instead.
+ Please set the 'fastjet'variable to the full (absolute) /PATH/TO/fastjet-config (including fastjet-config).
+ MG5_aMC> set fastjet /PATH/TO/fastjet-config
+
+set lhapdf to /cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/lhapdf/6.2.1/share/LHAPDF/../../bin/lhapdf-config
+No valid eps viewer found. Please set in ./input/mg5_configuration.txt
+No valid web browser found. Please set in ./input/mg5_configuration.txt
+set automatic_html_opening False --no_save
+compute_widths 6 --precision_channel=0.01 --body_decay=4.0025 --path=/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/processtmp/Cards/param_card.dat --output=/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/processtmp/Cards/param_card.dat
+[1;34mPlease note that the automatic computation of the width is
+    only valid in narrow-width approximation and at tree-level.[0m
+INFO: get decay diagram for t 
+Vertexlist of this model has not been searched.Automatically run the model.find_vertexlist()
+Found 2 stable particles
+Pass to numerical integration for computing the widths:
+INFO: More info in temporary files:
+    /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/processtmp/tmpV0GRQo/temp_decay/index.html 
+Results written to /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/processtmp/Cards/param_card.dat
+INFO: Update the dependent parameter of the param_card.dat 
+Generating gridpack with run name pilotrun
+survey  pilotrun --accuracy=0.01 --points=2000 --iterations=8 --gridpack=.true.
+INFO: compile directory 
+[1;34mWARNING: Support of LHAPDF 6.2.x is still in beta phase. Consider to use LHAPDF 6.1.x in case of problem. [0m
+INFO: Using LHAPDF v6.2.1 interface for PDFs 
+[1;34mWARNING: Support of LHAPDF 6.2.x is still in beta phase. Consider to use LHAPDF 6.1.x in case of problem. [0m
+[1;34mWARNING: Support of LHAPDF 6.2.x is still in beta phase. Consider to use LHAPDF 6.1.x in case of problem. [0m
+compile Source Directory
+Using random number seed offset = 21
+INFO: Running Survey 
+Creating Jobs
+Working on SubProcesses
+INFO:     P1_gb_twmtaptam  
+INFO:     P2_gbx_txwptaptam  
+INFO:     P1_gb_twmll  
+INFO:     P2_gbx_txwpll  
+INFO:  Idle: 36,  Running: 10,  Completed: 0 [  0.066s  ] 
+INFO:  Idle: 36,  Running: 10,  Completed: 0 [  0.15s  ] 
+INFO:  Idle: 17,  Running: 29,  Completed: 0 [  30.3s  ] 
+INFO:  Idle: 17,  Running: 28,  Completed: 1 [  1m 0s  ] 
+INFO:  Idle: 17,  Running: 21,  Completed: 8 [  1m 30s  ] 
+INFO:  Idle: 17,  Running: 20,  Completed: 9 [  2m 0s  ] 
+INFO:  Idle: 17,  Running: 8,  Completed: 21 [  2m 30s  ] 
+INFO: Start to wait 60s between checking status.
+Note that you can change this time in the configuration file.
+Press ctrl-C to force the update. 
+INFO:  Idle: 17,  Running: 1,  Completed: 28 [  3m 31s  ] 
+INFO:  Idle: 6,  Running: 10,  Completed: 30 [  4m 31s  ] 
+INFO:  Idle: 2,  Running: 11,  Completed: 33 [  5m 31s  ] 
+INFO:  Idle: 0,  Running: 7,  Completed: 39 [  6m 31s  ] 
+INFO:  Idle: 0,  Running: 2,  Completed: 44 [  7m 32s  ] 
+INFO: All jobs finished 
+INFO:  Idle: 0,  Running: 0,  Completed: 46 [  8m 32s  ] 
+  === Results Summary for run: pilotrun tag: tag_1 ===
+
+     Cross-section :   0.01035 +- 2.211e-05 pb
+     Nb of events :  0
+ 
+INFO: End survey 
+combine_events
+INFO: Combining Events 
+store_events
+INFO: Storing parton level results 
+INFO: End Parton 
+decay_events -from_cards
+create_gridpack
+INFO: Creating gridpack 
+P1_gb_twmtaptam
+P2_gbx_txwptaptam
+P1_gb_twmll
+P2_gbx_txwpll
+Cleaning  SubProcesses.... 
+INFO: gridpack created 
+quit
+INFO: storing files of previous run 
+INFO: Done 
+INFO:  
+ 
+INFO:  
+ 
+launch in debug mode
+finished pilot run
+cleaning temporary output
+unpacking temporary gridpack
+cleaning temporary gridpack
+Updating grid_card.dat...
+Now generating 80000 events with random seed 657343 and granularity -1
+P1_gb_twmtaptam
+P2_gbx_txwptaptam
+P1_gb_twmll
+P2_gbx_txwpll
+DONE
+Moving events from  events.lhe
+preparing reweighting step
+preparing reweighting step
+Running MG5 in debug mode
+No module named madgraph
+************************************************************
+*                                                          *
+*                      W E L C O M E to                    *
+*             M A D G R A P H 5 _ a M C @ N L O            *
+*                      M A D E V E N T                     *
+*                                                          *
+*                 *                       *                *
+*                   *        * *        *                  *
+*                     * * * * 5 * * * *                    *
+*                   *        * *        *                  *
+*                 *                       *                *
+*                                                          *
+*         VERSION 2.6.0                 20xx-xx-xx         *
+*                                                          *
+*    The MadGraph5_aMC@NLO Development Team - Find us at   *
+*    https://server06.fynu.ucl.ac.be/projects/madgraph     *
+*                                                          *
+*               Type 'help' for in-line help.              *
+*                                                          *
+************************************************************
+INFO: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent/Cards/me5_configuration.txt  
+INFO: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt  
+INFO: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent/Cards/me5_configuration.txt  
+No valid eps viewer found. Please set in ./input/mg5_configuration.txt
+No valid web browser found. Please set in ./input/mg5_configuration.txt
+reweight pilotrun
+Do you want to edit a card (press enter to bypass editing)?
+/------------------------------------------------------------\
+|  [31m1[0m. reweight : [32mreweight_card.dat[0m                           |
+\------------------------------------------------------------/
+ you can also
+   - enter the path to a valid card.
+ [[4m0[0m, done, 1, reweight, enter path][90s to answer] 
+>INFO: Update the dependent parameter of the param_card.dat 
+[1;32mDEBUG: No module named madgraph [0m
+[1;32mDEBUG: /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent/bin/internal/me5_logging.conf [0m
+[1;32mDEBUG: ************************************************************ [0m
+[1;32mDEBUG: *                                                          * [0m
+[1;32mDEBUG: *                      W E L C O M E to                    * [0m
+[1;32mDEBUG: *             M A D G R A P H 5 _ a M C @ N L O            * [0m
+[1;32mDEBUG: *                      M A D E V E N T                     * [0m
+[1;32mDEBUG: *                                                          * [0m
+[1;32mDEBUG: *                 *                       *                * [0m
+[1;32mDEBUG: *                   *        * *        *                  * [0m
+[1;32mDEBUG: *                     * * * * 5 * * * *                    * [0m
+[1;32mDEBUG: *                   *        * *        *                  * [0m
+[1;32mDEBUG: *                 *                       *                * [0m
+[1;32mDEBUG: *                                                          * [0m
+[1;32mDEBUG: *         VERSION 2.6.0                 20xx-xx-xx         * [0m
+[1;32mDEBUG: *                                                          * [0m
+[1;32mDEBUG: *    The MadGraph5_aMC@NLO Development Team - Find us at   * [0m
+[1;32mDEBUG: *    https://server06.fynu.ucl.ac.be/projects/madgraph     * [0m
+[1;32mDEBUG: *                                                          * [0m
+[1;32mDEBUG: *               Type 'help' for in-line help.              * [0m
+[1;32mDEBUG: *                                                          * [0m
+[1;32mDEBUG: ************************************************************ [0m
+REWEIGHT: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent/Cards/me5_configuration.txt  
+REWEIGHT: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/MG5_aMC_v2_6_0/input/mg5_configuration.txt  
+REWEIGHT: load configuration from /pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent/Cards/me5_configuration.txt  
+[1;32mDEBUG: No valid eps viewer found. Please set in ./input/mg5_configuration.txt [0m
+[1;32mDEBUG: No valid web browser found. Please set in ./input/mg5_configuration.txt [0m
+[1;32mDEBUG: reweight pilotrun -from_cards [0m
+REWEIGHT: Extracting the banner ... 
+REWEIGHT: process: p p > t w l+ l-  
+REWEIGHT: options: DIM6=0 
+REWEIGHT: Running Reweighting 
+[1;32mDEBUG: We are in mode False [0m
+[1;32mDEBUG: change rwgt_dir rwgt [0m
+[1;32mDEBUG: launch --rwgt_name=dummy # Name of first argument seems to be rwgt_1. Add dummy to fix it. [0m
+REWEIGHT: detected model: dim6top_LO_UFO. Loading... 
+REWEIGHT: generating the square matrix element for reweighting 
+REWEIGHT: generate p p > t w l+ l- DIM6=0 ;add process p p > t~ w l+ l- DIM6=0 ; 
+REWEIGHT: Done 15.75 
+[1;32mDEBUG: Do you want to edit a card (press enter to bypass editing)? [0m
+[1;32mDEBUG: /------------------------------------------------------------\ [0m
+[1;32mDEBUG: |  [31m1[0m. param : [32mparam_card.dat[0m                                 | [0m
+[1;32mDEBUG: |  [31m9[0m. plot  : [32mplot_card.dat[0m                                  | [0m
+[1;32mDEBUG: \------------------------------------------------------------/ [0m
+[1;32mDEBUG:  you can also [0m
+[1;32mDEBUG:    - enter the path to a valid card or banner. [0m
+[1;32mDEBUG:    - use the 'set' command to modify a parameter directly. [0m
+[1;32mDEBUG:      The set option works only for param_card and run_card. [0m
+[1;32mDEBUG:      Type 'help set' for more information on this command. [0m
+[1;32mDEBUG:    - call an external program (ASperGE/MadWidth/...). [0m
+[1;32mDEBUG:      Type 'help' for the list of available command [0m
+[1;32mDEBUG:  [[4m0[0m, done, 1, param, 9, plot, enter path] [0m
+>[1;34mWARNING:  REWEIGHTING: original card and new card are identical. [0m
+REWEIGHT: starts to compute weight for events with the following modification to the param_card: 
+REWEIGHT:  
+REWEIGHT: Event nb 0 current time: 10h14 
+[1;31mCRITICAL: mass reweighting requires dedicated lhe output!. Please include "change output 2.0" in your reweight_card [0m
+[1;32mDEBUG: [1;31mCommand "reweight pilotrun -from_cards" interrupted with error: [0m
+[1;32mDEBUG: Exception :  [0m
+[1;32mDEBUG: Please report this bug on https://bugs.launchpad.net/mg5amcnlo [0m
+[1;32mDEBUG: More information is found in '/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent/pilotrun_tag_2_debug.log'. [0m
+[1;32mDEBUG: Please attach this file to your report.[0m [0m
+[1;32mDEBUG: quit [0m
+REWEIGHT: storing files of previous run 
+[1;32mDEBUG: gzipping output file: unweighted_events.lhe [0m
+REWEIGHT: Done 
+REWEIGHT:  
+[1;32mDEBUG:   [0m
+REWEIGHT:  
+[1;32mDEBUG:   [0m
+quit
+INFO:  
+ 
+INFO:  
+ 
+Compiling subprocess P1_gb_twmepem
+Library MENUM=2 compiled with status 0
+Library MENUM=3 compiled with status 0
+/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent
+Compiling subprocess P1_gb_twmtaptam
+Library MENUM=2 compiled with status 0
+Library MENUM=3 compiled with status 0
+/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent
+Compiling subprocess P2_gbx_txwpepem
+Library MENUM=2 compiled with status 0
+Library MENUM=3 compiled with status 0
+/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent
+Compiling subprocess P2_gbx_txwptaptam
+Library MENUM=2 compiled with status 0
+Library MENUM=3 compiled with status 0
+/pool/lsf/llechner/179705427/tWZ_rwgt/tWZ_rwgt_gridpack/work/process/madevent
+preparing final gridpack
+cleaning unneeded files from gridpack
+Saving log file(s)
+Creating tarball
+Gridpack created successfully at /afs/cern.ch/user/l/llechner/public/CMSSW_9_4_6_patch1/src/gridpacks_addbg_noref/output/tWZ/order2//tWZ_rwgt_slc6_amd64_gcc630_CMSSW_9_3_0_tarball.tar.xz
+End of job
+
+Job finished at Tue Jul 10 10:17:28 CEST 2018 on node 
+ under linux version Scientific Linux CERN SLC release 6.10 (Carbon)
+
+CERN statistics: This process used approximately : 0:45:13 KSI2K hours (2713 KSI2K seconds)
+                 This process corresponds to     : 2:56:23 HS06  hours (10583 HS06  seconds)
